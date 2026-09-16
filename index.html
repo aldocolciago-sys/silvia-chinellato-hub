@@ -343,7 +343,6 @@
                     <span>Accedi con Google</span>
                 </button>
 
-                <!-- Quick Admin Simulation Test Button -->
                 <button onclick="handleTestAdminLogin()" class="w-full py-2.5 bg-nature-700 hover:bg-nature-800 text-white font-semibold rounded-2xl shadow-sm transition text-xs italic-title">
                     <i class="fa-solid fa-bolt mr-1.5"></i> Accesso Rapido Test Admin
                 </button>
@@ -2033,8 +2032,7 @@
                             backgroundColor: color, 
                             borderColor: hasConflict ? '#dc2626' : color, 
                             borderWidth: hasConflict ? '3px' : '1px',
-                            textColor: '#ffffff',
-                            classNames: hasConflict ? ['ring-4', 'ring-rose-500', 'animate-pulse'] : []
+                            textColor: '#ffffff'
                         };
                     });
                     successCallback(mappedEvents);
