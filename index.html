@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Silvia Chinellato | Osteopata & Idrocolonterapia</title>
     
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -45,10 +46,13 @@
         }
     </script>
     
+    <!-- Google Fonts & FontAwesome -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600;1,700&family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- FullCalendar -->
     <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
     
@@ -79,6 +83,7 @@
 </head>
 <body class="h-full text-slate-800 flex flex-col selection:bg-nature-200 selection:text-nature-900 scroll-smooth">
 
+    <!-- PUBLIC VIEW -->
     <div id="public-view" class="flex-1 flex flex-col overflow-y-auto">
         <header class="bg-white/90 backdrop-blur-md border-b border-nature-100/80 sticky top-0 z-40 shadow-xs">
             <div class="max-w-6xl mx-auto px-4 sm:px-6 py-3.5 flex items-center justify-between">
@@ -229,8 +234,8 @@
                         <div class="w-14 h-14 rounded-2xl bg-nature-600 text-white flex items-center justify-center text-xl shadow-md">
                             <i class="fa-brands fa-whatsapp"></i>
                         </div>
-                        <h4 class="font-editorial text-xl font-bold text-nature-900 italic">Telefono Diretto</h4>
-                        <p class="text-xs text-slate-600 font-light leading-relaxed font-editorial italic text-sm">Contatto telefonico o WhatsApp per urgenze e informazioni rapide.</p>
+                        <h4 class="font-editorial text-xl font-bold text-nature-900 italic">Contatto Telefonico</h4>
+                        <p class="text-xs text-slate-600 font-light leading-relaxed font-editorial italic text-sm">Contatto diretto tramite telefono o WhatsApp per urgenze e informazioni rapide.</p>
                         <div class="px-4 py-2 bg-slate-200/90 rounded-xl text-xs font-semibold text-slate-600 tracking-widest blur-[3px] select-none cursor-pointer hover:blur-none transition font-editorial text-base" title="Passa il cursore per svelare">
                             +39 333 •••••••
                         </div>
@@ -241,7 +246,7 @@
                             <i class="fa-brands fa-instagram"></i>
                         </div>
                         <h4 class="font-editorial text-xl font-bold text-slate-900 italic">Instagram</h4>
-                        <p class="text-xs text-slate-600 font-light leading-relaxed font-editorial italic text-sm">Segui i consigli di benessere e le ultime novità dallo studio.</p>
+                        <p class="text-xs text-slate-600 font-light leading-relaxed font-editorial italic text-sm">Segui i consigli di benessere, le storie e le ultime novità dallo studio.</p>
                         <span class="text-xs font-bold text-rose-600 underline font-editorial italic text-lg">@dott.ssasilviachinellato</span>
                     </a>
 
@@ -249,8 +254,8 @@
                         <div class="w-14 h-14 rounded-2xl bg-water-600 text-white flex items-center justify-center text-xl shadow-md group-hover:scale-105 transition">
                             <i class="fa-solid fa-envelope"></i>
                         </div>
-                        <h4 class="font-editorial text-xl font-bold text-slate-900 italic">Email</h4>
-                        <p class="text-xs text-slate-600 font-light leading-relaxed font-editorial italic text-sm">Scrivi comodamente per prendere un appuntamento o per richieste.</p>
+                        <h4 class="font-editorial text-xl font-bold text-slate-900 italic">Email per Appuntamenti</h4>
+                        <p class="text-xs text-slate-600 font-light leading-relaxed font-editorial italic text-sm">Scrivi comodamente per prendere un appuntamento o per richieste dettagliate.</p>
                         <span class="text-xs font-bold text-water-700 underline font-editorial italic text-lg">silviachine@gmail.com</span>
                     </a>
                 </div>
@@ -262,6 +267,7 @@
         </footer>
     </div>
 
+    <!-- PRIVATE ADMIN VIEW -->
     <div id="private-view" class="hidden flex-1 flex flex-col h-full overflow-hidden">
         <header class="bg-white/95 backdrop-blur-md border-b border-nature-100 px-3 sm:px-4 py-2 flex flex-col sm:flex-row sm:items-center justify-between gap-2 z-30 shadow-xs flex-shrink-0">
             <div class="flex items-center gap-2.5">
@@ -310,7 +316,6 @@
             </div>
         </header>
 
-        <!-- Conflict Warning Banner Container -->
         <div id="calendar-conflict-banner" class="hidden bg-rose-50 border-b border-rose-200 px-4 py-2 flex items-center justify-between gap-3 text-xs text-rose-800 flex-shrink-0 z-20 shadow-xs">
             <div class="flex items-center gap-2">
                 <i class="fa-solid fa-triangle-exclamation text-rose-600 text-sm animate-bounce"></i>
@@ -326,6 +331,7 @@
         </main>
     </div>
 
+    <!-- LOGIN MODAL (Google Only) -->
     <div id="login-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-md hidden z-50 flex items-center justify-center p-4">
         <div class="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-sm overflow-hidden flex flex-col border border-nature-100">
             <div class="px-6 py-5 border-b border-slate-100 flex items-center justify-between bg-nature-50/50">
@@ -348,6 +354,7 @@
         </div>
     </div>
 
+    <!-- STUDIO EVENT MODAL -->
     <div id="studio-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-md hidden z-50 flex items-center justify-center p-4">
         <div class="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-md overflow-hidden flex flex-col border border-nature-100 max-h-[90vh]">
             <div class="px-5 sm:px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-nature-50/50">
@@ -358,6 +365,13 @@
                 <input type="hidden" id="studio-edit-event-id">
                 <input type="hidden" id="studio-event-is-external" value="false">
                 
+                <div class="space-y-1">
+                    <label class="text-[11px] font-bold text-slate-600">Sede / Poliambulatorio</label>
+                    <select id="studio-center-select" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-2xl text-xs">
+                        <option value="">Studio Privato (Default)</option>
+                    </select>
+                </div>
+
                 <div class="space-y-1">
                     <label class="text-[11px] font-bold text-slate-600">Associa Paziente in Anagrafica (Opzionale)</label>
                     <select id="studio-patient-select" onchange="onPatientSelectChange()" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-2xl text-xs">
@@ -416,7 +430,7 @@
         </div>
     </div>
 
-    <!-- Patients Modal & Editor -->
+    <!-- PATIENTS MODAL -->
     <div id="patients-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-md hidden z-50 flex items-center justify-center p-4">
         <div class="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-4xl overflow-hidden flex flex-col max-h-[90vh]">
             <div class="px-5 sm:px-6 py-4 border-b border-amber-100 flex items-center justify-between bg-amber-50/50">
@@ -439,7 +453,7 @@
         </div>
     </div>
 
-    <!-- Patient Edit/Create Modal -->
+    <!-- PATIENT EDIT MODAL -->
     <div id="patient-edit-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-md hidden z-[60] flex items-center justify-center p-4">
         <div class="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-md overflow-hidden flex flex-col border border-amber-100 max-h-[90vh]">
             <div class="px-5 sm:px-6 py-4 border-b border-amber-100 flex items-center justify-between bg-amber-50/50">
@@ -474,7 +488,7 @@
         </div>
     </div>
 
-    <!-- Patient Appointments History Modal -->
+    <!-- PATIENT HISTORY MODAL -->
     <div id="patient-history-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-md hidden z-[65] flex items-center justify-center p-4">
         <div class="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-2xl overflow-hidden flex flex-col max-h-[90vh]">
             <div class="px-5 sm:px-6 py-4 border-b border-amber-100 flex items-center justify-between bg-amber-50/50">
@@ -491,7 +505,7 @@
         </div>
     </div>
 
-    <!-- Sync Progress & Detailed Report Modal -->
+    <!-- SYNC REPORT MODAL -->
     <div id="sync-report-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-md hidden z-[80] flex items-center justify-center p-4">
         <div class="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-xl overflow-hidden flex flex-col border border-water-100">
             <div class="px-6 py-4 border-b border-water-100 flex items-center justify-between bg-water-50/50">
@@ -514,7 +528,7 @@
         </div>
     </div>
 
-    <!-- Trattamenti Admin Modal -->
+    <!-- TREATMENTS ADMIN MODAL -->
     <div id="treatments-admin-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-md hidden z-50 flex items-center justify-center p-4">
         <div class="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-2xl overflow-hidden flex flex-col max-h-[90vh]">
             <div class="px-5 sm:px-6 py-4 sm:py-5 border-b border-nature-100 flex items-center justify-between bg-nature-50/50">
@@ -558,7 +572,7 @@
         </div>
     </div>
 
-    <!-- Poliambulatori Admin Modal -->
+    <!-- CENTERS ADMIN MODAL (With Icon and Color Picker) -->
     <div id="centers-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-md hidden z-50 flex items-center justify-center p-4">
         <div class="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-2xl overflow-hidden flex flex-col max-h-[90vh]">
             <div class="px-5 sm:px-6 py-4 sm:py-5 border-b border-nature-100 flex items-center justify-between bg-nature-50/50">
@@ -577,6 +591,26 @@
                         <input type="text" id="new-center-service" required placeholder="Prestazione in evidenza *" class="px-4 py-2.5 bg-white border border-slate-200 rounded-2xl text-xs focus:outline-none focus:ring-2 focus:ring-nature-500">
                     </div>
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div class="space-y-1">
+                            <label class="text-[10px] font-bold text-slate-600">Icona Poliambulatorio</label>
+                            <select id="new-center-icon" class="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-2xl text-xs focus:outline-none focus:ring-2 focus:ring-nature-500">
+                                <option value="fa-hospital">🏥 Ospedale / Centro</option>
+                                <option value="fa-clinic-medical">🏨 Clinica Medica</option>
+                                <option value="fa-house-medical">🏠 Studio Medico</option>
+                                <option value="fa-notes-medical">📋 Note Mediche</option>
+                                <option value="fa-user-doctor">👨‍⚕️ Dottore / Specialista</option>
+                                <option value="fa-building-columns">🏛️ Edificio Struttura</option>
+                            </select>
+                        </div>
+                        <div class="space-y-1">
+                            <label class="text-[10px] font-bold text-slate-600">Colore Identificativo (Calendario & Badge)</label>
+                            <div class="flex items-center gap-2">
+                                <input type="color" id="new-center-color" value="#3f5e4e" class="w-12 h-10 rounded-xl border border-slate-200 cursor-pointer p-1 bg-white">
+                                <span class="text-[11px] text-slate-500">Scegli il colore per gli eventi</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <input type="text" id="new-center-address" placeholder="Indirizzo della sede (opzionale)" class="px-4 py-2.5 bg-white border border-slate-200 rounded-2xl text-xs focus:outline-none focus:ring-2 focus:ring-nature-500">
                         <input type="text" id="new-center-phone" placeholder="Telefono prenotazioni (opzionale)" class="px-4 py-2.5 bg-white border border-slate-200 rounded-2xl text-xs focus:outline-none focus:ring-2 focus:ring-nature-500">
                     </div>
@@ -585,7 +619,7 @@
                         <input type="url" id="new-center-booking" placeholder="Link prenotazione online (opzionale)" class="px-4 py-2.5 bg-white border border-slate-200 rounded-2xl text-xs focus:outline-none focus:ring-2 focus:ring-nature-500">
                     </div>
                     <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 items-center">
-                        <input type="url" id="new-center-ical" placeholder="Link iCal (.ics) Google Calendar" class="sm:col-span-2 px-4 py-2.5 bg-white border border-slate-200 rounded-2xl text-xs focus:outline-none focus:ring-2 focus:ring-nature-500">
+                        <input type="url" id="new-center-ical" placeholder="Link iCal (.ics) Google Calendar (opzionale)" class="sm:col-span-2 px-4 py-2.5 bg-white border border-slate-200 rounded-2xl text-xs focus:outline-none focus:ring-2 focus:ring-nature-500">
                         <div class="flex items-center gap-2.5 px-2">
                             <input type="checkbox" id="new-center-public" checked class="w-4 h-4 text-nature-600 rounded focus:ring-nature-500">
                             <label for="new-center-public" class="text-xs font-semibold text-slate-700">Visibile clienti</label>
@@ -607,7 +641,7 @@
         </div>
     </div>
 
-    <!-- News Admin Modal -->
+    <!-- NEWS ADMIN MODAL (With Date Picker) -->
     <div id="news-admin-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-md hidden z-50 flex items-center justify-center p-4">
         <div class="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-2xl overflow-hidden flex flex-col max-h-[90vh]">
             <div class="px-5 sm:px-6 py-4 sm:py-5 border-b border-nature-100 flex items-center justify-between bg-water-50/50">
@@ -617,7 +651,13 @@
             <div class="p-4 sm:p-6 overflow-y-auto space-y-6 flex-1">
                 <form id="news-form" class="bg-water-50/40 p-4 sm:p-5 rounded-3xl border border-water-100 space-y-3" onsubmit="handleNewsSubmit(event)">
                     <input type="hidden" id="news-edit-id">
-                    <input type="text" id="new-news-title" required placeholder="Titolo della news *" class="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-2xl text-xs focus:outline-none focus:ring-2 focus:ring-water-500">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <input type="text" id="new-news-title" required placeholder="Titolo della news *" class="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-2xl text-xs focus:outline-none focus:ring-2 focus:ring-water-500">
+                        <div class="space-y-1">
+                            <label class="text-[10px] font-bold text-slate-600">Data Comunicazione *</label>
+                            <input type="date" id="new-news-date" required class="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-2xl text-xs focus:outline-none focus:ring-2 focus:ring-water-500">
+                        </div>
+                    </div>
                     <textarea id="new-news-content" required placeholder="Contenuto completo..." class="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-2xl text-xs focus:outline-none focus:ring-2 focus:ring-water-500 h-24 resize-none"></textarea>
                     <input type="url" id="new-news-link" placeholder="Link di approfondimento opzionale (es. https://...)" class="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-2xl text-xs focus:outline-none focus:ring-2 focus:ring-water-500">
                     <div class="flex justify-end gap-2">
@@ -633,7 +673,7 @@
         </div>
     </div>
 
-    <!-- Preparazione Admin Modal -->
+    <!-- PREPARATION ADMIN MODAL -->
     <div id="prep-admin-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-md hidden z-50 flex items-center justify-center p-4">
         <div class="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-2xl overflow-hidden flex flex-col max-h-[90vh]">
             <div class="px-5 sm:px-6 py-4 border-b border-nature-100 flex items-center justify-between bg-nature-50/50">
@@ -661,7 +701,7 @@
         </div>
     </div>
 
-    <!-- Confirm Modal -->
+    <!-- CONFIRM DIALOG MODAL -->
     <div id="confirm-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-md hidden z-[70] flex items-center justify-center p-4">
         <div class="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-sm overflow-hidden flex flex-col border border-nature-100 p-6 text-center space-y-4">
             <div class="w-14 h-14 rounded-full bg-rose-50 text-rose-600 flex items-center justify-center mx-auto text-xl shadow-inner">
@@ -676,7 +716,7 @@
         </div>
     </div>
 
-    <!-- Toast Notification -->
+    <!-- TOAST NOTIFICATION -->
     <div id="toast" class="fixed bottom-6 right-6 z-50 bg-slate-900 text-white px-5 py-3 rounded-2xl shadow-2xl text-xs font-bold flex items-center gap-3 transition-all duration-300 transform translate-y-20 opacity-0 pointer-events-none">
         <i class="fa-solid fa-circle-check text-nature-400 text-sm"></i>
         <span id="toast-message">Operazione completata</span>
@@ -702,8 +742,8 @@
             isLoggedIn: false,
             currentUserEmail: null,
             centers: [
-                { id: '1', name: 'Centro Polisalute', service: 'Osteopatia & Visite', color: '#3f5e4e', icalUrl: '', showPublic: true, address: 'Via Roma 10, Milano', phone: '02 1234567', siteUrl: 'https://example.com', bookingUrl: 'https://example.com/book' },
-                { id: '2', name: 'Poliambulatorio San Benedetto', service: 'Idrocolonterapia', color: '#4a8fa8', icalUrl: '', showPublic: true, address: 'Corso Italia 45, Monza', phone: '039 7654321', siteUrl: 'https://example.com', bookingUrl: 'https://example.com/book' }
+                { id: '1', name: 'Centro Polisalute', service: 'Osteopatia & Visite', color: '#3f5e4e', icon: 'fa-hospital', icalUrl: '', showPublic: true, address: 'Via Roma 10, Milano', phone: '02 1234567', siteUrl: 'https://example.com', bookingUrl: 'https://example.com/book' },
+                { id: '2', name: 'Poliambulatorio San Benedetto', service: 'Idrocolonterapia', color: '#4a8fa8', icon: 'fa-clinic-medical', icalUrl: '', showPublic: true, address: 'Corso Italia 45, Monza', phone: '039 7654321', siteUrl: 'https://example.com', bookingUrl: 'https://example.com/book' }
             ],
             treatments: [
                 { id: 't1', title: 'Idrocolonterapia', icon: 'fa-droplet', desc: "Depurazione profonda e delicata del colon, utile per eliminare tossine, ridurre l'infiammazione e ripristinare la vitalità dell'organismo." },
@@ -711,7 +751,7 @@
                 { id: 't3', title: 'Prevenzione & Equilibrio', icon: 'fa-heart-pulse', desc: 'Consulenze e percorsi personalizzati volti al mantenimento dello stato di salute e alla prevenzione dei disturbi cronici.' }
             ],
             news: [
-                { id: 'n1', title: 'Chiusura Estiva Studio', content: 'Si avvisano i gentili pazienti che lo studio rimarrà chiuso per ferie estive dal 10 al 25 agosto. Le prenotazioni online restano attive.', link: '' }
+                { id: 'n1', title: 'Chiusura Estiva Studio', date: '2026-08-10', content: 'Si avvisano i gentili pazienti che lo studio rimarrà chiuso per ferie estive dal 10 al 25 agosto. Le prenotazioni online restano attive.', link: '' }
             ],
             preparations: [
                 { id: 'p1', title: 'Preparazione Idrocolonterapia', tag: 'Idrocolonterapia', content: "Nei 2 giorni precedenti il trattamento si consiglia un'alimentazione leggera, ricca di acqua e povera di scorie." }
@@ -756,7 +796,7 @@
                     showPrivateView();
                     await loadAllDataFromFirestore();
                     setTimeout(() => {
-                        triggerIcalSync(true); // Automatic sync immediately after login with real-time modal progress
+                        triggerIcalSync(true); 
                     }, 500);
                 } else if (user && user.email) {
                     await signOut(auth);
@@ -841,6 +881,7 @@
                 renderTreatmentsManagementList();
                 renderPatientsList();
                 populatePatientDropdown();
+                populateCenterDropdown();
                 if (calendarInstance) calendarInstance.refetchEvents();
                 checkCalendarConflicts();
             } catch (err) {
@@ -871,6 +912,7 @@
             renderPrepManagementList();
             renderPatientsList();
             populatePatientDropdown();
+            populateCenterDropdown();
             setTimeout(() => {
                 initCalendar();
                 checkCalendarConflicts();
@@ -897,7 +939,9 @@
                     <div class="space-y-3">
                         <div class="flex items-center justify-between">
                             <span class="px-4 py-1.5 rounded-full text-xs font-bold bg-nature-50 text-nature-800 italic-title">${center.service}</span>
-                            <div class="w-3.5 h-3.5 rounded-full shadow-sm" style="background-color: ${center.color};"></div>
+                            <div class="w-8 h-8 rounded-xl flex items-center justify-center text-white text-xs shadow-sm" style="background-color: ${center.color || '#3f5e4e'};">
+                                <i class="fa-solid ${center.icon || 'fa-hospital'}"></i>
+                            </div>
                         </div>
                         <h4 class="font-editorial text-xl sm:text-2xl font-bold text-slate-900 italic">${center.name}</h4>
                         ${center.address ? `<p class="text-xs sm:text-sm text-slate-500 font-light flex items-center gap-2"><i class="fa-solid fa-location-dot text-nature-600"></i> ${center.address}</p>` : ''}
@@ -930,23 +974,37 @@
                 grid.innerHTML = `<p class="text-xs text-slate-400 italic col-span-2 text-center py-6">Nessuna news pubblicata al momento.</p>`;
                 return;
             }
-            grid.innerHTML = appState.news.map((item, idx) => `
-                <div class="bg-white/90 backdrop-blur-md p-6 sm:p-8 rounded-[2.5rem] border border-white/80 shadow-lg space-y-3 flex flex-col justify-between">
-                    <div class="space-y-2">
-                        <span class="text-[10px] font-bold text-water-700 uppercase tracking-widest italic-title">Aggiornamento Studio</span>
-                        <h4 class="font-editorial text-xl font-bold text-slate-900 italic">${item.title}</h4>
-                        <div class="text-xs sm:text-sm text-slate-600 font-light leading-relaxed" id="news-content-${idx}">
-                            <p class="line-clamp-2">${item.content}</p>
+            grid.innerHTML = appState.news.map((item, idx) => {
+                let formattedDate = '';
+                if (item.date) {
+                    try {
+                        let dObj = new Date(item.date);
+                        formattedDate = dObj.toLocaleDateString('it-IT', { day: 'numeric', month: 'long', year: 'numeric' });
+                    } catch(e) {
+                        formattedDate = item.date;
+                    }
+                }
+                return `
+                    <div class="bg-white/90 backdrop-blur-md p-6 sm:p-8 rounded-[2.5rem] border border-white/80 shadow-lg space-y-3 flex flex-col justify-between">
+                        <div class="space-y-2">
+                            <div class="flex items-center justify-between">
+                                <span class="text-[10px] font-bold text-water-700 uppercase tracking-widest italic-title">Aggiornamento Studio</span>
+                                ${formattedDate ? `<span class="text-xs font-semibold text-slate-500 bg-water-50 px-2.5 py-0.5 rounded-full"><i class="fa-regular fa-calendar-days text-water-600 mr-1"></i> ${formattedDate}</span>` : ''}
+                            </div>
+                            <h4 class="font-editorial text-xl font-bold text-slate-900 italic">${item.title}</h4>
+                            <div class="text-xs sm:text-sm text-slate-600 font-light leading-relaxed" id="news-content-${idx}">
+                                <p class="line-clamp-2">${item.content}</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between pt-2 border-t border-slate-100">
+                            <button onclick="toggleNewsExpand(${idx})" id="news-btn-${idx}" class="text-xs font-bold text-water-700 hover:text-water-900 transition flex items-center gap-1 italic-title">
+                                <span>Leggi tutto</span> <i class="fa-solid fa-chevron-down text-[10px]"></i>
+                            </button>
+                            ${item.link ? `<a href="${item.link}" target="_blank" class="px-3 py-1.5 bg-water-50 hover:bg-water-100 text-water-800 rounded-xl text-xs font-semibold transition"><i class="fa-solid fa-arrow-up-right-from-square"></i> Approfondisci</a>` : ''}
                         </div>
                     </div>
-                    <div class="flex items-center justify-between pt-2 border-t border-slate-100">
-                        <button onclick="toggleNewsExpand(${idx})" id="news-btn-${idx}" class="text-xs font-bold text-water-700 hover:text-water-900 transition flex items-center gap-1 italic-title">
-                            <span>Leggi tutto</span> <i class="fa-solid fa-chevron-down text-[10px]"></i>
-                        </button>
-                        ${item.link ? `<a href="${item.link}" target="_blank" class="px-3 py-1.5 bg-water-50 hover:bg-water-100 text-water-800 rounded-xl text-xs font-semibold transition"><i class="fa-solid fa-arrow-up-right-from-square"></i> Approfondisci</a>` : ''}
-                    </div>
-                </div>
-            `).join('');
+                `;
+            }).join('');
         }
 
         window.toggleNewsExpand = function(idx) {
@@ -987,7 +1045,8 @@
             if (!legend) return;
             legend.innerHTML = appState.centers.map(center => `
                 <div class="inline-flex items-center gap-1.5 px-2.5 py-0.5 bg-white/90 rounded-full border border-nature-200 shadow-2xs flex-shrink-0">
-                    <span class="w-2 h-2 rounded-full flex-shrink-0" style="background-color: ${center.color};"></span>
+                    <span class="w-2 h-2 rounded-full flex-shrink-0" style="background-color: ${center.color || '#3f5e4e'};"></span>
+                    <i class="fa-solid ${center.icon || 'fa-hospital'} text-[10px]" style="color: ${center.color || '#3f5e4e'};"></i>
                     <span class="font-bold text-slate-700 text-[10px] truncate max-w-[110px] italic-title">${center.name}</span>
                 </div>
             `).join('');
@@ -1074,21 +1133,24 @@
 
         window.openStudioModal = function(editEv = null) {
             populateTimeSelects();
+            populateCenterDropdown();
             const form = document.getElementById('studio-event-form');
             form.reset();
             document.getElementById('studio-edit-event-id').value = '';
             document.getElementById('studio-event-is-external').value = 'false';
             document.getElementById('studio-delete-btn').classList.add('hidden');
-            document.getElementById('studio-modal-title').textContent = 'Nuovo Appuntamento Studio';
+            document.getElementById('studio-modal-title').textContent = 'Nuovo Appuntamento Studio / Sede';
             
             document.getElementById('studio-title').disabled = false;
             document.getElementById('studio-date').disabled = false;
             document.getElementById('studio-time-start').disabled = false;
             document.getElementById('studio-time-end').disabled = false;
+            document.getElementById('studio-center-select').disabled = false;
             document.getElementById('studio-title').classList.remove('bg-slate-200', 'text-slate-500');
             document.getElementById('studio-date').classList.remove('bg-slate-200', 'text-slate-500');
             document.getElementById('studio-time-start').classList.remove('bg-slate-200', 'text-slate-500');
             document.getElementById('studio-time-end').classList.remove('bg-slate-200', 'text-slate-500');
+            document.getElementById('studio-center-select').classList.remove('bg-slate-200', 'text-slate-500');
 
             const today = new Date().toISOString().split('T')[0];
             document.getElementById('studio-date').value = today;
@@ -1111,6 +1173,9 @@
                     let dEnd = new Date(editEv.end);
                     document.getElementById('studio-time-end').value = `${String(dEnd.getHours()).padStart(2, '0')}:${String(dEnd.getMinutes()).padStart(2, '0')}`;
                 }
+                if (editEv.extendedProps?.centerId) {
+                    document.getElementById('studio-center-select').value = editEv.extendedProps.centerId;
+                }
                 if (editEv.extendedProps?.patientId) {
                     document.getElementById('studio-patient-select').value = editEv.extendedProps.patientId;
                     showLivePatientNotes(editEv.extendedProps.patientId);
@@ -1123,10 +1188,12 @@
                     document.getElementById('studio-date').disabled = true;
                     document.getElementById('studio-time-start').disabled = true;
                     document.getElementById('studio-time-end').disabled = true;
+                    document.getElementById('studio-center-select').disabled = true;
                     document.getElementById('studio-title').classList.add('bg-slate-200', 'text-slate-500');
                     document.getElementById('studio-date').classList.add('bg-slate-200', 'text-slate-500');
                     document.getElementById('studio-time-start').classList.add('bg-slate-200', 'text-slate-500');
                     document.getElementById('studio-time-end').classList.add('bg-slate-200', 'text-slate-500');
+                    document.getElementById('studio-center-select').classList.add('bg-slate-200', 'text-slate-500');
                 }
 
                 document.getElementById('studio-delete-btn').classList.remove('hidden');
@@ -1136,6 +1203,12 @@
         }
 
         window.closeStudioModal = function() { document.getElementById('studio-modal').classList.add('hidden'); }
+
+        function populateCenterDropdown() {
+            const sel = document.getElementById('studio-center-select');
+            if (!sel) return;
+            sel.innerHTML = '<option value="">Studio Privato (Default)</option>' + appState.centers.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+        }
 
         window.onPatientSelectChange = function() {
             const selId = document.getElementById('studio-patient-select').value;
@@ -1198,10 +1271,15 @@
             const date = document.getElementById('studio-date').value;
             const startH = document.getElementById('studio-time-start').value;
             const endH = document.getElementById('studio-time-end').value;
+            const centerId = document.getElementById('studio-center-select').value;
             const patientId = document.getElementById('studio-patient-select').value;
 
             const start = `${date}T${startH}:00`;
             const end = `${date}T${endH}:00`;
+
+            const selectedCenter = appState.centers.find(c => c.id === centerId);
+            const centerName = selectedCenter ? selectedCenter.name : 'Studio Privato';
+            const centerColor = selectedCenter ? (selectedCenter.color || '#3f5e4e') : '#3f5e4e';
 
             let existingEv = appState.events.find(ev => ev.id === id);
 
@@ -1220,10 +1298,10 @@
                     title, 
                     start, 
                     end, 
-                    backgroundColor: '#3f5e4e',
-                    borderColor: '#3f5e4e',
+                    backgroundColor: centerColor,
+                    borderColor: centerColor,
                     textColor: '#ffffff',
-                    extendedProps: { centerName: 'Studio Privato', patientId: patientId || null } 
+                    extendedProps: { centerId: centerId || null, centerName: centerName, patientId: patientId || null } 
                 };
             }
 
@@ -1256,7 +1334,6 @@
             });
         }
 
-        // --- Patients Management & History ---
         window.openPatientsModal = function() {
             renderPatientsList();
             document.getElementById('patients-modal').classList.remove('hidden');
@@ -1399,7 +1476,11 @@
         window.closeCentersModal = function() { document.getElementById('centers-modal').classList.add('hidden'); }
         window.openTreatmentsAdminModal = function() { document.getElementById('treatments-admin-modal').classList.remove('hidden'); }
         window.closeTreatmentsAdminModal = function() { document.getElementById('treatments-admin-modal').classList.add('hidden'); }
-        window.openNewsAdminModal = function() { document.getElementById('news-admin-modal').classList.remove('hidden'); }
+        window.openNewsAdminModal = function() { 
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('new-news-date').value = today;
+            document.getElementById('news-admin-modal').classList.remove('hidden'); 
+        }
         window.closeNewsAdminModal = function() { document.getElementById('news-admin-modal').classList.add('hidden'); }
         window.openPrepAdminModal = function() { document.getElementById('prep-admin-modal').classList.remove('hidden'); }
         window.closePrepAdminModal = function() { document.getElementById('prep-admin-modal').classList.add('hidden'); }
@@ -1481,19 +1562,18 @@
             const id = document.getElementById('center-edit-id').value || 'c_' + Date.now();
             const name = document.getElementById('new-center-name').value.trim();
             const service = document.getElementById('new-center-service').value.trim();
+            const icon = document.getElementById('new-center-icon').value;
+            const color = document.getElementById('new-center-color').value;
             const address = document.getElementById('new-center-address').value.trim();
             const phone = document.getElementById('new-center-phone').value.trim();
             const siteUrl = document.getElementById('new-center-site').value.trim();
             const bookingUrl = document.getElementById('new-center-booking').value.trim();
             const icalUrl = document.getElementById('new-center-ical').value.trim();
             const showPublic = document.getElementById('new-center-public').checked;
-            const colors = ['#3f5e4e', '#4a8fa8', '#2f473c', '#d5bdaf'];
-            const color = colors[Math.floor(Math.random() * colors.length)];
 
-            const newC = { id, name, service, address, phone, siteUrl, bookingUrl, icalUrl, showPublic, color };
+            const newC = { id, name, service, icon, color, address, phone, siteUrl, bookingUrl, icalUrl, showPublic };
             const idx = appState.centers.findIndex(c => c.id === id);
             if (idx >= 0) {
-                newC.color = appState.centers[idx].color;
                 appState.centers[idx] = newC;
             } else {
                 appState.centers.push(newC);
@@ -1510,6 +1590,7 @@
             renderCentersManagementList();
             renderPublicCenters();
             renderHeaderLegend();
+            populateCenterDropdown();
             showToast("Poliambulatorio salvato!");
         }
 
@@ -1518,8 +1599,10 @@
             if (!list) return;
             list.innerHTML = appState.centers.map(c => `
                 <div class="p-3 bg-white border border-slate-200 rounded-2xl flex items-center justify-between text-xs">
-                    <div class="flex items-center gap-2.5">
-                        <div class="w-3.5 h-3.5 rounded-full" style="background-color: ${c.color}"></div>
+                    <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 rounded-xl flex items-center justify-center text-white text-xs font-bold" style="background-color: ${c.color || '#3f5e4e'}">
+                            <i class="fa-solid ${c.icon || 'fa-hospital'}"></i>
+                        </div>
                         <div>
                             <strong class="text-slate-900 font-editorial italic text-sm">${c.name}</strong>
                             <p class="text-slate-500 text-[11px]">${c.service} ${c.icalUrl ? '• iCal attivo' : ''}</p>
@@ -1539,6 +1622,8 @@
             document.getElementById('center-edit-id').value = c.id;
             document.getElementById('new-center-name').value = c.name;
             document.getElementById('new-center-service').value = c.service;
+            document.getElementById('new-center-icon').value = c.icon || 'fa-hospital';
+            document.getElementById('new-center-color').value = c.color || '#3f5e4e';
             document.getElementById('new-center-address').value = c.address || '';
             document.getElementById('new-center-phone').value = c.phone || '';
             document.getElementById('new-center-site').value = c.siteUrl || '';
@@ -1553,6 +1638,7 @@
         window.resetCenterForm = function() {
             document.getElementById('center-form').reset();
             document.getElementById('center-edit-id').value = '';
+            document.getElementById('new-center-color').value = '#3f5e4e';
             document.getElementById('center-form-title').textContent = 'Aggiungi Nuovo Poliambulatorio';
             document.getElementById('center-submit-btn-text').textContent = 'Salva Poliambulatorio';
             document.getElementById('center-cancel-edit').classList.add('hidden');
@@ -1570,6 +1656,7 @@
                 renderCentersManagementList();
                 renderPublicCenters();
                 renderHeaderLegend();
+                populateCenterDropdown();
                 showToast("Poliambulatorio eliminato.");
             });
         }
@@ -1578,10 +1665,11 @@
             e.preventDefault();
             const id = document.getElementById('news-edit-id').value || 'n_' + Date.now();
             const title = document.getElementById('new-news-title').value.trim();
+            const date = document.getElementById('new-news-date').value;
             const content = document.getElementById('new-news-content').value.trim();
             const link = document.getElementById('new-news-link').value.trim();
 
-            const newN = { id, title, content, link };
+            const newN = { id, title, date, content, link };
             const idx = appState.news.findIndex(n => n.id === id);
             if (idx >= 0) appState.news[idx] = newN;
             else appState.news.push(newN);
@@ -1598,15 +1686,38 @@
             if (!list) return;
             list.innerHTML = appState.news.map(n => `
                 <div class="p-3 bg-white border border-slate-200 rounded-2xl flex items-center justify-between text-xs">
-                    <div><strong class="text-slate-900">${n.title}</strong><p class="text-slate-500 text-[11px] line-clamp-1">${n.content}</p></div>
-                    <button type="button" onclick="confirmDeleteNews('${n.id}')" class="px-2.5 py-1 bg-rose-50 text-rose-600 rounded-lg font-semibold">Elimina</button>
+                    <div>
+                        <div class="flex items-center gap-2">
+                            ${n.date ? `<span class="text-[10px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded font-bold">${n.date}</span>` : ''}
+                            <strong class="text-slate-900">${n.title}</strong>
+                        </div>
+                        <p class="text-slate-500 text-[11px] line-clamp-1">${n.content}</p>
+                    </div>
+                    <div class="flex items-center gap-1.5">
+                        <button type="button" onclick="editNews('${n.id}')" class="px-2.5 py-1 bg-nature-50 text-nature-700 rounded-lg font-semibold">Modifica</button>
+                        <button type="button" onclick="confirmDeleteNews('${n.id}')" class="px-2.5 py-1 bg-rose-50 text-rose-600 rounded-lg font-semibold">Elimina</button>
+                    </div>
                 </div>
             `).join('');
+        }
+
+        window.editNews = function(id) {
+            const n = appState.news.find(x => x.id === id);
+            if (!n) return;
+            document.getElementById('news-edit-id').value = n.id;
+            document.getElementById('new-news-title').value = n.title;
+            document.getElementById('new-news-date').value = n.date || '';
+            document.getElementById('new-news-content').value = n.content;
+            document.getElementById('new-news-link').value = n.link || '';
+            document.getElementById('news-submit-btn-text').textContent = 'Aggiorna News';
+            document.getElementById('news-cancel-edit').classList.remove('hidden');
         }
 
         window.resetNewsForm = function() {
             document.getElementById('news-form').reset();
             document.getElementById('news-edit-id').value = '';
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('new-news-date').value = today;
             document.getElementById('news-submit-btn-text').textContent = 'Pubblica News';
             document.getElementById('news-cancel-edit').classList.add('hidden');
         }
@@ -1668,7 +1779,6 @@
             });
         }
 
-        // --- iCal Multi-Center Sync with Real-time Progress & Detailed Log ---
         window.triggerIcalSync = async function(isAutomatic = false) {
             const modal = document.getElementById('sync-report-modal');
             const titleEl = document.getElementById('sync-modal-title');
@@ -1778,13 +1888,14 @@
                                     }
                                 }
 
+                                const centerColor = center.color || '#3f5e4e';
                                 const parsedEvent = {
                                     id: eventId,
                                     title: eventTitleClean,
                                     start: parsedStart,
                                     end: parsedEnd,
-                                    backgroundColor: center.color,
-                                    borderColor: center.color,
+                                    backgroundColor: centerColor,
+                                    borderColor: centerColor,
                                     textColor: '#ffffff',
                                     extendedProps: { centerId: center.id, centerName: center.name, patientId: matchedPatientId }
                                 };
@@ -1993,7 +2104,7 @@
                     const events = appState.events;
                     const mappedEvents = events.map((ev, index) => {
                         const center = appState.centers.find(c => c.id === ev.extendedProps?.centerId);
-                        let color = center ? center.color : (ev.backgroundColor || '#3f5e4e');
+                        let color = center ? (center.color || '#3f5e4e') : (ev.backgroundColor || '#3f5e4e');
                         
                         let hasConflict = false;
                         let start1 = new Date(ev.start).getTime();
