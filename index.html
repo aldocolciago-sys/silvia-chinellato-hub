@@ -282,7 +282,7 @@
                             <span id="firebase-dot" class="w-1.5 h-1.5 rounded-full bg-amber-500 inline-block"></span>
                             <span id="firebase-text">Connessione...</span>
                         </div>
-                        <button onclick="triggerIcalSync(false)" id="sync-ical-btn" class="inline-flex items-center gap-1 bg-water-50 hover:bg-water-100 text-water-800 px-2.5 py-0.5 rounded-full text-[10px] font-bold border border-water-200 transition shadow-2xs" title="Sincronizza Calendari Poliambulatori">
+                        <button onclick="triggerIcalSync()" id="sync-ical-btn" class="inline-flex items-center gap-1 bg-water-50 hover:bg-water-100 text-water-800 px-2.5 py-0.5 rounded-full text-[10px] font-bold border border-water-200 transition shadow-2xs" title="Sincronizza Calendari Poliambulatori">
                             <i class="fa-solid fa-rotate text-[9px]"></i> <span>Sincronizza Calendari</span>
                         </button>
                     </div>
@@ -369,7 +369,12 @@
                 </div>
 
                 <div class="space-y-1">
-                    <label class="text-[11px] font-bold text-slate-600">Associa Paziente in Anagrafica (Opzionale)</label>
+                    <label class="text-[11px] font-bold text-slate-600 flex items-center justify-between">
+                        <span>Associa Paziente in Anagrafica</span>
+                        <button type="button" onclick="openQuickPatientModal()" class="text-[10px] text-nature-700 hover:underline font-bold flex items-center gap-1">
+                            <i class="fa-solid fa-user-plus"></i> + Nuovo Paziente
+                        </button>
+                    </label>
                     <select id="studio-patient-select" onchange="onPatientSelectChange()" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-2xl text-xs">
                         <option value="">-- Seleziona Paziente --</option>
                     </select>
@@ -421,6 +426,38 @@
                 <div class="flex items-center gap-2 pt-2">
                     <button type="button" id="studio-delete-btn" onclick="confirmDeleteStudioEvent()" class="hidden px-4 py-3 bg-rose-50 hover:bg-rose-100 text-rose-600 font-semibold rounded-2xl text-xs transition">Elimina</button>
                     <button type="submit" class="flex-1 py-3 bg-nature-700 hover:bg-nature-800 text-white font-semibold rounded-2xl text-xs transition">Salva Appuntamento</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- QUICK PATIENT MODAL (CREATED FROM EVENT EDIT) -->
+    <div id="quick-patient-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-md hidden z-[70] flex items-center justify-center p-4">
+        <div class="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-sm overflow-hidden flex flex-col border border-amber-100">
+            <div class="px-5 py-4 border-b border-amber-100 flex items-center justify-between bg-amber-50/50">
+                <h3 class="font-editorial text-base font-bold text-slate-900 italic">Nuovo Paziente Veloce</h3>
+                <button type="button" onclick="closeQuickPatientModal()" class="text-slate-400 hover:text-slate-600 w-8 h-8 rounded-full flex items-center justify-center"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <form id="quick-patient-form" class="p-5 space-y-3" onsubmit="handleQuickPatientSubmit(event)">
+                <div class="space-y-1">
+                    <label class="text-[11px] font-bold text-slate-600">Nome e Cognome *</label>
+                    <input type="text" id="quick-patient-name" required placeholder="Nome e Cognome" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-2xl text-xs">
+                </div>
+                <div class="space-y-1">
+                    <label class="text-[11px] font-bold text-slate-600">Telefono</label>
+                    <input type="text" id="quick-patient-phone" placeholder="Telefono" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-2xl text-xs">
+                </div>
+                <div class="space-y-1">
+                    <label class="text-[11px] font-bold text-slate-600">Email</label>
+                    <input type="email" id="quick-patient-email" placeholder="Email" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-2xl text-xs">
+                </div>
+                <div class="space-y-1">
+                    <label class="text-[11px] font-bold text-slate-600">Note</label>
+                    <textarea id="quick-patient-notes" placeholder="Note cliniche..." class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-2xl text-xs h-16 resize-none"></textarea>
+                </div>
+                <div class="flex justify-end gap-2 pt-2">
+                    <button type="button" onclick="closeQuickPatientModal()" class="px-4 py-2.5 bg-slate-200 text-slate-700 font-semibold rounded-2xl text-xs">Annulla</button>
+                    <button type="submit" class="px-5 py-2.5 bg-amber-600 hover:bg-amber-700 text-white font-semibold rounded-2xl text-xs transition">Salva e Associa</button>
                 </div>
             </form>
         </div>
@@ -498,23 +535,26 @@
         </div>
     </div>
 
+    <!-- SYNC REPORT MODAL WITH PROGRESS & LOGS -->
     <div id="sync-report-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-md hidden z-[80] flex items-center justify-center p-4">
-        <div class="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-xl overflow-hidden flex flex-col border border-water-100">
+        <div class="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-xl overflow-hidden flex flex-col border border-water-100 max-h-[90vh]">
             <div class="px-6 py-4 border-b border-water-100 flex items-center justify-between bg-water-50/50">
                 <div class="flex items-center gap-2.5">
                     <div class="w-8 h-8 rounded-full bg-water-100 text-water-700 flex items-center justify-center font-bold text-xs"><i class="fa-solid fa-rotate animate-spin" id="sync-spinner"></i></div>
                     <h3 id="sync-modal-title" class="font-editorial text-base font-bold text-slate-900 italic">Sincronizzazione Calendari in corso...</h3>
                 </div>
             </div>
-            <div class="p-6 space-y-4 overflow-y-auto max-h-[65vh]">
-                <div id="sync-report-content" class="text-xs space-y-3">
-                    <div class="flex items-center gap-3 py-4 text-slate-600">
-                        <i class="fa-solid fa-circle-notch animate-spin text-water-600 text-base"></i>
-                        <span id="sync-status-text">Connessione ai calendari dei poliambulatori...</span>
-                    </div>
-                </div>
+            <div class="p-6 space-y-4 overflow-y-auto max-h-[55vh]" id="sync-report-content"></div>
+            
+            <div class="px-6 py-3 bg-slate-50 border-t border-slate-100 flex flex-col">
+                <button type="button" onclick="toggleSyncLogs()" class="text-xs font-bold text-slate-600 hover:text-slate-900 flex items-center justify-between py-1">
+                    <span><i class="fa-solid fa-terminal mr-1.5 text-nature-600"></i> Visualizza Log Dettagliati</span>
+                    <i class="fa-solid fa-chevron-down text-[10px]" id="sync-logs-icon"></i>
+                </button>
+                <div id="sync-logs-container" class="hidden mt-2 p-3 bg-slate-900 text-emerald-400 font-mono text-[10px] rounded-xl max-h-36 overflow-y-auto space-y-1"></div>
             </div>
-            <div id="sync-modal-footer" class="px-6 py-4 border-t border-slate-100 bg-slate-50 flex justify-end hidden">
+
+            <div id="sync-modal-footer" class="px-6 py-4 border-t border-slate-100 bg-white flex justify-end hidden">
                 <button type="button" onclick="closeSyncReportModal()" class="px-6 py-2.5 bg-water-700 hover:bg-water-800 text-white font-semibold rounded-2xl text-xs transition">Ho capito</button>
             </div>
         </div>
@@ -595,7 +635,7 @@
                         <div class="space-y-1">
                             <label class="text-[10px] font-bold text-slate-600">Colore Identificativo (Preset Mobile)</label>
                             <input type="hidden" id="new-center-color" value="#3f5e4e">
-                            <div class="flex items-center gap-2 pt-1" id="center-color-preset-container">
+                            <div class="flex items-center gap-2.5 pt-1" id="center-color-preset-container">
                                 <button type="button" onclick="selectCenterColor('#3f5e4e', this)" class="w-7 h-7 rounded-full bg-[#3f5e4e] ring-offset-2 ring-2 ring-nature-600 transition shadow-xs" data-color="#3f5e4e" title="Verde Natura"></button>
                                 <button type="button" onclick="selectCenterColor('#4a8fa8', this)" class="w-7 h-7 rounded-full bg-[#4a8fa8] ring-offset-2 ring-2 ring-transparent transition shadow-xs" data-color="#4a8fa8" title="Blu Acqua"></button>
                                 <button type="button" onclick="selectCenterColor('#d97706', this)" class="w-7 h-7 rounded-full bg-[#d97706] ring-offset-2 ring-2 ring-transparent transition shadow-xs" data-color="#d97706" title="Ambra Caldo"></button>
@@ -756,6 +796,7 @@
         let auth = null;
         let userId = null;
         let calendarInstance = null;
+        let syncLogsBuffer = [];
 
         try {
             const app = initializeApp(firebaseConfig);
@@ -787,9 +828,6 @@
                     userId = user.uid;
                     showPrivateView();
                     await loadAllDataFromFirestore();
-                    setTimeout(() => {
-                        triggerIcalSync(true); 
-                    }, 500);
                 } else if (user && user.email) {
                     await signOut(auth);
                     appState.isLoggedIn = false;
@@ -843,7 +881,6 @@
                 }
                 renderAllPublicUI();
             } catch(e) {
-                console.warn("Error loading public data:", e);
                 renderAllPublicUI();
             }
         }
@@ -876,9 +913,7 @@
                 populateCenterDropdown();
                 if (calendarInstance) calendarInstance.refetchEvents();
                 checkCalendarConflicts();
-            } catch (err) {
-                console.warn("Error loading private data:", err);
-            }
+            } catch (err) {}
         }
 
         document.addEventListener('DOMContentLoaded', () => {
@@ -1195,6 +1230,36 @@
         }
 
         window.closeStudioModal = function() { document.getElementById('studio-modal').classList.add('hidden'); }
+
+        window.openQuickPatientModal = function() {
+            document.getElementById('quick-patient-form').reset();
+            document.getElementById('quick-patient-modal').classList.remove('hidden');
+        }
+        window.closeQuickPatientModal = function() {
+            document.getElementById('quick-patient-modal').classList.add('hidden');
+        }
+
+        window.handleQuickPatientSubmit = async function(e) {
+            e.preventDefault();
+            const id = 'pat_' + Date.now();
+            const name = document.getElementById('quick-patient-name').value.trim();
+            const phone = document.getElementById('quick-patient-phone').value.trim();
+            const email = document.getElementById('quick-patient-email').value.trim();
+            const notes = document.getElementById('quick-patient-notes').value.trim();
+
+            const newPat = { id, name, phone, email, notes };
+            appState.patients.push(newPat);
+
+            if (db && userId) {
+                try { await setDoc(doc(db, 'artifacts', appId, 'users', userId, 'patients_list', id), newPat); } catch(e){}
+            }
+
+            populatePatientDropdown();
+            document.getElementById('studio-patient-select').value = id;
+            onPatientSelectChange();
+            closeQuickPatientModal();
+            showToast("Paziente creato e associato con successo!");
+        }
 
         function populateCenterDropdown() {
             const sel = document.getElementById('studio-center-select');
@@ -1805,10 +1870,25 @@
             });
         }
 
-        window.triggerIcalSync = async function(isAutomatic = false) {
+        window.toggleSyncLogs = function() {
+            const container = document.getElementById('sync-logs-container');
+            const icon = document.getElementById('sync-logs-icon');
+            if (container.classList.contains('hidden')) {
+                container.classList.remove('hidden');
+                icon.classList.remove('fa-chevron-down');
+                icon.classList.add('fa-chevron-up');
+            } else {
+                container.classList.add('hidden');
+                icon.classList.remove('fa-chevron-up');
+                icon.classList.add('fa-chevron-down');
+            }
+        }
+
+        window.triggerIcalSync = async function() {
             const modal = document.getElementById('sync-report-modal');
             const titleEl = document.getElementById('sync-modal-title');
             const contentEl = document.getElementById('sync-report-content');
+            const logsEl = document.getElementById('sync-logs-container');
             const spinner = document.getElementById('sync-spinner');
             const footer = document.getElementById('sync-modal-footer');
 
@@ -1817,41 +1897,69 @@
             if (spinner) spinner.classList.add('animate-spin');
             if (footer) footer.classList.add('hidden');
 
-            let progressHtml = `<div class="space-y-2"><p class="font-bold text-slate-800">Stato avanzamento:</p><div id="sync-steps" class="space-y-1.5 text-slate-600">`;
-            progressHtml += `<div class="flex items-center gap-2"><i class="fa-solid fa-spinner animate-spin text-water-600"></i> Preparazione connessione poliambulatori...</div>`;
+            syncLogsBuffer = [];
+            const logMsg = (msg) => {
+                let timestamp = new Date().toLocaleTimeString('it-IT');
+                syncLogsBuffer.push(`[${timestamp}] ${msg}`);
+                if (logsEl) {
+                    logsEl.innerHTML = syncLogsBuffer.join('<br>');
+                    logsEl.scrollTop = logsEl.scrollHeight;
+                }
+            };
+
+            logMsg("Avvio procedura di sincronizzazione iCal...");
+
+            let progressHtml = `<div class="space-y-3"><p class="font-bold text-slate-800 text-xs">Avanzamento sincronizzazione per poliambulatorio:</p><div id="sync-steps-list" class="space-y-2">`;
+            
+            const icalCenters = appState.centers.filter(c => c.icalUrl && c.icalUrl.trim() !== '');
+            if (icalCenters.length === 0) {
+                progressHtml += `<div class="p-3 bg-amber-50 text-amber-800 rounded-xl text-xs">Nessun link iCal configurato nei poliambulatori.</div>`;
+                progressHtml += `</div></div>`;
+                if (contentEl) contentEl.innerHTML = progressHtml;
+                if (spinner) spinner.classList.remove('animate-spin');
+                if (titleEl) titleEl.textContent = 'Sincronizzazione completata';
+                if (footer) footer.classList.remove('hidden');
+                logMsg("Nessun link iCal trovato nei poliambulatori.");
+                return;
+            }
+
+            for (let center of icalCenters) {
+                progressHtml += `
+                    <div id="sync-step-${center.id}" class="p-3 bg-slate-50 border border-slate-200 rounded-2xl flex items-center justify-between text-xs">
+                        <div class="flex items-center gap-2.5">
+                            <i class="fa-solid fa-spinner animate-spin text-water-600" id="sync-icon-${center.id}"></i>
+                            <div>
+                                <strong class="text-slate-900 font-editorial italic text-sm">${center.name}</strong>
+                                <p class="text-slate-500 text-[10px]" id="sync-status-${center.id}">Connessione in corso...</p>
+                            </div>
+                        </div>
+                        <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800" id="sync-badge-${center.id}">In attesa</span>
+                    </div>
+                `;
+            }
             progressHtml += `</div></div>`;
             if (contentEl) contentEl.innerHTML = progressHtml;
 
-            let addedCount = 0;
-            let modifiedCount = 0;
-            let deletedCount = 0;
-            let reportDetails = [];
+            let addedTotal = 0;
+            let modifiedTotal = 0;
+            let deletedTotal = 0;
+            let centerResults = [];
 
             let activeIcalEventIds = new Set();
             let oldEventsMap = new Map(appState.events.filter(e => e.id.startsWith('ical_')).map(ev => [ev.id, ev]));
 
-            const icalCenters = appState.centers.filter(c => c.icalUrl && c.icalUrl.trim() !== '');
-            if (icalCenters.length === 0) {
-                if (contentEl) {
-                    contentEl.innerHTML = `<div class="p-4 bg-amber-50 border border-amber-100 rounded-2xl text-center text-amber-800 font-medium text-xs">Nessun link iCal configurato nei poliambulatori.</div>`;
-                }
-                if (spinner) spinner.classList.remove('animate-spin');
-                if (titleEl) titleEl.textContent = 'Sincronizzazione completata';
-                if (footer) footer.classList.remove('hidden');
-                return;
-            }
-
-            let stepsContainer = document.getElementById('sync-steps');
-
             for (let center of icalCenters) {
-                if (stepsContainer) {
-                    stepsContainer.innerHTML += `<div class="flex items-center gap-2 text-slate-700"><i class="fa-solid fa-spinner animate-spin text-water-600"></i> Download calendario: <strong>${center.name}</strong>...</div>`;
-                }
+                let statusEl = document.getElementById(`sync-status-${center.id}`);
+                let badgeEl = document.getElementById(`sync-badge-${center.id}`);
+                let iconEl = document.getElementById(`sync-icon-${center.id}`);
+
+                logMsg(`Inizio fetch per "${center.name}" URL: ${center.icalUrl}`);
+                if (statusEl) statusEl.textContent = 'Scaricamento file ICS...';
 
                 let rawUrl = center.icalUrl.trim();
                 let targetUrl = normalizeGoogleCalendarUrl(rawUrl);
-                
                 let text = null;
+
                 const proxyEndpoints = [
                     `/api/ical?url=${encodeURIComponent(targetUrl)}`,
                     `https://api.allorigins.win/raw?url=${encodeURIComponent(targetUrl)}`,
@@ -1871,13 +1979,20 @@
                                 text = await response.text();
                             }
                             if (text && (text.includes('BEGIN:VCALENDAR') || text.includes('BEGIN:VEVENT'))) {
+                                logMsg(`Fetch riuscito per "${center.name}" tramite endpoint: ${endpoint}`);
                                 break;
                             }
                         }
-                    } catch(err) {}
+                    } catch(err) {
+                        logMsg(`Tentativo fallito endpoint ${endpoint}: ${err.message}`);
+                    }
                 }
 
                 if (text && (text.includes('BEGIN:VCALENDAR') || text.includes('BEGIN:VEVENT'))) {
+                    if (statusEl) statusEl.textContent = 'Parsing eventi in corso...';
+                    let centerAdded = 0;
+                    let centerModified = 0;
+
                     const lines = text.split(/\r\n|\n|\r/);
                     let currentEvent = null;
 
@@ -1897,10 +2012,6 @@
                                 if (!parsedEnd) {
                                     parsedEnd = new Date(new Date(parsedStart).getTime() + 3600000).toISOString();
                                 }
-
-                                let dObj = new Date(parsedStart);
-                                let dateFormatted = dObj.toLocaleDateString('it-IT', { day: 'numeric', month: 'short', year: 'numeric' });
-                                let timeFormatted = `${String(dObj.getHours()).padStart(2,'0')}:${String(dObj.getMinutes()).padStart(2,'0')}`;
 
                                 let existingEv = oldEventsMap.get(eventId);
                                 let matchedPatientId = existingEv?.extendedProps?.patientId || null;
@@ -1930,13 +2041,13 @@
                                 if (existingIdx >= 0) {
                                     let oldEv = appState.events[existingIdx];
                                     if (oldEv.title !== parsedEvent.title || oldEv.start !== parsedEvent.start || oldEv.end !== parsedEvent.end) {
-                                        modifiedCount++;
-                                        reportDetails.push({ type: 'modified', title: parsedEvent.title, centerName: center.name, dateStr: dateFormatted, timeStr: timeFormatted });
+                                        centerModified++;
+                                        modifiedTotal++;
                                     }
                                     appState.events[existingIdx] = parsedEvent;
                                 } else {
-                                    addedCount++;
-                                    reportDetails.push({ type: 'added', title: parsedEvent.title, centerName: center.name, dateStr: dateFormatted, timeStr: timeFormatted });
+                                    centerAdded++;
+                                    addedTotal++;
                                     appState.events.push(parsedEvent);
                                 }
 
@@ -1959,18 +2070,32 @@
                             else if (line.startsWith('DESCRIPTION:')) currentEvent.description = line.substring(12).trim();
                         }
                     }
+
+                    if (statusEl) statusEl.textContent = `Aggiornato (${centerAdded} aggiunti, ${centerModified} mod.)`;
+                    if (badgeEl) {
+                        badgeEl.className = 'px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800';
+                        badgeEl.innerHTML = '<i class="fa-solid fa-circle text-[6px] mr-1 text-emerald-600"></i> Successo';
+                    }
+                    if (iconEl) iconEl.className = 'fa-solid fa-circle-check text-emerald-600';
+                    logMsg(`Poliambulatorio "${center.name}" sincronizzato con successo.`);
+                    centerResults.push({ name: center.name, success: true, added: centerAdded, modified: centerModified });
+
+                } else {
+                    if (statusEl) statusEl.textContent = 'Errore di connessione / CORS';
+                    if (badgeEl) {
+                        badgeEl.className = 'px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-rose-100 text-rose-800';
+                        badgeEl.innerHTML = '<i class="fa-solid fa-circle text-[6px] mr-1 text-rose-600"></i> Errore';
+                    }
+                    if (iconEl) iconEl.className = 'fa-solid fa-triangle-exclamation text-rose-600';
+                    logMsg(`Errore: Impossibile scaricare o parsare il file iCal per "${center.name}".`);
+                    centerResults.push({ name: center.name, success: false, error: 'Impossibile recuperare il calendario' });
                 }
             }
 
             const removedIds = Array.from(oldEventsMap.keys()).filter(id => id.startsWith('ical_') && !activeIcalEventIds.has(id));
             for (let remId of removedIds) {
                 let evToRem = oldEventsMap.get(remId);
-                deletedCount++;
-                let dObjRem = evToRem?.start ? new Date(evToRem.start) : new Date();
-                let dateFmt = dObjRem.toLocaleDateString('it-IT', { day: 'numeric', month: 'short', year: 'numeric' });
-                let timeFmt = `${String(dObjRem.getHours()).padStart(2,'0')}:${String(dObjRem.getMinutes()).padStart(2,'0')}`;
-                
-                reportDetails.push({ type: 'deleted', title: evToRem?.title || 'Appuntamento esterno', centerName: evToRem?.extendedProps?.centerName || 'Poliambulatorio', dateStr: dateFmt, timeStr: timeFmt });
+                deletedTotal++;
                 appState.events = appState.events.filter(e => e.id !== remId);
                 if (db && userId) {
                     try { await deleteDoc(doc(db, 'artifacts', appId, 'users', userId, 'studio_events', remId)); } catch(e){}
@@ -1981,54 +2106,9 @@
             checkCalendarConflicts();
 
             if (spinner) spinner.classList.remove('animate-spin');
-            if (titleEl) titleEl.textContent = 'Esito Sincronizzazione Calendari';
+            if (titleEl) titleEl.textContent = 'Sincronizzazione completata';
             if (footer) footer.classList.remove('hidden');
-
-            showSyncReportModal(addedCount, modifiedCount, deletedCount, reportDetails);
-        }
-
-        function showSyncReportModal(added, modified, deleted, details) {
-            const content = document.getElementById('sync-report-content');
-            if (!content) return;
-
-            let html = '';
-            if (added === 0 && modified === 0 && deleted === 0) {
-                html = `<div class="p-5 bg-slate-50 border border-slate-200 rounded-2xl text-center text-slate-600 font-medium text-xs">Nessuna modifica avvenuta. I calendari dei poliambulatori sono già perfettamente aggiornati.</div>`;
-            } else {
-                html = `
-                    <div class="space-y-3">
-                        <p class="font-bold text-slate-800">Riepilogo aggiornamenti:</p>
-                        <div class="grid grid-cols-3 gap-2 text-center">
-                            <div class="p-2.5 bg-emerald-50 border border-emerald-100 rounded-xl"><strong class="block text-sm text-emerald-800">${added}</strong><span class="text-[10px] text-emerald-600">Aggiunti</span></div>
-                            <div class="p-2.5 bg-amber-50 border border-amber-100 rounded-xl"><strong class="block text-sm text-amber-800">${modified}</strong><span class="text-[10px] text-amber-600">Modificati</span></div>
-                            <div class="p-2.5 bg-rose-50 border border-rose-100 rounded-xl"><strong class="block text-sm text-rose-800">${deleted}</strong><span class="text-[10px] text-rose-600">Rimossi</span></div>
-                        </div>
-                        ${details.length > 0 ? `
-                            <div class="mt-3 space-y-2 bg-slate-50 p-3 rounded-2xl border border-slate-200 max-h-64 overflow-y-auto">
-                                ${details.map(item => {
-                                    let badgeColor = item.type === 'added' ? 'bg-emerald-100 text-emerald-800' : (item.type === 'modified' ? 'bg-amber-100 text-amber-800' : 'bg-rose-100 text-rose-800');
-                                    let labelText = item.type === 'added' ? 'Aggiunto' : (item.type === 'modified' ? 'Modificato' : 'Rimosso');
-                                    return `
-                                        <div class="p-3 bg-white border border-slate-200 rounded-xl text-xs space-y-1.5 shadow-2xs">
-                                            <div class="flex items-center justify-between">
-                                                <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold ${badgeColor}">${labelText}</span>
-                                                <span class="text-[11px] font-bold text-slate-700 bg-nature-50 px-2.5 py-1 rounded-md"><i class="fa-regular fa-calendar text-nature-600 mr-1.5"></i> ${item.dateStr} • ore ${item.timeStr}</span>
-                                            </div>
-                                            <p class="font-editorial text-sm font-bold text-slate-900 italic">${item.title}</p>
-                                            <p class="text-[11px] text-nature-700 font-medium"><i class="fa-solid fa-hospital text-nature-600 mr-1.5"></i> ${item.centerName}</p>
-                                        </div>
-                                    `;
-                                }).join('')}
-                            </div>
-                        ` : ''}
-                    </div>
-                `;
-            }
-            content.innerHTML = html;
-        }
-
-        window.closeSyncReportModal = function() {
-            document.getElementById('sync-report-modal').classList.add('hidden');
+            logMsg(`Sincronizzazione completata. Totale aggiunti: ${addedTotal}, modificati: ${modifiedTotal}, eliminati: ${deletedTotal}.`);
         }
 
         function normalizeGoogleCalendarUrl(url) {
