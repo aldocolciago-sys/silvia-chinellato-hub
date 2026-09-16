@@ -83,7 +83,6 @@
 </head>
 <body class="h-full text-slate-800 flex flex-col selection:bg-nature-200 selection:text-nature-900 scroll-smooth">
 
-    <!-- PUBLIC VIEW -->
     <div id="public-view" class="flex-1 flex flex-col overflow-y-auto">
         <header class="bg-white/90 backdrop-blur-md border-b border-nature-100/80 sticky top-0 z-40 shadow-xs">
             <div class="max-w-6xl mx-auto px-4 sm:px-6 py-3.5 flex items-center justify-between">
@@ -267,7 +266,6 @@
         </footer>
     </div>
 
-    <!-- PRIVATE ADMIN VIEW -->
     <div id="private-view" class="hidden flex-1 flex flex-col h-full overflow-hidden">
         <header class="bg-white/95 backdrop-blur-md border-b border-nature-100 px-3 sm:px-4 py-2 flex flex-col sm:flex-row sm:items-center justify-between gap-2 z-30 shadow-xs flex-shrink-0">
             <div class="flex items-center gap-2.5">
@@ -331,7 +329,6 @@
         </main>
     </div>
 
-    <!-- LOGIN MODAL (Google Only) -->
     <div id="login-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-md hidden z-50 flex items-center justify-center p-4">
         <div class="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-sm overflow-hidden flex flex-col border border-nature-100">
             <div class="px-6 py-5 border-b border-slate-100 flex items-center justify-between bg-nature-50/50">
@@ -354,7 +351,6 @@
         </div>
     </div>
 
-    <!-- STUDIO EVENT MODAL -->
     <div id="studio-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-md hidden z-50 flex items-center justify-center p-4">
         <div class="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-md overflow-hidden flex flex-col border border-nature-100 max-h-[90vh]">
             <div class="px-5 sm:px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-nature-50/50">
@@ -430,7 +426,6 @@
         </div>
     </div>
 
-    <!-- PATIENTS MODAL -->
     <div id="patients-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-md hidden z-50 flex items-center justify-center p-4">
         <div class="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-4xl overflow-hidden flex flex-col max-h-[90vh]">
             <div class="px-5 sm:px-6 py-4 border-b border-amber-100 flex items-center justify-between bg-amber-50/50">
@@ -453,7 +448,6 @@
         </div>
     </div>
 
-    <!-- PATIENT EDIT MODAL -->
     <div id="patient-edit-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-md hidden z-[60] flex items-center justify-center p-4">
         <div class="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-md overflow-hidden flex flex-col border border-amber-100 max-h-[90vh]">
             <div class="px-5 sm:px-6 py-4 border-b border-amber-100 flex items-center justify-between bg-amber-50/50">
@@ -488,7 +482,6 @@
         </div>
     </div>
 
-    <!-- PATIENT HISTORY MODAL -->
     <div id="patient-history-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-md hidden z-[65] flex items-center justify-center p-4">
         <div class="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-2xl overflow-hidden flex flex-col max-h-[90vh]">
             <div class="px-5 sm:px-6 py-4 border-b border-amber-100 flex items-center justify-between bg-amber-50/50">
@@ -505,7 +498,6 @@
         </div>
     </div>
 
-    <!-- SYNC REPORT MODAL -->
     <div id="sync-report-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-md hidden z-[80] flex items-center justify-center p-4">
         <div class="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-xl overflow-hidden flex flex-col border border-water-100">
             <div class="px-6 py-4 border-b border-water-100 flex items-center justify-between bg-water-50/50">
@@ -528,7 +520,6 @@
         </div>
     </div>
 
-    <!-- TREATMENTS ADMIN MODAL -->
     <div id="treatments-admin-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-md hidden z-50 flex items-center justify-center p-4">
         <div class="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-2xl overflow-hidden flex flex-col max-h-[90vh]">
             <div class="px-5 sm:px-6 py-4 sm:py-5 border-b border-nature-100 flex items-center justify-between bg-nature-50/50">
@@ -572,7 +563,6 @@
         </div>
     </div>
 
-    <!-- CENTERS ADMIN MODAL (With Icon and Color Picker) -->
     <div id="centers-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-md hidden z-50 flex items-center justify-center p-4">
         <div class="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-2xl overflow-hidden flex flex-col max-h-[90vh]">
             <div class="px-5 sm:px-6 py-4 sm:py-5 border-b border-nature-100 flex items-center justify-between bg-nature-50/50">
@@ -603,10 +593,15 @@
                             </select>
                         </div>
                         <div class="space-y-1">
-                            <label class="text-[10px] font-bold text-slate-600">Colore Identificativo (Calendario & Badge)</label>
-                            <div class="flex items-center gap-2">
-                                <input type="color" id="new-center-color" value="#3f5e4e" class="w-12 h-10 rounded-xl border border-slate-200 cursor-pointer p-1 bg-white">
-                                <span class="text-[11px] text-slate-500">Scegli il colore per gli eventi</span>
+                            <label class="text-[10px] font-bold text-slate-600">Colore Identificativo (Preset Mobile)</label>
+                            <input type="hidden" id="new-center-color" value="#3f5e4e">
+                            <div class="flex items-center gap-2 pt-1" id="center-color-preset-container">
+                                <button type="button" onclick="selectCenterColor('#3f5e4e', this)" class="w-7 h-7 rounded-full bg-[#3f5e4e] ring-offset-2 ring-2 ring-nature-600 transition shadow-xs" data-color="#3f5e4e" title="Verde Natura"></button>
+                                <button type="button" onclick="selectCenterColor('#4a8fa8', this)" class="w-7 h-7 rounded-full bg-[#4a8fa8] ring-offset-2 ring-2 ring-transparent transition shadow-xs" data-color="#4a8fa8" title="Blu Acqua"></button>
+                                <button type="button" onclick="selectCenterColor('#d97706', this)" class="w-7 h-7 rounded-full bg-[#d97706] ring-offset-2 ring-2 ring-transparent transition shadow-xs" data-color="#d97706" title="Ambra Caldo"></button>
+                                <button type="button" onclick="selectCenterColor('#7c3aed', this)" class="w-7 h-7 rounded-full bg-[#7c3aed] ring-offset-2 ring-2 ring-transparent transition shadow-xs" data-color="#7c3aed" title="Viola Olistico"></button>
+                                <button type="button" onclick="selectCenterColor('#db2777', this)" class="w-7 h-7 rounded-full bg-[#db2777] ring-offset-2 ring-2 ring-transparent transition shadow-xs" data-color="#db2777" title="Rosa Acceso"></button>
+                                <button type="button" onclick="selectCenterColor('#475569', this)" class="w-7 h-7 rounded-full bg-[#475569] ring-offset-2 ring-2 ring-transparent transition shadow-xs" data-color="#475569" title="Ardesia Neutro"></button>
                             </div>
                         </div>
                     </div>
@@ -641,7 +636,6 @@
         </div>
     </div>
 
-    <!-- NEWS ADMIN MODAL (With Date Picker) -->
     <div id="news-admin-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-md hidden z-50 flex items-center justify-center p-4">
         <div class="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-2xl overflow-hidden flex flex-col max-h-[90vh]">
             <div class="px-5 sm:px-6 py-4 sm:py-5 border-b border-nature-100 flex items-center justify-between bg-water-50/50">
@@ -673,7 +667,6 @@
         </div>
     </div>
 
-    <!-- PREPARATION ADMIN MODAL -->
     <div id="prep-admin-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-md hidden z-50 flex items-center justify-center p-4">
         <div class="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-2xl overflow-hidden flex flex-col max-h-[90vh]">
             <div class="px-5 sm:px-6 py-4 border-b border-nature-100 flex items-center justify-between bg-nature-50/50">
@@ -701,7 +694,6 @@
         </div>
     </div>
 
-    <!-- CONFIRM DIALOG MODAL -->
     <div id="confirm-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-md hidden z-[70] flex items-center justify-center p-4">
         <div class="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-sm overflow-hidden flex flex-col border border-nature-100 p-6 text-center space-y-4">
             <div class="w-14 h-14 rounded-full bg-rose-50 text-rose-600 flex items-center justify-center mx-auto text-xl shadow-inner">
@@ -1557,13 +1549,24 @@
             });
         }
 
+        window.selectCenterColor = function(colorHex, btnElement) {
+            document.getElementById('new-center-color').value = colorHex;
+            const buttons = document.querySelectorAll('#center-color-preset-container button');
+            buttons.forEach(b => {
+                b.classList.remove('ring-nature-600', 'ring-2');
+                b.classList.add('ring-transparent');
+            });
+            btnElement.classList.remove('ring-transparent');
+            btnElement.classList.add('ring-nature-600', 'ring-2');
+        }
+
         window.handleCenterSubmit = async function(e) {
             e.preventDefault();
             const id = document.getElementById('center-edit-id').value || 'c_' + Date.now();
             const name = document.getElementById('new-center-name').value.trim();
             const service = document.getElementById('new-center-service').value.trim();
             const icon = document.getElementById('new-center-icon').value;
-            const color = document.getElementById('new-center-color').value;
+            const color = document.getElementById('new-center-color').value || '#3f5e4e';
             const address = document.getElementById('new-center-address').value.trim();
             const phone = document.getElementById('new-center-phone').value.trim();
             const siteUrl = document.getElementById('new-center-site').value.trim();
@@ -1600,7 +1603,7 @@
             list.innerHTML = appState.centers.map(c => `
                 <div class="p-3 bg-white border border-slate-200 rounded-2xl flex items-center justify-between text-xs">
                     <div class="flex items-center gap-3">
-                        <div class="w-8 h-8 rounded-xl flex items-center justify-center text-white text-xs font-bold" style="background-color: ${c.color || '#3f5e4e'}">
+                        <div class="w-8 h-8 rounded-xl flex items-center justify-center text-white text-xs font-bold shadow-xs" style="background-color: ${c.color || '#3f5e4e'}">
                             <i class="fa-solid ${c.icon || 'fa-hospital'}"></i>
                         </div>
                         <div>
@@ -1623,7 +1626,20 @@
             document.getElementById('new-center-name').value = c.name;
             document.getElementById('new-center-service').value = c.service;
             document.getElementById('new-center-icon').value = c.icon || 'fa-hospital';
-            document.getElementById('new-center-color').value = c.color || '#3f5e4e';
+            
+            const targetColor = c.color || '#3f5e4e';
+            document.getElementById('new-center-color').value = targetColor;
+            const colorButtons = document.querySelectorAll('#center-color-preset-container button');
+            colorButtons.forEach(b => {
+                if (b.getAttribute('data-color') === targetColor) {
+                    b.classList.remove('ring-transparent');
+                    b.classList.add('ring-nature-600', 'ring-2');
+                } else {
+                    b.classList.remove('ring-nature-600', 'ring-2');
+                    b.classList.add('ring-transparent');
+                }
+            });
+
             document.getElementById('new-center-address').value = c.address || '';
             document.getElementById('new-center-phone').value = c.phone || '';
             document.getElementById('new-center-site').value = c.siteUrl || '';
@@ -1639,6 +1655,16 @@
             document.getElementById('center-form').reset();
             document.getElementById('center-edit-id').value = '';
             document.getElementById('new-center-color').value = '#3f5e4e';
+            const colorButtons = document.querySelectorAll('#center-color-preset-container button');
+            colorButtons.forEach((b, idx) => {
+                if (idx === 0) {
+                    b.classList.remove('ring-transparent');
+                    b.classList.add('ring-nature-600', 'ring-2');
+                } else {
+                    b.classList.remove('ring-nature-600', 'ring-2');
+                    b.classList.add('ring-transparent');
+                }
+            });
             document.getElementById('center-form-title').textContent = 'Aggiungi Nuovo Poliambulatorio';
             document.getElementById('center-submit-btn-text').textContent = 'Salva Poliambulatorio';
             document.getElementById('center-cancel-edit').classList.add('hidden');
