@@ -1,0 +1,5 @@
+{
+  "rewrites": [
+    { "source": "/api/ical", "destination": "/api/ical.js" }
+  ]
+}
