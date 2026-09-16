@@ -92,12 +92,13 @@
                     </div>
                 </a>
 
-                <nav class="hidden md:flex items-center gap-6 text-sm font-medium italic-title text-slate-700">
+                <nav class="hidden md:flex items-center gap-5 text-sm font-medium italic-title text-slate-700">
                     <a href="#profilo-pubblica" class="hover:text-nature-700 transition">Chi Sono</a>
                     <a href="#filosofia-pubblica" class="hover:text-nature-700 transition">Il Mio Metodo</a>
                     <a href="#trattamenti-pubblica" class="hover:text-nature-700 transition">Trattamenti</a>
                     <a href="#poliambulatori-pubblica" class="hover:text-nature-700 transition">Dove Ricevo</a>
                     <a href="#news-pubblica" class="hover:text-nature-700 transition">News</a>
+                    <a href="#preparazione-pubblica" class="hover:text-nature-700 transition">Preparazione</a>
                     <a href="#contatti-pubblica" class="hover:text-nature-700 transition">Contatti</a>
                 </nav>
 
@@ -111,12 +112,13 @@
                     </div>
                 </div>
             </div>
-            <div class="md:hidden flex items-center gap-5 overflow-x-auto no-scrollbar px-4 py-2 bg-white/70 border-t border-nature-100/60 text-xs font-semibold italic-title text-nature-800 whitespace-nowrap">
+            <div class="md:hidden flex items-center gap-4 overflow-x-auto no-scrollbar px-4 py-2 bg-white/70 border-t border-nature-100/60 text-xs font-semibold italic-title text-nature-800 whitespace-nowrap">
                 <a href="#profilo-pubblica" class="hover:text-nature-600">Chi Sono</a>
                 <a href="#filosofia-pubblica" class="hover:text-nature-600">Il Mio Metodo</a>
                 <a href="#trattamenti-pubblica" class="hover:text-nature-600">Trattamenti</a>
                 <a href="#poliambulatori-pubblica" class="hover:text-nature-600">Dove Ricevo</a>
                 <a href="#news-pubblica" class="hover:text-nature-600">News</a>
+                <a href="#preparazione-pubblica" class="hover:text-nature-600">Preparazione</a>
                 <a href="#contatti-pubblica" class="hover:text-nature-600">Contatti</a>
             </div>
         </header>
@@ -127,8 +129,8 @@
                 <div class="absolute -right-20 -bottom-20 w-96 h-96 bg-water-500/15 rounded-full blur-3xl pointer-events-none"></div>
                 <div class="absolute -left-20 -top-20 w-80 h-80 bg-warmth-500/15 rounded-full blur-3xl pointer-events-none"></div>
                 
-                <div class="w-48 h-48 sm:w-68 sm:h-68 rounded-[2.5rem] bg-white/10 backdrop-blur-xl p-3 border border-white/25 flex-shrink-0 shadow-2xl flex items-center justify-center overflow-hidden">
-                    <img src="Silvia Foto Profilo.jpeg" alt="Silvia Chinellato" class="w-full h-full object-cover rounded-[2rem]" onerror="this.onerror=null; this.src='https://placehold.co/260x260/3f5e4e/ffffff?text=Silvia+Chinellato'">
+                <div class="w-56 h-56 sm:w-72 sm:h-72 rounded-[2.5rem] bg-white/10 backdrop-blur-xl p-3 border border-white/25 flex-shrink-0 shadow-2xl flex items-center justify-center overflow-hidden">
+                    <img src="Silvia Foto Profilo.jpeg" alt="Silvia Chinellato" class="w-full h-full object-cover rounded-[2rem]" onerror="this.onerror=null; this.src='https://placehold.co/280x280/3f5e4e/ffffff?text=Silvia+Chinellato'">
                 </div>
 
                 <div class="space-y-4 text-center md:text-left z-10">
@@ -170,8 +172,8 @@
                     </ul>
                 </div>
                 <div class="bg-gradient-to-br from-nature-50/90 via-water-50/70 to-warmth-50/60 p-6 sm:p-10 rounded-[2rem] sm:rounded-[2.5rem] border border-nature-100 space-y-6 shadow-inner text-center flex flex-col items-center justify-center">
-                    <div class="w-36 h-36 sm:w-48 sm:h-48 rounded-full bg-white border-4 border-nature-200 flex items-center justify-center shadow-xl overflow-hidden mx-auto flex-shrink-0">
-                        <img src="Logo.jpeg" alt="Logo Silvia Chinellato" class="w-full h-full object-cover" onerror="this.onerror=null; this.src='https://placehold.co/200x200/3f5e4e/ffffff?text=SC'">
+                    <div class="w-40 h-40 sm:w-56 sm:h-56 rounded-full bg-white border-4 border-nature-200 flex items-center justify-center shadow-2xl overflow-hidden mx-auto flex-shrink-0">
+                        <img src="Logo.jpeg" alt="Logo Silvia Chinellato" class="w-full h-full object-cover" onerror="this.onerror=null; this.src='https://placehold.co/240x240/3f5e4e/ffffff?text=SC'">
                     </div>
                     <blockquote class="text-xs sm:text-sm text-slate-700 leading-relaxed font-editorial italic text-base sm:text-lg max-w-sm">
                         "La salute non è solo assenza di malattia, ma uno stato di profonda armonia tra corpo, mente ed energia vitale."
@@ -278,7 +280,7 @@
                             <span id="firebase-text">Connessione in corso...</span>
                         </div>
                         <button onclick="triggerIcalSync()" id="sync-ical-btn" class="inline-flex items-center gap-1 bg-water-50 hover:bg-water-100 text-water-800 px-2.5 py-0.5 rounded-full text-[10px] font-bold border border-water-200 transition shadow-2xs" title="Sincronizza Poliambulatori iCal">
-                            <i class="fa-solid fa-rotate text-[9px]"></i> <span>Sync iCal</span>
+                            <i class="fa-solid fa-rotate text-[9px]"></i> <span>Sincronizza Calendari</span>
                         </button>
                     </div>
                 </div>
@@ -620,19 +622,47 @@
         </div>
     </div>
 
+    <!-- Modale Avanzato Sincronizzazione iCal con Progresso, Esito per Poliambulatorio e Log -->
     <div id="ical-changelog-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-md hidden z-[60] flex items-center justify-center p-4">
         <div class="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-2xl overflow-hidden flex flex-col max-h-[90vh]">
             <div class="px-5 sm:px-6 py-4 sm:py-5 border-b border-water-100 flex items-center justify-between bg-water-50/50">
                 <div class="flex items-center gap-3">
                     <div class="w-9 h-9 rounded-2xl bg-water-100 text-water-700 flex items-center justify-center"><i class="fa-solid fa-rotate text-sm"></i></div>
-                    <h3 class="font-editorial text-base sm:text-lg font-bold text-slate-900 italic">Report Variazioni iCal (Sincronizzazione)</h3>
+                    <h3 class="font-editorial text-base sm:text-lg font-bold text-slate-900 italic">Sincronizzazione Calendari Poliambulatori</h3>
                 </div>
                 <button type="button" onclick="closeIcalChangelogModal()" class="text-slate-400 hover:text-slate-600 w-8 h-8 rounded-full flex items-center justify-center hover:bg-slate-200/60 transition"><i class="fa-solid fa-xmark"></i></button>
             </div>
 
-            <div class="p-4 sm:p-6 overflow-y-auto space-y-4 flex-1">
-                <p class="text-xs text-slate-600 font-light">Ecco il dettaglio esaustivo degli appuntamenti aggiunti, modificati o cancellati durante l'ultimo aggiornamento dai poliambulatori:</p>
-                <div id="changelog-entries-container" class="space-y-3"></div>
+            <div class="p-4 sm:p-6 overflow-y-auto space-y-5 flex-1">
+                <!-- Barra di Progresso Dinamica -->
+                <div id="sync-progress-banner" class="p-4 bg-amber-50 border border-amber-200 rounded-2xl flex items-center gap-3 shadow-xs">
+                    <div id="sync-spinner" class="w-6 h-6 rounded-full bg-amber-500 animate-ping flex-shrink-0"></div>
+                    <div class="flex-1">
+                        <h4 id="sync-status-title" class="text-xs font-bold text-amber-900 uppercase tracking-wide">Aggiornamento in corso</h4>
+                        <p id="sync-progress-text" class="text-xs text-slate-700">Contatto dei server iCal in corso...</p>
+                    </div>
+                </div>
+
+                <!-- Esito per Poliambulatorio con Pallino Verde/Rosso -->
+                <div class="space-y-3">
+                    <h4 class="font-editorial font-bold text-xs text-slate-500 uppercase tracking-wide italic">Esito per Poliambulatorio</h4>
+                    <div id="changelog-centers-summary" class="space-y-2"></div>
+                </div>
+
+                <!-- Variazioni Rilevate -->
+                <div class="space-y-3">
+                    <h4 class="font-editorial font-bold text-xs text-slate-500 uppercase tracking-wide italic">Variazioni Rilevate (Aggiunti / Modificati / Cancellati)</h4>
+                    <div id="changelog-entries-container" class="space-y-2"></div>
+                </div>
+
+                <!-- Sezione Log Dettagliati Espandibile -->
+                <div class="pt-2 border-t border-slate-100">
+                    <button type="button" onclick="toggleSyncLogs()" class="flex items-center justify-between w-full text-xs font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 p-3 rounded-xl transition">
+                        <span class="flex items-center gap-2"><i class="fa-solid fa-terminal text-water-700"></i> Registro Log Dettagliati (Diagnostica)</span>
+                        <i id="log-chevron" class="fa-solid fa-chevron-down"></i>
+                    </button>
+                    <div id="sync-logs-container" class="hidden mt-2 p-3 bg-slate-900 text-slate-200 font-mono text-[10px] rounded-xl max-h-40 overflow-y-auto space-y-1"></div>
+                </div>
             </div>
 
             <div class="px-5 sm:px-6 py-4 border-t border-slate-100 bg-slate-50 flex justify-end">
@@ -1533,130 +1563,151 @@
             showToast(`Merge completato con successo in "${targetPatient.name}"!`);
         }
 
-        // iCal Sync & Changelog Report
+        // iCal Advanced Sync with Realtime Progress, Center Badges and Logs
         window.triggerIcalSync = async function() {
-            showToast('Sincronizzazione iCal poliambulatori in corso...');
+            openIcalChangelogModal({ status: 'loading', centersReport: [], added: [], modified: [], deleted: [], logs: [] });
             
+            let logs = [];
+            let centersReport = [];
             let addedEvents = [];
             let modifiedEvents = [];
             let deletedEvents = [];
             let activeIcalEventIds = new Set();
             let oldEventsMap = new Map(appState.events.map(ev => [ev.id, ev]));
 
-            setTimeout(async () => {
-                for (let center of appState.centers) {
-                    if (center.icalUrl && center.id !== '3') {
-                        let rawUrl = center.icalUrl.trim();
-                        let targetUrl = rawUrl;
+            logs.push(`[${new Date().toLocaleTimeString()}] === INIZIO SINCRONIZZAZIONE CALENDARI (VERCEL/CORS PROXY) ===`);
 
-                        if (rawUrl.includes('calendar.google.com')) {
-                            if (rawUrl.includes('cid=')) {
-                                try {
-                                    const urlObj = new URL(rawUrl);
-                                    const cid = urlObj.searchParams.get('cid');
-                                    if (cid) {
-                                        targetUrl = `https://calendar.google.com/calendar/ical/${encodeURIComponent(cid)}/public/basic.ics`;
-                                    }
-                                } catch (e) {}
-                            } else if (rawUrl.includes('/embed?')) {
-                                targetUrl = rawUrl.replace('/embed?', '/exporticalendar?');
+            const icalCenters = appState.centers.filter(c => c.icalUrl && c.id !== '3');
+            if (icalCenters.length === 0) {
+                logs.push(`[${new Date().toLocaleTimeString()}] Nessun poliambulatorio con link iCal configurato.`);
+                updateIcalChangelogModal({ status: 'completed', centersReport: [], added: [], modified: [], deleted: [], logs });
+                showToast('Nessun link iCal configurato.', 'info');
+                return;
+            }
+
+            for (let center of icalCenters) {
+                let rawUrl = center.icalUrl.trim();
+                logs.push(`[${new Date().toLocaleTimeString()}] Tentativo fetch iCal per struttura: "${center.name}" URL: ${rawUrl}`);
+                
+                let text = null;
+                const proxyList = [
+                    `/api/ical?url=${encodeURIComponent(rawUrl)}`,
+                    `https://api.allorigins.win/raw?url=${encodeURIComponent(rawUrl)}`,
+                    `https://corsproxy.io/?${encodeURIComponent(rawUrl)}`,
+                    rawUrl
+                ];
+
+                let successFetch = false;
+                for (let proxyUrl of proxyList) {
+                    try {
+                        logs.push(`[${new Date().toLocaleTimeString()}] Richiesta via: ${proxyUrl.substring(0, 60)}...`);
+                        let response = await fetch(proxyUrl);
+                        if (response.ok) {
+                            const contentType = response.headers.get("content-type");
+                            if (contentType && contentType.includes("application/json")) {
+                                const jsonData = await response.json();
+                                text = jsonData.icsContent || jsonData.contents;
+                            } else {
+                                text = await response.text();
                             }
-                        }
 
-                        let text = null;
-                        const proxyList = [
-                            `https://api.allorigins.win/raw?url=${encodeURIComponent(targetUrl)}`,
-                            `https://corsproxy.io/?${encodeURIComponent(targetUrl)}`,
-                            targetUrl
-                        ];
-
-                        for (let proxyUrl of proxyList) {
-                            try {
-                                let response = await fetch(proxyUrl);
-                                if (response.ok) {
-                                    text = await response.text();
-                                    if (text && (text.includes('BEGIN:VCALENDAR') || text.includes('BEGIN:VEVENT'))) {
-                                        break;
-                                    }
-                                }
-                            } catch(err) {}
-                        }
-
-                        if (text) {
-                            const lines = text.split(/\r\n|\n|\r/);
-                            let currentEvent = null;
-
-                            for (let line of lines) {
-                                if (line.startsWith('BEGIN:VEVENT')) {
-                                    currentEvent = {};
-                                } else if (line.startsWith('END:VEVENT') && currentEvent) {
-                                    if (currentEvent.uid || currentEvent.summary || currentEvent.start) {
-                                        const eventUid = currentEvent.uid || ('evt_' + Math.random().toString(36).substring(2, 9));
-                                        const eventId = `ical_${center.id}_${eventUid}`;
-                                        activeIcalEventIds.add(eventId);
-
-                                        const eventTitleClean = currentEvent.summary || 'Appuntamento';
-                                        const formattedTitle = `${eventTitleClean} (${center.name})`;
-                                        const parsedStart = parseIcalDate(currentEvent.start);
-                                        const parsedEnd = currentEvent.end ? parseIcalDate(currentEvent.end) : new Date(new Date(parsedStart).getTime() + 3600000).toISOString();
-
-                                        const parsedEvent = {
-                                            id: eventId,
-                                            title: formattedTitle,
-                                            start: parsedStart,
-                                            end: parsedEnd,
-                                            extendedProps: { centerId: center.id, centerName: center.name, notes: currentEvent.description || 'Sincronizzato da iCal' }
-                                        };
-
-                                        if (!oldEventsMap.has(eventId)) {
-                                            addedEvents.push({ centerName: center.name, title: eventTitleClean, date: formatDateNice(parsedStart) });
-                                        } else {
-                                            const oldEv = oldEventsMap.get(eventId);
-                                            if (oldEv.title !== formattedTitle || oldEv.start !== parsedStart) {
-                                                modifiedEvents.push({ centerName: center.name, title: eventTitleClean, date: formatDateNice(parsedStart) });
-                                            }
-                                        }
-
-                                        const existingIdx = appState.events.findIndex(e => e.id === eventId);
-                                        if (existingIdx >= 0) {
-                                            appState.events[existingIdx] = parsedEvent;
-                                        } else {
-                                            appState.events.push(parsedEvent);
-                                        }
-                                        if (db && userId) {
-                                            await setDoc(doc(db, 'artifacts', appId, 'users', userId, 'studio_events', eventId), parsedEvent).catch(()=>{});
-                                        }
-                                    }
-                                    currentEvent = null;
-                                } else if (currentEvent) {
-                                    if (line.startsWith('UID:')) currentEvent.uid = line.substring(4).trim();
-                                    else if (line.startsWith('SUMMARY:')) currentEvent.summary = line.substring(8).trim();
-                                    else if (line.startsWith('DTSTART')) currentEvent.start = line.split(':')[1]?.trim();
-                                    else if (line.startsWith('DTEND')) currentEvent.end = line.split(':')[1]?.trim();
-                                    else if (line.startsWith('DESCRIPTION:')) currentEvent.description = line.substring(12).trim();
-                                }
+                            if (text && (text.includes('BEGIN:VCALENDAR') || text.includes('BEGIN:VEVENT'))) {
+                                successFetch = true;
+                                logs.push(`[${new Date().toLocaleTimeString()}] Successo fetch per "${center.name}" (${text.length} caratteri).`);
+                                break;
+                            } else {
+                                logs.push(`[${new Date().toLocaleTimeString()}] Risposta ricevuta ma formato iCal non valido o vuoto.`);
                             }
+                        } else {
+                            logs.push(`[${new Date().toLocaleTimeString()}] Errore HTTP: ${response.status}`);
                         }
+                    } catch(err) {
+                        logs.push(`[${new Date().toLocaleTimeString()}] Eccezione rete: ${err.message}`);
                     }
                 }
 
-                appState.events.forEach(ev => {
-                    if (ev.id.startsWith('ical_') && !activeIcalEventIds.has(ev.id)) {
-                        deletedEvents.push({ centerName: ev.extendedProps?.centerName || 'Poliambulatorio', title: ev.title, date: formatDateNice(ev.start) });
-                    }
-                });
+                if (successFetch && text) {
+                    centersReport.push({ name: center.name, success: true, message: 'Aggiornato con successo' });
+                    const lines = text.split(/\r\n|\n|\r/);
+                    let currentEvent = null;
+                    let countAddedCenter = 0;
 
-                for (let remId of activeIcalEventIds.size > 0 ? Array.from(oldEventsMap.keys()).filter(id => id.startsWith('ical_') && !activeIcalEventIds.has(id)) : []) {
-                    appState.events = appState.events.filter(e => e.id !== remId);
-                    if (db && userId) {
-                        try { await deleteDoc(doc(db, 'artifacts', appId, 'users', userId, 'studio_events', remId)); } catch(e){}
+                    for (let line of lines) {
+                        if (line.startsWith('BEGIN:VEVENT')) {
+                            currentEvent = {};
+                        } else if (line.startsWith('END:VEVENT') && currentEvent) {
+                            if (currentEvent.uid || currentEvent.summary || currentEvent.start) {
+                                const eventUid = currentEvent.uid || ('evt_' + Math.random().toString(36).substring(2, 9));
+                                const eventId = `ical_${center.id}_${eventUid}`;
+                                activeIcalEventIds.add(eventId);
+
+                                const eventTitleClean = currentEvent.summary || 'Appuntamento';
+                                const formattedTitle = `${eventTitleClean} (${center.name})`;
+                                const parsedStart = parseIcalDate(currentEvent.start);
+                                const parsedEnd = currentEvent.end ? parseIcalDate(currentEvent.end) : new Date(new Date(parsedStart).getTime() + 3600000).toISOString();
+
+                                const parsedEvent = {
+                                    id: eventId,
+                                    title: formattedTitle,
+                                    start: parsedStart,
+                                    end: parsedEnd,
+                                    extendedProps: { centerId: center.id, centerName: center.name, notes: currentEvent.description || 'Sincronizzato da iCal' }
+                                };
+
+                                if (!oldEventsMap.has(eventId)) {
+                                    addedEvents.push({ centerName: center.name, title: eventTitleClean, date: formatDateNice(parsedStart) });
+                                } else {
+                                    const oldEv = oldEventsMap.get(eventId);
+                                    if (oldEv.title !== formattedTitle || oldEv.start !== parsedStart) {
+                                        modifiedEvents.push({ centerName: center.name, title: eventTitleClean, date: formatDateNice(parsedStart) });
+                                    }
+                                }
+
+                                const existingIdx = appState.events.findIndex(e => e.id === eventId);
+                                if (existingIdx >= 0) {
+                                    appState.events[existingIdx] = parsedEvent;
+                                } else {
+                                    appState.events.push(parsedEvent);
+                                }
+                                if (db && userId) {
+                                    await setDoc(doc(db, 'artifacts', appId, 'users', userId, 'studio_events', eventId), parsedEvent).catch(()=>{});
+                                }
+                                countAddedCenter++;
+                            }
+                            currentEvent = null;
+                        } else if (currentEvent) {
+                            if (line.startsWith('UID:')) currentEvent.uid = line.substring(4).trim();
+                            else if (line.startsWith('SUMMARY:')) currentEvent.summary = line.substring(8).trim();
+                            else if (line.startsWith('DTSTART')) currentEvent.start = line.split(':')[1]?.trim();
+                            else if (line.startsWith('DTEND')) currentEvent.end = line.split(':')[1]?.trim();
+                            else if (line.startsWith('DESCRIPTION:')) currentEvent.description = line.substring(12).trim();
+                        }
                     }
+                    logs.push(`[${new Date().toLocaleTimeString()}] Parsati ${countAddedCenter} eventi per ${center.name}.`);
+                } else {
+                    centersReport.push({ name: center.name, success: false, message: 'Impossibile scaricare il calendario (CORS o URL non valido)' });
+                    logs.push(`[${new Date().toLocaleTimeString()}] ERRORE CRITICO: Fallito download iCal per ${center.name}.`);
                 }
+            }
 
-                if (calendarInstance) calendarInstance.refetchEvents();
-                showIcalChangelogModal(addedEvents, modifiedEvents, deletedEvents);
-                showToast('Sincronizzazione iCal completata!');
-            }, 1000);
+            appState.events.forEach(ev => {
+                if (ev.id.startsWith('ical_') && !activeIcalEventIds.has(ev.id)) {
+                    deletedEvents.push({ centerName: ev.extendedProps?.centerName || 'Poliambulatorio', title: ev.title, date: formatDateNice(ev.start) });
+                }
+            });
+
+            for (let remId of activeIcalEventIds.size > 0 ? Array.from(oldEventsMap.keys()).filter(id => id.startsWith('ical_') && !activeIcalEventIds.has(id)) : []) {
+                appState.events = appState.events.filter(e => e.id !== remId);
+                if (db && userId) {
+                    try { await deleteDoc(doc(db, 'artifacts', appId, 'users', userId, 'studio_events', remId)); } catch(e){}
+                }
+            }
+
+            logs.push(`[${new Date().toLocaleTimeString()}] === FINE SINCRONIZZAZIONE ICAL ===`);
+
+            if (calendarInstance) calendarInstance.refetchEvents();
+            updateIcalChangelogModal({ status: 'completed', centersReport, added: addedEvents, modified: modifiedEvents, deleted: deletedEvents, logs });
+            showToast('Sincronizzazione calendari completata!');
         }
 
         function parseIcalDate(str) {
@@ -1686,46 +1737,97 @@
             }
         }
 
-        function showIcalChangelogModal(added, modified, deleted) {
-            const container = document.getElementById('changelog-entries-container');
-            if (!container) return;
+        function openIcalChangelogModal(data) {
+            updateIcalChangelogModal(data);
+            document.getElementById('ical-changelog-modal').classList.remove('hidden');
+        }
 
-            const totalChanges = added.length + modified.length + deleted.length;
-            if (totalChanges === 0) {
-                container.innerHTML = `<div class="p-4 bg-slate-50 rounded-2xl text-center text-xs text-slate-500 italic">Nessuna variazione rilevata rispetto all'ultima sincronizzazione.</div>`;
+        function updateIcalChangelogModal(data) {
+            const banner = document.getElementById('sync-progress-banner');
+            const spinner = document.getElementById('sync-spinner');
+            const statusTitle = document.getElementById('sync-status-title');
+            const progressText = document.getElementById('sync-progress-text');
+            const centersSummary = document.getElementById('changelog-centers-summary');
+            const entriesContainer = document.getElementById('changelog-entries-container');
+            const logsContainer = document.getElementById('sync-logs-container');
+
+            if (data.status === 'loading') {
+                banner.className = 'p-4 bg-amber-50 border border-amber-200 rounded-2xl flex items-center gap-3 shadow-xs';
+                spinner.className = 'w-6 h-6 rounded-full bg-amber-500 animate-ping flex-shrink-0';
+                statusTitle.textContent = 'Aggiornamento in corso';
+                progressText.textContent = 'Contatto dei server iCal dei poliambulatori in corso...';
             } else {
-                let html = '';
-                if (added.length > 0) {
-                    html += `<div class="space-y-2"><h5 class="text-xs font-bold text-nature-700 uppercase tracking-wide">Aggiunti (${added.length})</h5>`;
-                    html += added.map(item => `
-                        <div class="p-3 bg-nature-50/80 border border-nature-200 rounded-xl flex items-center justify-between text-xs">
-                            <div><strong class="text-slate-900">${item.title}</strong> <span class="text-slate-500">(${item.centerName})</span></div>
-                            <span class="text-[11px] font-semibold text-nature-800">${item.date}</span>
-                        </div>
-                    `).join('') + `</div>`;
-                }
-                if (modified.length > 0) {
-                    html += `<div class="space-y-2 pt-2"><h5 class="text-xs font-bold text-amber-700 uppercase tracking-wide">Modificati (${modified.length})</h5>`;
-                    html += modified.map(item => `
-                        <div class="p-3 bg-amber-50/80 border border-amber-200 rounded-xl flex items-center justify-between text-xs">
-                            <div><strong class="text-slate-900">${item.title}</strong> <span class="text-slate-500">(${item.centerName})</span></div>
-                            <span class="text-[11px] font-semibold text-amber-800">${item.date}</span>
-                        </div>
-                    `).join('') + `</div>`;
-                }
-                if (deleted.length > 0) {
-                    html += `<div class="space-y-2 pt-2"><h5 class="text-xs font-bold text-rose-700 uppercase tracking-wide">Cancellati (${deleted.length})</h5>`;
-                    html += deleted.map(item => `
-                        <div class="p-3 bg-rose-50/80 border border-rose-200 rounded-xl flex items-center justify-between text-xs">
-                            <div><strong class="text-slate-900">${item.title}</strong> <span class="text-slate-500">(${item.centerName})</span></div>
-                            <span class="text-[11px] font-semibold text-rose-800">${item.date}</span>
-                        </div>
-                    `).join('') + `</div>`;
-                }
-                container.innerHTML = html;
+                banner.className = 'p-4 bg-nature-50 border border-nature-200 rounded-2xl flex items-center gap-3 shadow-xs';
+                spinner.className = 'w-6 h-6 rounded-full bg-nature-600 flex items-center justify-center text-white text-xs flex-shrink-0 font-bold';
+                spinner.innerHTML = '<i class="fa-solid fa-check"></i>';
+                statusTitle.textContent = 'Sincronizzazione completata';
+                progressText.textContent = 'Tutti i flussi iCal sono stati analizzati.';
             }
 
-            document.getElementById('ical-changelog-modal').classList.remove('hidden');
+            if (data.centersReport && data.centersReport.length > 0) {
+                centersSummary.innerHTML = data.centersReport.map(c => `
+                    <div class="p-3 bg-white border border-slate-200 rounded-xl flex items-center justify-between text-xs shadow-2xs">
+                        <div class="flex items-center gap-2.5">
+                            <span class="w-3 h-3 rounded-full flex-shrink-0 ${c.success ? 'bg-emerald-500 shadow-xs shadow-emerald-200 animate-pulse' : 'bg-rose-500 shadow-xs shadow-rose-200'}"></span>
+                            <strong class="text-slate-900 font-editorial italic text-sm">${c.name}</strong>
+                        </div>
+                        <span class="text-[11px] font-semibold ${c.success ? 'text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full' : 'text-rose-600 bg-rose-50 px-2.5 py-0.5 rounded-full'}">${c.message}</span>
+                    </div>
+                `).join('');
+            } else {
+                centersSummary.innerHTML = `<div class="p-3 bg-slate-50 text-slate-400 text-xs italic rounded-xl">Nessun poliambulatorio con iCal associato.</div>`;
+            }
+
+            let htmlVar = '';
+            const totalVars = (data.added?.length || 0) + (data.modified?.length || 0) + (data.deleted?.length || 0);
+            if (totalVars === 0) {
+                htmlVar = `<div class="p-3 bg-slate-50 rounded-xl text-center text-xs text-slate-500 italic">Nessuna nuova variazione o modifica rilevata rispetto all'ultima sincronizzazione.</div>`;
+            } else {
+                if (data.added?.length > 0) {
+                    htmlVar += `<div class="text-[11px] font-bold text-nature-700 uppercase mb-1">Aggiunti (${data.added.length})</div>`;
+                    htmlVar += data.added.map(item => `
+                        <div class="p-2.5 bg-nature-50 border border-nature-200 rounded-xl flex items-center justify-between text-xs mb-1.5">
+                            <div><strong class="text-slate-900">${item.title}</strong> <span class="text-nature-800 font-semibold bg-white px-2 py-0.5 rounded-md border border-nature-100 ml-1">${item.centerName}</span></div>
+                            <span class="text-[10px] text-nature-700 font-medium">${item.date}</span>
+                        </div>
+                    `).join('');
+                }
+                if (data.modified?.length > 0) {
+                    htmlVar += `<div class="text-[11px] font-bold text-amber-700 uppercase mb-1 mt-2">Modificati (${data.modified.length})</div>`;
+                    htmlVar += data.modified.map(item => `
+                        <div class="p-2.5 bg-amber-50 border border-amber-200 rounded-xl flex items-center justify-between text-xs mb-1.5">
+                            <div><strong class="text-slate-900">${item.title}</strong> <span class="text-amber-800 font-semibold bg-white px-2 py-0.5 rounded-md border border-amber-100 ml-1">${item.centerName}</span></div>
+                            <span class="text-[10px] text-amber-700 font-medium">${item.date}</span>
+                        </div>
+                    `).join('');
+                }
+                if (data.deleted?.length > 0) {
+                    htmlVar += `<div class="text-[11px] font-bold text-rose-700 uppercase mb-1 mt-2">Cancellati (${data.deleted.length})</div>`;
+                    htmlVar += data.deleted.map(item => `
+                        <div class="p-2.5 bg-rose-50 border border-rose-200 rounded-xl flex items-center justify-between text-xs mb-1.5">
+                            <div><strong class="text-slate-900">${item.title}</strong> <span class="text-rose-800 font-semibold bg-white px-2 py-0.5 rounded-md border border-rose-100 ml-1">${item.centerName}</span></div>
+                            <span class="text-[10px] text-rose-700 font-medium">${item.date}</span>
+                        </div>
+                    `).join('');
+                }
+            }
+            entriesContainer.innerHTML = htmlVar;
+
+            if (data.logs) {
+                logsContainer.innerHTML = data.logs.map(l => `<div>${l}</div>`).join('');
+            }
+        }
+
+        window.toggleSyncLogs = function() {
+            const container = document.getElementById('sync-logs-container');
+            const chevron = document.getElementById('log-chevron');
+            if (container.classList.contains('hidden')) {
+                container.classList.remove('hidden');
+                chevron.className = 'fa-solid fa-chevron-up';
+            } else {
+                container.classList.add('hidden');
+                chevron.className = 'fa-solid fa-chevron-down';
+            }
         }
 
         window.closeIcalChangelogModal = function() {
