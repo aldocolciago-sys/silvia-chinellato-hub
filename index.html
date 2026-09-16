@@ -401,7 +401,7 @@
                 <button type="button" onclick="closeTreatmentsAdminModal()" class="text-slate-400 hover:text-slate-600 w-8 h-8 rounded-full flex items-center justify-center hover:bg-slate-200/60 transition"><i class="fa-solid fa-xmark"></i></button>
             </div>
             <div class="p-4 sm:p-6 overflow-y-auto space-y-6 flex-1">
-                <form id="treatment-form" class="bg-nature-50/40 p-4 sm:p-5 rounded-3xl border border-nature-100 space-y-3">
+                <form id="treatment-form" class="bg-nature-50/40 p-4 sm:p-5 rounded-3xl border border-nature-100 space-y-3" onsubmit="handleTreatmentSubmit(event)">
                     <input type="hidden" id="treatment-edit-id">
                     <h4 id="treatment-form-title" class="font-editorial font-bold text-xs sm:text-sm text-nature-900 uppercase tracking-wide italic">Aggiungi Nuovo Trattamento</h4>
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -441,7 +441,7 @@
                 <button type="button" onclick="closeCentersModal()" class="text-slate-400 hover:text-slate-600 w-8 h-8 rounded-full flex items-center justify-center hover:bg-slate-200/60 transition"><i class="fa-solid fa-xmark"></i></button>
             </div>
             <div class="p-4 sm:p-6 overflow-y-auto space-y-6 flex-1">
-                <form id="center-form" class="bg-nature-50/40 p-4 sm:p-5 rounded-3xl border border-nature-100 space-y-3">
+                <form id="center-form" class="bg-nature-50/40 p-4 sm:p-5 rounded-3xl border border-nature-100 space-y-3" onsubmit="handleCenterSubmit(event)">
                     <input type="hidden" id="center-edit-id">
                     <h4 id="center-form-title" class="font-editorial font-bold text-xs sm:text-sm text-nature-900 uppercase tracking-wide italic">Aggiungi Nuovo Poliambulatorio</h4>
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -487,7 +487,7 @@
                 <button type="button" onclick="closeNewsAdminModal()" class="text-slate-400 hover:text-slate-600 w-8 h-8 rounded-full flex items-center justify-center hover:bg-slate-200/60 transition"><i class="fa-solid fa-xmark"></i></button>
             </div>
             <div class="p-4 sm:p-6 overflow-y-auto space-y-6 flex-1">
-                <form id="news-form" class="bg-water-50/40 p-4 sm:p-5 rounded-3xl border border-water-100 space-y-3">
+                <form id="news-form" class="bg-water-50/40 p-4 sm:p-5 rounded-3xl border border-water-100 space-y-3" onsubmit="handleNewsSubmit(event)">
                     <input type="hidden" id="news-edit-id">
                     <input type="text" id="new-news-title" required placeholder="Titolo della news *" class="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-2xl text-xs focus:outline-none focus:ring-2 focus:ring-water-500">
                     <textarea id="new-news-content" required placeholder="Contenuto completo..." class="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-2xl text-xs focus:outline-none focus:ring-2 focus:ring-water-500 h-24 resize-none"></textarea>
@@ -513,7 +513,7 @@
                 <button type="button" onclick="closePrepAdminModal()" class="text-slate-400 hover:text-slate-600 w-8 h-8 rounded-full flex items-center justify-center hover:bg-slate-200/60 transition"><i class="fa-solid fa-xmark"></i></button>
             </div>
             <div class="p-4 sm:p-6 overflow-y-auto space-y-6 flex-1">
-                <form id="prep-form" class="bg-nature-50/40 p-4 sm:p-5 rounded-3xl border border-nature-100 space-y-3">
+                <form id="prep-form" class="bg-nature-50/40 p-4 sm:p-5 rounded-3xl border border-nature-100 space-y-3" onsubmit="handlePrepSubmit(event)">
                     <input type="hidden" id="prep-edit-id">
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <input type="text" id="prep-title" required placeholder="Titolo *" class="px-4 py-2.5 bg-white border border-slate-200 rounded-2xl text-xs">
@@ -559,7 +559,7 @@
                 <h3 class="font-editorial text-base sm:text-lg font-bold text-slate-900 italic">Studio Privato</h3>
                 <button type="button" onclick="closeStudioModal()" class="text-slate-400 hover:text-slate-600 w-8 h-8 rounded-full flex items-center justify-center"><i class="fa-solid fa-xmark"></i></button>
             </div>
-            <form id="studio-event-form" class="p-5 sm:p-6 space-y-4">
+            <form id="studio-event-form" class="p-5 sm:p-6 space-y-4" onsubmit="handleStudioEventSubmit(event)">
                 <input type="hidden" id="studio-edit-event-id">
                 <input type="text" id="studio-title" required placeholder="Nome Paziente / Trattamento" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-xs">
                 <input type="date" id="studio-date" required class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-xs">
@@ -645,6 +645,7 @@
                 } catch (err) {
                     console.warn("Auth initialization warning:", err);
                     updateFirebaseStatus(false, 'Offline Mode');
+                    renderAllPublicUI();
                 }
             };
             initAuth();
@@ -667,6 +668,7 @@
             console.warn("Firebase initialization error:", e);
             userId = 'offline-user';
             updateFirebaseStatus(false, 'Non disponibile');
+            renderAllPublicUI();
         }
 
         function updateFirebaseStatus(isOnline, text) {
@@ -682,12 +684,20 @@
         }
 
         async function loadPublicDataFromFirestore() {
-            if (!db) return;
+            if (!db) {
+                renderAllPublicUI();
+                return;
+            }
             try {
                 const pubCentersSnap = await getDocs(collection(db, 'artifacts', appId, 'public', 'data', 'centers_list'));
                 if (!pubCentersSnap.empty) {
                     appState.centers = [];
                     pubCentersSnap.forEach(d => appState.centers.push(d.data()));
+                }
+                const pubTreatmentsSnap = await getDocs(collection(db, 'artifacts', appId, 'public', 'data', 'treatments_list'));
+                if (!pubTreatmentsSnap.empty) {
+                    appState.treatments = [];
+                    pubTreatmentsSnap.forEach(d => appState.treatments.push(d.data()));
                 }
                 const pubNewsSnap = await getDocs(collection(db, 'artifacts', appId, 'public', 'data', 'news_list'));
                 if (!pubNewsSnap.empty) {
@@ -699,11 +709,11 @@
                     appState.preparations = [];
                     pubPrepSnap.forEach(d => appState.preparations.push(d.data()));
                 }
-                renderPublicCenters();
-                renderPublicTreatments();
-                renderPublicNews();
-                renderPublicPreparations();
-            } catch(e) {}
+                renderAllPublicUI();
+            } catch(e) {
+                console.warn("Error loading public data:", e);
+                renderAllPublicUI();
+            }
         }
 
         async function loadAllDataFromFirestore() {
@@ -719,13 +729,16 @@
                 appState.events = [];
                 eventsSnap.forEach(d => appState.events.push(d.data()));
 
-                renderPublicCenters();
+                renderAllPublicUI();
                 renderHeaderLegend();
                 renderNewsManagementList();
                 renderPrepManagementList();
                 renderCentersManagementList();
+                renderTreatmentsManagementList();
                 if (calendarInstance) calendarInstance.refetchEvents();
-            } catch (err) {}
+            } catch (err) {
+                console.warn("Error loading private data:", err);
+            }
         }
 
         document.addEventListener('DOMContentLoaded', () => {
@@ -744,7 +757,18 @@
             document.getElementById('private-view').classList.remove('hidden');
             document.getElementById('logged-user-email-display').innerHTML = `<span class="w-2 h-2 rounded-full bg-nature-500 animate-pulse"></span> ${appState.currentUserEmail || 'Amministratore'}`;
             renderHeaderLegend();
+            renderTreatmentsManagementList();
+            renderCentersManagementList();
+            renderNewsManagementList();
+            renderPrepManagementList();
             setTimeout(() => initCalendar(), 100);
+        }
+
+        function renderAllPublicUI() {
+            renderPublicCenters();
+            renderPublicTreatments();
+            renderPublicNews();
+            renderPublicPreparations();
         }
 
         function renderPublicCenters() {
@@ -886,7 +910,7 @@
             if (auth) { try { await signOut(auth); } catch (e) {} }
             appState.isLoggedIn = false;
             showPublicView();
-            showToast('Disconnesso', 'info');
+            showToast('Disconnesso');
         }
 
         window.openStudioModal = function() { document.getElementById('studio-modal').classList.remove('hidden'); }
@@ -901,6 +925,297 @@
         window.closePrepAdminModal = function() { document.getElementById('prep-admin-modal').classList.add('hidden'); }
         window.openPatientsModal = function() { document.getElementById('patients-modal').classList.remove('hidden'); }
         window.closePatientsModal = function() { document.getElementById('patients-modal').classList.add('hidden'); }
+
+        // --- Gestione Admin & Salvataggio su Firestore (Trattamenti, Poliambulatori, News, Preparazioni) ---
+
+        window.handleTreatmentSubmit = async function(e) {
+            e.preventDefault();
+            const id = document.getElementById('treatment-edit-id').value || 't_' + Date.now();
+            const title = document.getElementById('new-treatment-title').value.trim();
+            const icon = document.getElementById('new-treatment-icon').value;
+            const desc = document.getElementById('new-treatment-desc').value.trim();
+
+            const newT = { id, title, icon, desc };
+            const idx = appState.treatments.findIndex(t => t.id === id);
+            if (idx >= 0) appState.treatments[idx] = newT;
+            else appState.treatments.push(newT);
+
+            if (db) {
+                try {
+                    await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'treatments_list', id), newT);
+                } catch(err) { console.warn("Firestore write error:", err); }
+            }
+
+            resetTreatmentForm();
+            renderTreatmentsManagementList();
+            renderPublicTreatments();
+            showToast("Trattamento salvato con successo!");
+        }
+
+        function renderTreatmentsManagementList() {
+            const list = document.getElementById('treatments-management-list');
+            if (!list) return;
+            list.innerHTML = appState.treatments.map(t => `
+                <div class="p-3 bg-white border border-slate-200 rounded-2xl flex items-center justify-between text-xs">
+                    <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 rounded-xl bg-nature-50 text-nature-700 flex items-center justify-center font-bold"><i class="fa-solid ${t.icon || 'fa-spa'}"></i></div>
+                        <div>
+                            <strong class="text-slate-900 font-editorial italic text-sm">${t.title}</strong>
+                            <p class="text-slate-500 text-[11px] line-clamp-1">${t.desc}</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-1.5">
+                        <button type="button" onclick="editTreatment('${t.id}')" class="px-2.5 py-1 bg-nature-50 text-nature-700 rounded-lg font-semibold hover:bg-nature-100">Modifica</button>
+                        <button type="button" onclick="deleteTreatment('${t.id}')" class="px-2.5 py-1 bg-rose-50 text-rose-600 rounded-lg font-semibold hover:bg-rose-100">Elimina</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        window.editTreatment = function(id) {
+            const t = appState.treatments.find(x => x.id === id);
+            if (!t) return;
+            document.getElementById('treatment-edit-id').value = t.id;
+            document.getElementById('new-treatment-title').value = t.title;
+            document.getElementById('new-treatment-icon').value = t.icon || 'fa-spa';
+            document.getElementById('new-treatment-desc').value = t.desc;
+            document.getElementById('treatment-form-title').textContent = 'Modifica Trattamento';
+            document.getElementById('treatment-submit-btn-text').textContent = 'Aggiorna Trattamento';
+            document.getElementById('treatment-cancel-edit').classList.remove('hidden');
+        }
+
+        window.resetTreatmentForm = function() {
+            document.getElementById('treatment-form').reset();
+            document.getElementById('treatment-edit-id').value = '';
+            document.getElementById('treatment-form-title').textContent = 'Aggiungi Nuovo Trattamento';
+            document.getElementById('treatment-submit-btn-text').textContent = 'Salva Trattamento';
+            document.getElementById('treatment-cancel-edit').classList.add('hidden');
+        }
+
+        window.deleteTreatment = async function(id) {
+            appState.treatments = appState.treatments.filter(t => t.id !== id);
+            if (db) {
+                try { await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'treatments_list', id)); } catch(e){}
+            }
+            renderTreatmentsManagementList();
+            renderPublicTreatments();
+            showToast("Trattamento eliminato.");
+        }
+
+        window.handleCenterSubmit = async function(e) {
+            e.preventDefault();
+            const id = document.getElementById('center-edit-id').value || 'c_' + Date.now();
+            const name = document.getElementById('new-center-name').value.trim();
+            const service = document.getElementById('new-center-service').value.trim();
+            const address = document.getElementById('new-center-address').value.trim();
+            const phone = document.getElementById('new-center-phone').value.trim();
+            const siteUrl = document.getElementById('new-center-site').value.trim();
+            const bookingUrl = document.getElementById('new-center-booking').value.trim();
+            const icalUrl = document.getElementById('new-center-ical').value.trim();
+            const showPublic = document.getElementById('new-center-public').checked;
+            const colors = ['#3f5e4e', '#4a8fa8', '#2f473c', '#d5bdaf'];
+            const color = colors[Math.floor(Math.random() * colors.length)];
+
+            const newC = { id, name, service, address, phone, siteUrl, bookingUrl, icalUrl, showPublic, color };
+            const idx = appState.centers.findIndex(c => c.id === id);
+            if (idx >= 0) {
+                newC.color = appState.centers[idx].color;
+                appState.centers[idx] = newC;
+            } else {
+                appState.centers.push(newC);
+            }
+
+            if (db && userId) {
+                try {
+                    await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'centers_list', id), newC);
+                    await setDoc(doc(db, 'artifacts', appId, 'users', userId, 'centers_list', id), newC);
+                } catch(e) {}
+            }
+
+            resetCenterForm();
+            renderCentersManagementList();
+            renderPublicCenters();
+            renderHeaderLegend();
+            showToast("Poliambulatorio salvato!");
+        }
+
+        function renderCentersManagementList() {
+            const list = document.getElementById('centers-management-list');
+            if (!list) return;
+            list.innerHTML = appState.centers.map(c => `
+                <div class="p-3 bg-white border border-slate-200 rounded-2xl flex items-center justify-between text-xs">
+                    <div class="flex items-center gap-2.5">
+                        <div class="w-3.5 h-3.5 rounded-full" style="background-color: ${c.color}"></div>
+                        <div>
+                            <strong class="text-slate-900 font-editorial italic text-sm">${c.name}</strong>
+                            <p class="text-slate-500 text-[11px]">${c.service} ${c.icalUrl ? '• iCal attivo' : ''}</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-1.5">
+                        <button type="button" onclick="editCenter('${c.id}')" class="px-2.5 py-1 bg-nature-50 text-nature-700 rounded-lg font-semibold">Modifica</button>
+                        <button type="button" onclick="deleteCenter('${c.id}')" class="px-2.5 py-1 bg-rose-50 text-rose-600 rounded-lg font-semibold">Elimina</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        window.editCenter = function(id) {
+            const c = appState.centers.find(x => x.id === id);
+            if (!c) return;
+            document.getElementById('center-edit-id').value = c.id;
+            document.getElementById('new-center-name').value = c.name;
+            document.getElementById('new-center-service').value = c.service;
+            document.getElementById('new-center-address').value = c.address || '';
+            document.getElementById('new-center-phone').value = c.phone || '';
+            document.getElementById('new-center-site').value = c.siteUrl || '';
+            document.getElementById('new-center-booking').value = c.bookingUrl || '';
+            document.getElementById('new-center-ical').value = c.icalUrl || '';
+            document.getElementById('new-center-public').checked = c.showPublic !== false;
+            document.getElementById('center-form-title').textContent = 'Modifica Poliambulatorio';
+            document.getElementById('center-submit-btn-text').textContent = 'Aggiorna';
+            document.getElementById('center-cancel-edit').classList.remove('hidden');
+        }
+
+        window.resetCenterForm = function() {
+            document.getElementById('center-form').reset();
+            document.getElementById('center-edit-id').value = '';
+            document.getElementById('center-form-title').textContent = 'Aggiungi Nuovo Poliambulatorio';
+            document.getElementById('center-submit-btn-text').textContent = 'Salva Poliambulatorio';
+            document.getElementById('center-cancel-edit').classList.add('hidden');
+        }
+
+        window.deleteCenter = async function(id) {
+            appState.centers = appState.centers.filter(c => c.id !== id);
+            if (db && userId) {
+                try {
+                    await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'centers_list', id));
+                    await deleteDoc(doc(db, 'artifacts', appId, 'users', userId, 'centers_list', id));
+                } catch(e){}
+            }
+            renderCentersManagementList();
+            renderPublicCenters();
+            renderHeaderLegend();
+            showToast("Poliambulatorio eliminato.");
+        }
+
+        window.handleNewsSubmit = async function(e) {
+            e.preventDefault();
+            const id = document.getElementById('news-edit-id').value || 'n_' + Date.now();
+            const title = document.getElementById('new-news-title').value.trim();
+            const content = document.getElementById('new-news-content').value.trim();
+            const link = document.getElementById('new-news-link').value.trim();
+
+            const newN = { id, title, content, link };
+            const idx = appState.news.findIndex(n => n.id === id);
+            if (idx >= 0) appState.news[idx] = newN;
+            else appState.news.push(newN);
+
+            if (db) {
+                try { await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'news_list', id), newN); } catch(e){}
+            }
+            resetNewsForm();
+            renderNewsManagementList();
+            renderPublicNews();
+            showToast("News pubblicata!");
+        }
+
+        function renderNewsManagementList() {
+            const list = document.getElementById('news-management-list');
+            if (!list) return;
+            list.innerHTML = appState.news.map(n => `
+                <div class="p-3 bg-white border border-slate-200 rounded-2xl flex items-center justify-between text-xs">
+                    <div><strong class="text-slate-900">${n.title}</strong><p class="text-slate-500 text-[11px] line-clamp-1">${n.content}</p></div>
+                    <button type="button" onclick="deleteNews('${n.id}')" class="px-2.5 py-1 bg-rose-50 text-rose-600 rounded-lg font-semibold">Elimina</button>
+                </div>
+            `).join('');
+        }
+
+        window.resetNewsForm = function() {
+            document.getElementById('news-form').reset();
+            document.getElementById('news-edit-id').value = '';
+            document.getElementById('news-submit-btn-text').textContent = 'Pubblica News';
+            document.getElementById('news-cancel-edit').classList.add('hidden');
+        }
+
+        window.deleteNews = async function(id) {
+            appState.news = appState.news.filter(n => n.id !== id);
+            if (db) { try { await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'news_list', id)); } catch(e){} }
+            renderNewsManagementList();
+            renderPublicNews();
+            showToast("News eliminata.");
+        }
+
+        window.handlePrepSubmit = async function(e) {
+            e.preventDefault();
+            const id = document.getElementById('prep-edit-id').value || 'p_' + Date.now();
+            const title = document.getElementById('prep-title').value.trim();
+            const tag = document.getElementById('prep-tag').value.trim();
+            const content = document.getElementById('prep-content').value.trim();
+
+            const newP = { id, title, tag, content };
+            const idx = appState.preparations.findIndex(p => p.id === id);
+            if (idx >= 0) appState.preparations[idx] = newP;
+            else appState.preparations.push(newP);
+
+            if (db) { try { await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'preparations_list', id), newP); } catch(e){} }
+            resetPrepForm();
+            renderPrepManagementList();
+            renderPublicPreparations();
+            showToast("Guida salvata!");
+        }
+
+        function renderPrepManagementList() {
+            const list = document.getElementById('prep-management-list');
+            if (!list) return;
+            list.innerHTML = appState.preparations.map(p => `
+                <div class="p-3 bg-white border border-slate-200 rounded-2xl flex items-center justify-between text-xs">
+                    <div><span class="px-2 py-0.5 rounded bg-nature-50 text-nature-800 text-[10px] font-bold">${p.tag}</span> <strong class="text-slate-900 ml-1">${p.title}</strong></div>
+                    <button type="button" onclick="deletePrep('${p.id}')" class="px-2.5 py-1 bg-rose-50 text-rose-600 rounded-lg font-semibold">Elimina</button>
+                </div>
+            `).join('');
+        }
+
+        window.resetPrepForm = function() {
+            document.getElementById('prep-form').reset();
+            document.getElementById('prep-edit-id').value = '';
+            document.getElementById('prep-submit-btn-text').textContent = 'Salva Guida';
+            document.getElementById('prep-cancel-edit').classList.add('hidden');
+        }
+
+        window.deletePrep = async function(id) {
+            appState.preparations = appState.preparations.filter(p => p.id !== id);
+            if (db) { try { await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'preparations_list', id)); } catch(e){} }
+            renderPrepManagementList();
+            renderPublicPreparations();
+            showToast("Guida eliminata.");
+        }
+
+        window.handleStudioEventSubmit = async function(e) {
+            e.preventDefault();
+            const id = document.getElementById('studio-edit-event-id').value || 'evt_' + Date.now();
+            const title = document.getElementById('studio-title').value.trim();
+            const date = document.getElementById('studio-date').value;
+            const startH = document.getElementById('studio-time-start').value;
+            const endH = document.getElementById('studio-time-end').value;
+            const notes = document.getElementById('studio-notes').value.trim();
+
+            const start = `${date}T${startH}:00`;
+            const end = `${date}T${endH}:00`;
+
+            const newEv = { id, title, start, end, extendedProps: { notes, centerName: 'Studio Privato' } };
+            const idx = appState.events.findIndex(ev => ev.id === id);
+            if (idx >= 0) appState.events[idx] = newEv;
+            else appState.events.push(newEv);
+
+            if (db && userId) {
+                try { await setDoc(doc(db, 'artifacts', appId, 'users', userId, 'studio_events', id), newEv); } catch(e){}
+            }
+
+            closeStudioModal();
+            document.getElementById('studio-event-form').reset();
+            if (calendarInstance) calendarInstance.refetchEvents();
+            showToast("Appuntamento studio salvato!");
+        }
 
         // Sincronizzazione iCal avanzata con Proxy Vercel e log dettagliati
         window.triggerIcalSync = async function() {
@@ -920,7 +1235,7 @@
             if (icalCenters.length === 0) {
                 logs.push(`[${new Date().toLocaleTimeString()}] Nessun poliambulatorio con link iCal configurato.`);
                 updateIcalChangelogModal({ status: 'completed', centersReport: [], added: [], modified: [], deleted: [], logs });
-                showToast('Nessun link iCal configurato.', 'info');
+                showToast('Nessun link iCal configurato.');
                 return;
             }
 
@@ -1021,7 +1336,7 @@
                     }
                     logs.push(`[${new Date().toLocaleTimeString()}] Aggiunti/Aggiornati ${countAdded} eventi da "${center.name}".`);
                 } else {
-                    centersReport.push({ name: center.name, success: false, message: 'Impossibile scaricare (CORS/URL non valido)' });
+                    centersReport.push({ name: center.name, success: false, message: 'Impossibile scaricare (CORS/URL)' });
                     logs.push(`[${new Date().toLocaleTimeString()}] ERRORE CRITICO: Fallito download iCal per ${center.name}.`);
                 }
             }
