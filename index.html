@@ -278,7 +278,7 @@
                             <span id="firebase-dot" class="w-1.5 h-1.5 rounded-full bg-amber-500 inline-block"></span>
                             <span id="firebase-text">Connessione...</span>
                         </div>
-                        <button onclick="triggerIcalSync()" id="sync-ical-btn" class="inline-flex items-center gap-1 bg-water-50 hover:bg-water-100 text-water-800 px-2.5 py-0.5 rounded-full text-[10px] font-bold border border-water-200 transition shadow-2xs" title="Sincronizza Calendari Poliambulatori">
+                        <button onclick="triggerIcalSync(false)" id="sync-ical-btn" class="inline-flex items-center gap-1 bg-water-50 hover:bg-water-100 text-water-800 px-2.5 py-0.5 rounded-full text-[10px] font-bold border border-water-200 transition shadow-2xs" title="Sincronizza Calendari Poliambulatori">
                             <i class="fa-solid fa-rotate text-[9px]"></i> <span>Sincronizza Calendari</span>
                         </button>
                     </div>
@@ -485,16 +485,16 @@
         </div>
     </div>
 
-    <!-- Sync Progress & Report Modal -->
+    <!-- Sync Progress & Detailed Report Modal -->
     <div id="sync-report-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-md hidden z-[80] flex items-center justify-center p-4">
-        <div class="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-md overflow-hidden flex flex-col border border-water-100">
+        <div class="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-lg overflow-hidden flex flex-col border border-water-100">
             <div class="px-6 py-4 border-b border-water-100 flex items-center justify-between bg-water-50/50">
                 <div class="flex items-center gap-2.5">
                     <div class="w-8 h-8 rounded-full bg-water-100 text-water-700 flex items-center justify-center font-bold text-xs"><i class="fa-solid fa-rotate animate-spin" id="sync-spinner"></i></div>
                     <h3 id="sync-modal-title" class="font-editorial text-base font-bold text-slate-900 italic">Sincronizzazione Calendari in corso...</h3>
                 </div>
             </div>
-            <div class="p-6 space-y-4 overflow-y-auto max-h-[60vh]">
+            <div class="p-6 space-y-4 overflow-y-auto max-h-[65vh]">
                 <div id="sync-report-content" class="text-xs space-y-3">
                     <div class="flex items-center gap-3 py-4 text-slate-600">
                         <i class="fa-solid fa-circle-notch animate-spin text-water-600 text-base"></i>
@@ -1683,7 +1683,7 @@
             let addedCount = 0;
             let modifiedCount = 0;
             let deletedCount = 0;
-            let reportDetails = [];
+            let reportDetails = []; // Structured detailed log items { type, title, centerName, dateStr, timeStr }
 
             let activeIcalEventIds = new Set();
             let oldEventsMap = new Map(appState.events.filter(e => e.id.startsWith('ical_')).map(ev => [ev.id, ev]));
@@ -1756,6 +1756,11 @@
                                     parsedEnd = new Date(new Date(parsedStart).getTime() + 3600000).toISOString();
                                 }
 
+                                // Format date & time for detailed reporting
+                                let dObj = new Date(parsedStart);
+                                let dateFormatted = dObj.toLocaleDateString('it-IT', { day: 'numeric', month: 'short', year: 'numeric' });
+                                let timeFormatted = `${String(dObj.getHours()).padStart(2,'0')}:${String(dObj.getMinutes()).padStart(2,'0')}`;
+
                                 let existingEv = oldEventsMap.get(eventId);
                                 let matchedPatientId = existingEv?.extendedProps?.patientId || null;
 
@@ -1784,12 +1789,12 @@
                                     let oldEv = appState.events[existingIdx];
                                     if (oldEv.title !== parsedEvent.title || oldEv.start !== parsedEvent.start || oldEv.end !== parsedEvent.end) {
                                         modifiedCount++;
-                                        reportDetails.push(`Modificato: ${parsedEvent.title} (${center.name})`);
+                                        reportDetails.push({ type: 'modified', title: parsedEvent.title, centerName: center.name, dateStr: dateFormatted, timeStr: timeFormatted });
                                     }
                                     appState.events[existingIdx] = parsedEvent;
                                 } else {
                                     addedCount++;
-                                    reportDetails.push(`Aggiunto: ${parsedEvent.title} (${center.name})`);
+                                    reportDetails.push({ type: 'added', title: parsedEvent.title, centerName: center.name, dateStr: dateFormatted, timeStr: timeFormatted });
                                     appState.events.push(parsedEvent);
                                 }
 
@@ -1819,7 +1824,11 @@
             for (let remId of removedIds) {
                 let evToRem = oldEventsMap.get(remId);
                 deletedCount++;
-                reportDetails.push(`Rimosso: ${evToRem?.title || 'Appuntamento esterno'}`);
+                let dObjRem = evToRem?.start ? new Date(evToRem.start) : new Date();
+                let dateFmt = dObjRem.toLocaleDateString('it-IT', { day: 'numeric', month: 'short', year: 'numeric' });
+                let timeFmt = `${String(dObjRem.getHours()).padStart(2,'0')}:${String(dObjRem.getMinutes()).padStart(2,'0')}`;
+                
+                reportDetails.push({ type: 'deleted', title: evToRem?.title || 'Appuntamento esterno', centerName: evToRem?.extendedProps?.centerName || 'Poliambulatorio', dateStr: dateFmt, timeStr: timeFmt });
                 appState.events = appState.events.filter(e => e.id !== remId);
                 if (db && userId) {
                     try { await deleteDoc(doc(db, 'artifacts', appId, 'users', userId, 'studio_events', remId)); } catch(e){}
@@ -1842,10 +1851,10 @@
 
             let html = '';
             if (added === 0 && modified === 0 && deleted === 0) {
-                html = `<div class="p-4 bg-slate-50 border border-slate-200 rounded-2xl text-center text-slate-600 font-medium">Nessuna modifica avvenuta. I calendari sono già aggiornati.</div>`;
+                html = `<div class="p-5 bg-slate-50 border border-slate-200 rounded-2xl text-center text-slate-600 font-medium text-xs">Nessuna modifica avvenuta. I calendari dei poliambulatori sono già perfettamente aggiornati.</div>`;
             } else {
                 html = `
-                    <div class="space-y-2">
+                    <div class="space-y-3">
                         <p class="font-bold text-slate-800">Riepilogo aggiornamenti:</p>
                         <div class="grid grid-cols-3 gap-2 text-center">
                             <div class="p-2.5 bg-emerald-50 border border-emerald-100 rounded-xl"><strong class="block text-sm text-emerald-800">${added}</strong><span class="text-[10px] text-emerald-600">Aggiunti</span></div>
@@ -1853,8 +1862,21 @@
                             <div class="p-2.5 bg-rose-50 border border-rose-100 rounded-xl"><strong class="block text-sm text-rose-800">${deleted}</strong><span class="text-[10px] text-rose-600">Rimossi</span></div>
                         </div>
                         ${details.length > 0 ? `
-                            <div class="mt-3 space-y-1 bg-slate-50 p-3 rounded-xl border border-slate-200 max-h-36 overflow-y-auto">
-                                ${details.map(d => `<div class="text-[11px] text-slate-600 flex items-center gap-1.5"><i class="fa-solid fa-circle text-[4px] text-nature-600"></i> ${d}</div>`).join('')}
+                            <div class="mt-3 space-y-2 bg-slate-50 p-3 rounded-2xl border border-slate-200 max-h-56 overflow-y-auto">
+                                ${details.map(item => {
+                                    let badgeColor = item.type === 'added' ? 'bg-emerald-100 text-emerald-800' : (item.type === 'modified' ? 'bg-amber-100 text-amber-800' : 'bg-rose-100 text-rose-800');
+                                    let labelText = item.type === 'added' ? 'Aggiunto' : (item.type === 'modified' ? 'Modificato' : 'Rimosso');
+                                    return `
+                                        <div class="p-2.5 bg-white border border-slate-200 rounded-xl text-xs space-y-1 shadow-2xs">
+                                            <div class="flex items-center justify-between">
+                                                <span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${badgeColor}">${labelText}</span>
+                                                <span class="text-[11px] font-semibold text-slate-700"><i class="fa-regular fa-calendar text-nature-600 mr-1"></i> ${item.dateStr} ore ${item.timeStr}</span>
+                                            </div>
+                                            <p class="font-editorial text-sm font-bold text-slate-900 italic">${item.title}</p>
+                                            <p class="text-[10px] text-slate-500"><i class="fa-solid fa-hospital text-nature-600 mr-1"></i> ${item.centerName}</p>
+                                        </div>
+                                    `;
+                                }).join('')}
                             </div>
                         ` : ''}
                     </div>
