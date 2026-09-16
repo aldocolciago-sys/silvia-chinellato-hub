@@ -33,11 +33,6 @@
                             100: '#f7f1e5',
                             200: '#eddcd2',
                             500: '#d5bdaf',
-                        },
-                        roseSoft: {
-                            50: '#fdf8f8',
-                            100: '#f9f0f0',
-                            500: '#d4a3a3',
                         }
                     },
                     fontFamily: {
@@ -362,18 +357,6 @@
                     </select>
                 </div>
 
-                <!-- Phone and Email read-only fields populated from patient -->
-                <div id="patient-contact-info-container" class="grid grid-cols-2 gap-3 hidden">
-                    <div class="space-y-1">
-                        <label class="text-[10px] font-bold text-slate-500">Telefono Paziente</label>
-                        <input type="text" id="studio-patient-phone" readonly class="w-full px-3 py-2 bg-slate-100 border border-slate-200 rounded-xl text-xs text-slate-600">
-                    </div>
-                    <div class="space-y-1">
-                        <label class="text-[10px] font-bold text-slate-500">Email Paziente</label>
-                        <input type="text" id="studio-patient-email" readonly class="w-full px-3 py-2 bg-slate-100 border border-slate-200 rounded-xl text-xs text-slate-600">
-                    </div>
-                </div>
-
                 <div class="space-y-1">
                     <label class="text-[11px] font-bold text-slate-600">Titolo / Trattamento *</label>
                     <input type="text" id="studio-title" required placeholder="Es. Trattamento Osteopatico" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-xs">
@@ -399,7 +382,19 @@
                     </div>
                 </div>
 
-                <!-- Patient notes container without redundant subtitle -->
+                <!-- Patient Contact Phone and Email fields -->
+                <div id="patient-contact-info-container" class="grid grid-cols-2 gap-3 hidden">
+                    <div class="space-y-1">
+                        <label class="text-[10px] font-bold text-slate-500">Telefono Paziente</label>
+                        <input type="text" id="studio-patient-phone" readonly class="w-full px-3 py-2 bg-slate-100 border border-slate-200 rounded-xl text-xs text-slate-600">
+                    </div>
+                    <div class="space-y-1">
+                        <label class="text-[10px] font-bold text-slate-500">Email Paziente</label>
+                        <input type="text" id="studio-patient-email" readonly class="w-full px-3 py-2 bg-slate-100 border border-slate-200 rounded-xl text-xs text-slate-600">
+                    </div>
+                </div>
+
+                <!-- Patient notes container -->
                 <div id="live-patient-notes-container" class="space-y-1 hidden bg-amber-50/60 p-3.5 rounded-2xl border border-amber-200">
                     <label class="text-[11px] font-bold text-amber-900 flex items-center justify-between">
                         <span><i class="fa-solid fa-user-pen mr-1"></i> Note Anamnestiche Paziente</span>
@@ -751,7 +746,7 @@
                     showPrivateView();
                     await loadAllDataFromFirestore();
                     setTimeout(() => {
-                        triggerIcalSync(true); // automatic sync on login
+                        triggerIcalSync(true); // Automatic sync immediately after login
                     }, 600);
                 } else if (user && user.email) {
                     await signOut(auth);
@@ -1078,12 +1073,10 @@
             document.getElementById('studio-date').disabled = false;
             document.getElementById('studio-time-start').disabled = false;
             document.getElementById('studio-time-end').disabled = false;
-            document.getElementById('studio-patient-select').disabled = false;
             document.getElementById('studio-title').classList.remove('bg-slate-200', 'text-slate-500');
             document.getElementById('studio-date').classList.remove('bg-slate-200', 'text-slate-500');
             document.getElementById('studio-time-start').classList.remove('bg-slate-200', 'text-slate-500');
             document.getElementById('studio-time-end').classList.remove('bg-slate-200', 'text-slate-500');
-            document.getElementById('studio-patient-select').classList.remove('bg-slate-200', 'text-slate-500');
 
             const today = new Date().toISOString().split('T')[0];
             document.getElementById('studio-date').value = today;
@@ -1760,7 +1753,7 @@
                                     let oldEv = appState.events[existingIdx];
                                     if (oldEv.title !== parsedEvent.title || oldEv.start !== parsedEvent.start || oldEv.end !== parsedEvent.end) {
                                         modifiedCount++;
-                                        reportDetails.append ? null : reportDetails.push(`Modificato: ${parsedEvent.title} (${center.name})`);
+                                        reportDetails.push(`Modificato: ${parsedEvent.title} (${center.name})`);
                                     }
                                     appState.events[existingIdx] = parsedEvent;
                                 } else {
@@ -1805,9 +1798,7 @@
             if (calendarInstance) calendarInstance.refetchEvents();
             checkCalendarConflicts();
 
-            if (!isAutomatic) {
-                showSyncReportModal(addedCount, modifiedCount, deletedCount, reportDetails);
-            }
+            showSyncReportModal(addedCount, modifiedCount, deletedCount, reportDetails);
         }
 
         function showSyncReportModal(added, modified, deleted, details) {
