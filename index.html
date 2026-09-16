@@ -344,7 +344,7 @@
         </div>
     </div>
 
-    <!-- iCal Changelog Modal (Without debug logs frame) -->
+    <!-- iCal Changelog Modal -->
     <div id="ical-changelog-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-md hidden z-[60] flex items-center justify-center p-4">
         <div class="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-lg overflow-hidden flex flex-col max-h-[90vh]">
             <div class="px-5 sm:px-6 py-4 sm:py-5 border-b border-water-100 flex items-center justify-between bg-water-50/50">
@@ -381,7 +381,7 @@
         </div>
     </div>
 
-    <!-- Studio / Appointment Modal with Flexible Hours (07:00 to 23:00) and Patient Linking -->
+    <!-- Studio / Appointment Modal -->
     <div id="studio-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-md hidden z-50 flex items-center justify-center p-4">
         <div class="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-md overflow-hidden flex flex-col border border-nature-100 max-h-[90vh]">
             <div class="px-5 sm:px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-nature-50/50">
@@ -446,7 +446,11 @@
                     <button type="button" onclick="closePatientsModal()" class="text-slate-400 hover:text-slate-600 w-8 h-8 rounded-full flex items-center justify-center"><i class="fa-solid fa-xmark"></i></button>
                 </div>
             </div>
-            <div class="p-4 sm:p-6 overflow-y-auto space-y-4 flex-1">
+            <div class="p-4 sm:p-6 overflow-y-auto space-y-4 flex-1 space-y-4">
+                <div class="relative">
+                    <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400"><i class="fa-solid fa-magnifying-glass text-xs"></i></span>
+                    <input type="text" id="patient-search-input" oninput="filterPatientsList()" placeholder="Cerca paziente per nome, telefono o email..." class="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-2xl text-xs focus:outline-none focus:ring-2 focus:ring-amber-500">
+                </div>
                 <div id="patients-alphabetical-list" class="space-y-2.5"></div>
             </div>
             <div class="px-5 sm:px-6 py-4 border-t border-slate-100 bg-slate-50 flex justify-end">
@@ -507,7 +511,7 @@
         </div>
     </div>
 
-    <!-- Trattamenti Admin Modal with Icon Selector -->
+    <!-- Trattamenti Admin Modal -->
     <div id="treatments-admin-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-md hidden z-50 flex items-center justify-center p-4">
         <div class="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-2xl overflow-hidden flex flex-col max-h-[90vh]">
             <div class="px-5 sm:px-6 py-4 sm:py-5 border-b border-nature-100 flex items-center justify-between bg-nature-50/50">
@@ -654,7 +658,7 @@
         </div>
     </div>
 
-    <!-- Custom Confirmation Dialog Modal -->
+    <!-- Confirm Modal -->
     <div id="confirm-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-md hidden z-[70] flex items-center justify-center p-4">
         <div class="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-sm overflow-hidden flex flex-col border border-nature-100 p-6 text-center space-y-4">
             <div class="w-14 h-14 rounded-full bg-rose-50 text-rose-600 flex items-center justify-center mx-auto text-xl shadow-inner">
@@ -1147,6 +1151,7 @@
 
             closeStudioModal();
             if (calendarInstance) calendarInstance.refetchEvents();
+            checkCalendarConflicts();
             showToast("Appuntamento salvato con successo!");
         }
 
@@ -1160,6 +1165,7 @@
                 }
                 closeStudioModal();
                 if (calendarInstance) calendarInstance.refetchEvents();
+                checkCalendarConflicts();
                 showToast("Appuntamento eliminato.");
             });
         }
@@ -1230,10 +1236,10 @@
             document.getElementById('patient-history-title').textContent = `Storico: ${pat.name}`;
             
             const listEl = document.getElementById('patient-history-list');
-            const patientEvents = appState.events.filter(ev => ev.extendedProps?.patientId === patientId);
+            const patientEvents = appState.events.filter(ev => ev.extendedProps?.patientId === patientId || (ev.title && ev.title.toLowerCase().includes(pat.name.toLowerCase())));
 
             if (patientEvents.length === 0) {
-                listEl.innerHTML = `<p class="text-xs text-slate-400 italic text-center py-6">Nessun appuntamento registrato per questo paziente.</p>`;
+                listEl.innerHTML = `<p class="text-xs text-slate-400 italic text-center py-6">Nessun appuntamento passato o futuro registrato per questo paziente.</p>`;
             } else {
                 let sortedEvts = [...patientEvents].sort((a,b) => new Date(b.start) - new Date(a.start));
                 listEl.innerHTML = sortedEvts.map(ev => {
@@ -1260,14 +1266,23 @@
             document.getElementById('patient-history-modal').classList.add('hidden');
         }
 
-        function renderPatientsList() {
+        window.filterPatientsList = function() {
+            const query = document.getElementById('patient-search-input').value.toLowerCase().trim();
+            renderPatientsList(query);
+        }
+
+        function renderPatientsList(searchQuery = '') {
             const container = document.getElementById('patients-alphabetical-list');
             if (!container) return;
-            if (appState.patients.length === 0) {
-                container.innerHTML = `<p class="text-xs text-slate-400 italic text-center py-6">Nessun paziente registrato in anagrafica.</p>`;
+            let filtered = appState.patients;
+            if (searchQuery) {
+                filtered = appState.patients.filter(p => p.name.toLowerCase().includes(searchQuery) || (p.phone && p.phone.includes(searchQuery)) || (p.email && p.email.toLowerCase().includes(searchQuery)));
+            }
+            if (filtered.length === 0) {
+                container.innerHTML = `<p class="text-xs text-slate-400 italic text-center py-6">Nessun paziente trovato.</p>`;
                 return;
             }
-            let sorted = [...appState.patients].sort((a,b) => a.name.localeCompare(b.name));
+            let sorted = [...filtered].sort((a,b) => a.name.localeCompare(b.name));
             container.innerHTML = sorted.map(p => `
                 <div class="p-4 bg-white border border-slate-200 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs shadow-2xs">
                     <div class="space-y-1">
@@ -1276,7 +1291,7 @@
                             ${p.phone ? `<span class="text-slate-500"><i class="fa-solid fa-phone text-[10px] text-nature-600"></i> ${p.phone}</span>` : ''}
                             ${p.email ? `<span class="text-slate-500"><i class="fa-solid fa-envelope text-[10px] text-water-600"></i> ${p.email}</span>` : ''}
                         </div>
-                        ${p.notes ? `<p class="text-slate-600 font-light text-[11px] bg-slate-50 p-2 rounded-xl">${p.notes}</p>` : ''}
+                        ${p.notes ? `<p class="text-slate-600 font-light text-[11px] bg-slate-50 p-2 rounded-xl"><strong>Note:</strong> ${p.notes}</p>` : ''}
                     </div>
                     <div class="flex items-center gap-1.5 self-end sm:self-center flex-wrap">
                         <button onclick="openPatientHistoryModal('${p.id}')" class="px-3 py-1.5 bg-amber-50 text-amber-800 font-semibold rounded-xl hover:bg-amber-100 transition"><i class="fa-solid fa-calendar-days mr-1"></i> Storico</button>
@@ -1567,7 +1582,7 @@
             });
         }
 
-        // --- iCal Multi-Center Sync (Isolated & Robust) ---
+        // --- iCal Multi-Center Sync (Isolated & Robust with Smart Patient Matching) ---
         window.triggerIcalSync = async function() {
             openIcalChangelogModal({ status: 'loading', centersReport: [], added: [], modified: [], deleted: [] });
             
@@ -1640,6 +1655,15 @@
                                     parsedEnd = new Date(new Date(parsedStart).getTime() + 3600000).toISOString();
                                 }
 
+                                // Smart Patient Matching
+                                let matchedPatientId = null;
+                                for (let p of appState.patients) {
+                                    if (eventTitleClean.toLowerCase().includes(p.name.toLowerCase())) {
+                                        matchedPatientId = p.id;
+                                        break;
+                                    }
+                                }
+
                                 const parsedEvent = {
                                     id: eventId,
                                     title: formattedTitle,
@@ -1648,7 +1672,7 @@
                                     backgroundColor: center.color,
                                     borderColor: center.color,
                                     textColor: '#ffffff',
-                                    extendedProps: { centerId: center.id, centerName: center.name, notes: currentEvent.description || 'Sincronizzato da iCal' }
+                                    extendedProps: { centerId: center.id, centerName: center.name, notes: currentEvent.description || 'Sincronizzato da iCal', patientId: matchedPatientId }
                                 };
 
                                 if (!oldEventsMap.has(eventId)) {
@@ -1706,6 +1730,7 @@
             }
 
             if (calendarInstance) calendarInstance.refetchEvents();
+            checkCalendarConflicts();
             updateIcalChangelogModal({ status: 'completed', centersReport, added: addedEvents, modified: modifiedEvents, deleted: deletedEvents });
             showToast('Sincronizzazione completata!');
         }
@@ -1850,6 +1875,28 @@
             confirmCallback = null;
         });
 
+        function checkCalendarConflicts() {
+            let conflictCount = 0;
+            const events = appState.events;
+            for (let i = 0; i < events.length; i++) {
+                for (let j = i + 1; j < events.length; j++) {
+                    let e1 = events[i];
+                    let e2 = events[j];
+                    let start1 = new Date(e1.start).getTime();
+                    let end1 = new Date(e1.end || e1.start).getTime();
+                    let start2 = new Date(e2.start).getTime();
+                    let end2 = new Date(e2.end || e2.start).getTime();
+
+                    if (start1 < end2 && start2 < end1) {
+                        conflictCount++;
+                    }
+                }
+            }
+            if (conflictCount > 0) {
+                console.warn(`Attenzione: rilevate ${conflictCount} sovrapposizioni orarie in agenda.`);
+            }
+        }
+
         function initCalendar() {
             const calendarEl = document.getElementById('calendar');
             if (!calendarEl) return;
@@ -1872,6 +1919,7 @@
                 height: '100%'
             });
             calendarInstance.render();
+            checkCalendarConflicts();
         }
 
         window.showToast = function(message) {
