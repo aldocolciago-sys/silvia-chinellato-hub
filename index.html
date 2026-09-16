@@ -175,7 +175,7 @@
                     </ul>
                 </div>
                 <div class="bg-gradient-to-br from-nature-50/90 via-water-50/70 to-warmth-50/60 p-6 sm:p-10 rounded-[2rem] sm:rounded-[2.5rem] border border-nature-100 space-y-6 shadow-inner text-center flex flex-col items-center justify-center">
-                    <div class="w-36 h-36 sm:w-48 sm:h-48 rounded-full bg-white border-4 border-nature-200 flex items-center justify-center shadow-2xl overflow-hidden mx-auto flex-shrink-0 hover:scale-105 transition duration-500">
+                    <div class="w-44 h-44 sm:w-60 sm:h-60 rounded-full bg-white border-4 border-nature-200 flex items-center justify-center shadow-2xl overflow-hidden mx-auto flex-shrink-0 hover:scale-105 transition duration-500">
                         <img src="Logo.jpeg" alt="Logo Silvia Chinellato" class="w-full h-full object-cover" onerror="this.onerror=null; this.src='https://placehold.co/300x300/3f5e4e/ffffff?text=SC'">
                     </div>
                     <blockquote class="text-xs sm:text-sm text-slate-700 leading-relaxed font-editorial italic text-base sm:text-lg max-w-sm">
@@ -261,7 +261,7 @@
             </section>
         </main>
 
-        <footer class="bg-white/70 border-t border-nature-100/80 py-8 sm:py-10 text-center text-xs text-slate-500 mt-16 font-light italic-title text-sm px-4">
+        <footer class="bg-white/70 border-t border-nature-100/80 py-8 sm:py-10 text-center text-slate-500 mt-16 font-editorial italic text-base px-4">
             <p>© 2026 Silvia Chinellato • Tutti i diritti riservati • Osteopata & Idrocolon Terapista</p>
         </footer>
     </div>
@@ -359,7 +359,6 @@
             </div>
             <form id="studio-event-form" class="p-5 sm:p-6 space-y-4 overflow-y-auto" onsubmit="handleStudioEventSubmit(event)">
                 <input type="hidden" id="studio-edit-event-id">
-                <input type="hidden" id="studio-event-is-external" value="false">
                 
                 <div class="space-y-1">
                     <label class="text-[11px] font-bold text-slate-600">Sede / Poliambulatorio</label>
@@ -1164,20 +1163,8 @@
             const form = document.getElementById('studio-event-form');
             form.reset();
             document.getElementById('studio-edit-event-id').value = '';
-            document.getElementById('studio-event-is-external').value = 'false';
             document.getElementById('studio-delete-btn').classList.add('hidden');
             document.getElementById('studio-modal-title').textContent = 'Nuovo Appuntamento Studio / Sede';
-            
-            document.getElementById('studio-title').disabled = false;
-            document.getElementById('studio-date').disabled = false;
-            document.getElementById('studio-time-start').disabled = false;
-            document.getElementById('studio-time-end').disabled = false;
-            document.getElementById('studio-center-select').disabled = false;
-            document.getElementById('studio-title').classList.remove('bg-slate-200', 'text-slate-500');
-            document.getElementById('studio-date').classList.remove('bg-slate-200', 'text-slate-500');
-            document.getElementById('studio-time-start').classList.remove('bg-slate-200', 'text-slate-500');
-            document.getElementById('studio-time-end').classList.remove('bg-slate-200', 'text-slate-500');
-            document.getElementById('studio-center-select').classList.remove('bg-slate-200', 'text-slate-500');
 
             const today = new Date().toISOString().split('T')[0];
             document.getElementById('studio-date').value = today;
@@ -1209,18 +1196,7 @@
                 }
 
                 if (editEv.id && editEv.id.startsWith('ical_')) {
-                    document.getElementById('studio-event-is-external').value = 'true';
                     document.getElementById('studio-modal-title').textContent = `Appuntamento Poliambulatorio (${editEv.extendedProps?.centerName || 'Esterno'})`;
-                    document.getElementById('studio-title').disabled = true;
-                    document.getElementById('studio-date').disabled = true;
-                    document.getElementById('studio-time-start').disabled = true;
-                    document.getElementById('studio-time-end').disabled = true;
-                    document.getElementById('studio-center-select').disabled = true;
-                    document.getElementById('studio-title').classList.add('bg-slate-200', 'text-slate-500');
-                    document.getElementById('studio-date').classList.add('bg-slate-200', 'text-slate-500');
-                    document.getElementById('studio-time-start').classList.add('bg-slate-200', 'text-slate-500');
-                    document.getElementById('studio-time-end').classList.add('bg-slate-200', 'text-slate-500');
-                    document.getElementById('studio-center-select').classList.add('bg-slate-200', 'text-slate-500');
                 }
 
                 document.getElementById('studio-delete-btn').classList.remove('hidden');
@@ -1269,8 +1245,6 @@
 
         window.onPatientSelectChange = function() {
             const selId = document.getElementById('studio-patient-select').value;
-            const isExternal = document.getElementById('studio-event-is-external').value === 'true';
-            
             if (!selId) {
                 document.getElementById('live-patient-notes-container').classList.add('hidden');
                 document.getElementById('patient-contact-info-container').classList.add('hidden');
@@ -1279,9 +1253,7 @@
 
             const pat = appState.patients.find(p => p.id === selId);
             if (pat) {
-                if (!isExternal) {
-                    document.getElementById('studio-title').value = `Visita / Trattamento - ${pat.name}`;
-                }
+                document.getElementById('studio-title').value = `Visita / Trattamento - ${pat.name}`;
                 showLivePatientNotes(pat.id);
             }
         }
@@ -1323,7 +1295,6 @@
         window.handleStudioEventSubmit = async function(e) {
             e.preventDefault();
             const id = document.getElementById('studio-edit-event-id').value || 'evt_' + Date.now();
-            const isExternal = document.getElementById('studio-event-is-external').value === 'true';
             const title = document.getElementById('studio-title').value.trim();
             const date = document.getElementById('studio-date').value;
             const startH = document.getElementById('studio-time-start').value;
@@ -1341,7 +1312,7 @@
             let existingEv = appState.events.find(ev => ev.id === id);
 
             let newEv;
-            if (isExternal && existingEv) {
+            if (existingEv && existingEv.id.startsWith('ical_')) {
                 newEv = {
                     ...existingEv,
                     extendedProps: {
@@ -2109,6 +2080,10 @@
             if (titleEl) titleEl.textContent = 'Sincronizzazione completata';
             if (footer) footer.classList.remove('hidden');
             logMsg(`Sincronizzazione completata. Totale aggiunti: ${addedTotal}, modificati: ${modifiedTotal}, eliminati: ${deletedTotal}.`);
+        }
+
+        window.closeSyncReportModal = function() {
+            document.getElementById('sync-report-modal').classList.add('hidden');
         }
 
         function normalizeGoogleCalendarUrl(url) {
