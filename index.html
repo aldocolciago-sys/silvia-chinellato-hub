@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Silvia Chinellato | Osteopata & Idrocolonterapia</title>
-    <meta name="app-build" content="shared-data-v2-business-clinical">
+    <meta name="app-build" content="shared-data-v2.1-patient-recall-fix">
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -1703,6 +1703,11 @@
             document.getElementById('patient-edit-modal').classList.remove('hidden');
         }
         window.closePatientEditModal = function() { document.getElementById('patient-edit-modal').classList.add('hidden'); }
+        window.openPatientEditModalById = function(patientId) {
+            const patient = appState.patients.find(p => p.id === patientId);
+            if (!patient) { showToast('Paziente non trovato. Aggiorna la pagina e riprova.'); return; }
+            openPatientEditModal(patient);
+        }
 
         window.handlePatientSubmit = async function(e) {
             e.preventDefault();
@@ -1812,7 +1817,7 @@
                     </div>
                     <div class="flex items-center gap-1.5 self-end sm:self-center flex-wrap">
                         <button onclick="openPatientHistoryModal('${p.id}')" class="px-3 py-1.5 bg-amber-50 text-amber-800 font-semibold rounded-xl hover:bg-amber-100 transition"><i class="fa-solid fa-calendar-days mr-1"></i> Storico</button>
-                        <button onclick='openPatientEditModal(${JSON.stringify(p)})' class="px-3 py-1.5 bg-nature-50 text-nature-700 font-semibold rounded-xl hover:bg-nature-100 transition">Modifica</button>
+                        <button onclick="openPatientEditModalById('${p.id}')" class="px-3 py-1.5 bg-nature-50 text-nature-700 font-semibold rounded-xl hover:bg-nature-100 transition">Modifica</button>
                         <button onclick="confirmDeletePatient('${p.id}')" class="px-3 py-1.5 bg-rose-50 text-rose-600 font-semibold rounded-xl hover:bg-rose-100 transition">Elimina</button>
                     </div>
                 </div>
@@ -2475,15 +2480,35 @@
             const rows = Object.entries(groups).sort((a,b)=>b[1].total-a[1].total).map(([name,g]) => `<tr class="border-t border-slate-200"><td class="p-3 font-bold">${name}</td><td class="p-3 text-center">${g.count}</td><td class="p-3 text-right">${euro(g.paid)}</td><td class="p-3 text-right text-orange-700">${euro(g.unpaid)}</td><td class="p-3 text-right font-bold">${euro(g.total)}</td></tr>`).join('');
             document.getElementById('business-by-center').innerHTML = `<table class="w-full text-xs min-w-[560px]"><thead><tr class="text-slate-500"><th class="p-3 text-left">Sede</th><th>Visite</th><th class="text-right">Incassato</th><th class="text-right">Da incassare</th><th class="p-3 text-right">Totale</th></tr></thead><tbody>${rows || '<tr><td colspan="5" class="p-8 text-center text-slate-400">Nessun compenso registrato nel mese.</td></tr>'}</tbody></table>`;
         }
-        function lastVisitForPatient(patient) {
-            return appState.events.filter(ev => ev.extendedProps?.patientId === patient.id || (ev.title||'').toLowerCase().includes((patient.name||'').toLowerCase())).map(ev => new Date(ev.start)).filter(d => !isNaN(d) && d <= new Date()).sort((a,b)=>b-a)[0] || null;
+        function getPatientAppointmentStatus(patient) {
+            const now = new Date();
+            const normalizedName = (patient.name || '').trim().toLowerCase();
+            const matchingEvents = (appState.events || []).filter(ev => {
+                if (ev.extendedProps?.paymentStatus === 'cancelled') return false;
+                const explicitlyAssigned = ev.extendedProps?.patientId === patient.id;
+                const legacyTitleMatch = !ev.extendedProps?.patientId && normalizedName && (ev.title || '').toLowerCase().includes(normalizedName);
+                return explicitlyAssigned || legacyTitleMatch;
+            }).map(ev => ({ event: ev, date: new Date(ev.start) })).filter(item => !Number.isNaN(item.date.getTime()));
+            const pastAppointments = matchingEvents.filter(item => item.date < now).sort((a,b) => b.date-a.date);
+            const futureAppointments = matchingEvents.filter(item => item.date >= now).sort((a,b) => a.date-b.date);
+            return { lastVisit: pastAppointments[0] || null, nextAppointment: futureAppointments[0] || null };
         }
         window.openRecallModal = function() { renderRecallList(); document.getElementById('recall-modal').classList.remove('hidden'); }
         window.closeRecallModal = function() { document.getElementById('recall-modal').classList.add('hidden'); }
         window.renderRecallList = function() {
             const threshold = Number(document.getElementById('recall-threshold').value || 120), now = new Date();
-            const items = appState.patients.map(p => { const last=lastVisitForPatient(p); const days=last ? Math.floor((now-last)/86400000) : Infinity; return {p,last,days}; }).filter(x => x.days >= Math.min(threshold, Number(x.p.recallDays || threshold))).sort((a,b)=>b.days-a.days);
-            document.getElementById('recall-list').innerHTML = items.map(({p,last,days}) => { const label=last ? `${last.toLocaleDateString('it-IT')} • ${days} giorni fa` : 'Nessuna visita registrata'; const phone=(p.phone||'').replace(/[^0-9+]/g,''); const mail=p.email||''; return `<div class="p-4 border border-slate-200 rounded-2xl bg-white flex flex-col sm:flex-row sm:items-center justify-between gap-3"><div><div class="flex items-center gap-2"><strong class="font-editorial text-lg italic">${p.name}</strong><span class="px-2 py-1 rounded-full text-[10px] font-bold ${days===Infinity||days>180?'bg-rose-100 text-rose-800':'bg-amber-100 text-amber-800'}">${label}</span></div><p class="text-xs text-slate-500 mt-1">Richiamo previsto: ${p.recallDays || 120} giorni</p></div><div class="flex gap-2">${phone?`<a target="_blank" href="https://wa.me/${phone.replace('+','')}?text=${encodeURIComponent('Buongiorno '+p.name+', la contatto dallo studio per sapere come sta e valutare un eventuale nuovo appuntamento.')}" class="px-3 py-2 bg-emerald-600 text-white rounded-xl text-xs font-bold"><i class="fa-brands fa-whatsapp mr-1"></i>WhatsApp</a>`:''}${mail?`<a href="mailto:${mail}?subject=${encodeURIComponent('Richiamo dallo studio')}&body=${encodeURIComponent('Buongiorno '+p.name+',\n\nla contatto dallo studio per sapere come sta e valutare un eventuale nuovo appuntamento.')}" class="px-3 py-2 bg-water-600 text-white rounded-xl text-xs font-bold"><i class="fa-solid fa-envelope mr-1"></i>Email</a>`:''}</div></div>`; }).join('') || '<p class="text-center text-slate-400 py-10">Nessun paziente da richiamare con il filtro scelto.</p>';
+            const items = appState.patients.map(p => {
+                const status = getPatientAppointmentStatus(p);
+                if (status.nextAppointment) return null;
+                const last = status.lastVisit?.date || null;
+                const days = last ? Math.floor((now-last)/86400000) : Infinity;
+                return {p,last,days,effectiveThreshold:Math.min(threshold,Number(p.recallDays||threshold))};
+            }).filter(x => x && x.days >= x.effectiveThreshold).sort((a,b)=>b.days-a.days);
+            document.getElementById('recall-list').innerHTML = items.map(({p,last,days}) => {
+                const label=last ? `${last.toLocaleDateString('it-IT')} • ${days} giorni fa` : 'Nessuna visita assegnata';
+                const phone=(p.phone||'').replace(/[^0-9+]/g,''); const mail=p.email||'';
+                return `<div class="p-4 border border-slate-200 rounded-2xl bg-white flex flex-col sm:flex-row sm:items-center justify-between gap-3"><div><div class="flex items-center gap-2"><strong class="font-editorial text-lg italic">${p.name}</strong><span class="px-2 py-1 rounded-full text-[10px] font-bold ${days===Infinity||days>180?'bg-rose-100 text-rose-800':'bg-amber-100 text-amber-800'}">${label}</span></div><p class="text-xs text-slate-500 mt-1">Richiamo previsto: ${p.recallDays || 120} giorni</p></div><div class="flex gap-2">${phone?`<a target="_blank" href="https://wa.me/${phone.replace('+','')}?text=${encodeURIComponent('Buongiorno '+p.name+', la contatto dallo studio per sapere come sta e valutare un eventuale nuovo appuntamento.')}" class="px-3 py-2 bg-emerald-600 text-white rounded-xl text-xs font-bold"><i class="fa-brands fa-whatsapp mr-1"></i>WhatsApp</a>`:''}${mail?`<a href="mailto:${mail}?subject=${encodeURIComponent('Richiamo dallo studio')}&body=${encodeURIComponent('Buongiorno '+p.name+',\n\nla contatto dallo studio per sapere come sta e valutare un eventuale nuovo appuntamento.')}" class="px-3 py-2 bg-water-600 text-white rounded-xl text-xs font-bold"><i class="fa-solid fa-envelope mr-1"></i>Email</a>`:''}</div></div>`;
+            }).join('') || '<p class="text-center text-slate-400 py-10">Nessun paziente da richiamare con il filtro scelto.</p>';
         }
 
         function checkCalendarConflicts() {
