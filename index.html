@@ -368,11 +368,6 @@
                     <h4 class="font-editorial font-bold text-xs text-slate-500 uppercase tracking-wide italic">Esito per Poliambulatorio</h4>
                     <div id="changelog-centers-summary" class="space-y-2"></div>
                 </div>
-
-                <div class="space-y-3">
-                    <h4 class="font-editorial font-bold text-xs text-slate-500 uppercase tracking-wide italic">Variazioni Rilevate</h4>
-                    <div id="changelog-entries-container" class="space-y-2"></div>
-                </div>
             </div>
 
             <div class="px-5 sm:px-6 py-4 border-t border-slate-100 bg-slate-50 flex justify-end">
@@ -390,6 +385,7 @@
             </div>
             <form id="studio-event-form" class="p-5 sm:p-6 space-y-4 overflow-y-auto" onsubmit="handleStudioEventSubmit(event)">
                 <input type="hidden" id="studio-edit-event-id">
+                <input type="hidden" id="studio-event-is-external" value="false">
                 
                 <div class="space-y-1">
                     <label class="text-[11px] font-bold text-slate-600">Associa Paziente in Anagrafica (Opzionale)</label>
@@ -424,8 +420,16 @@
                 </div>
 
                 <div class="space-y-1">
-                    <label class="text-[11px] font-bold text-slate-600">Note Cliniche / Trattamento</label>
+                    <label class="text-[11px] font-bold text-slate-600">Note Appuntamento / Trattamento</label>
                     <textarea id="studio-notes" placeholder="Note cliniche..." class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-xs h-20 resize-none"></textarea>
+                </div>
+
+                <!-- Dedicated live synced patient notes frame -->
+                <div id="live-patient-notes-container" class="space-y-1 hidden bg-amber-50/60 p-3.5 rounded-2xl border border-amber-200">
+                    <label class="text-[11px] font-bold text-amber-900 flex items-center justify-between">
+                        <span><i class="fa-solid fa-user-pen mr-1"></i> Note Anamnestiche Paziente (Sincronizzate in tempo reale)</span>
+                    </label>
+                    <textarea id="live-patient-notes" oninput="onLivePatientNotesChange()" placeholder="Modifica note anamnestiche del paziente..." class="w-full px-3 py-2.5 bg-white border border-amber-200 rounded-xl text-xs h-20 resize-none focus:outline-none focus:ring-2 focus:ring-amber-500"></textarea>
                 </div>
 
                 <div class="flex items-center gap-2 pt-2">
@@ -446,7 +450,7 @@
                     <button type="button" onclick="closePatientsModal()" class="text-slate-400 hover:text-slate-600 w-8 h-8 rounded-full flex items-center justify-center"><i class="fa-solid fa-xmark"></i></button>
                 </div>
             </div>
-            <div class="p-4 sm:p-6 overflow-y-auto space-y-4 flex-1 space-y-4">
+            <div class="p-4 sm:p-6 overflow-y-auto space-y-4 flex-1">
                 <div class="relative">
                     <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400"><i class="fa-solid fa-magnifying-glass text-xs"></i></span>
                     <input type="text" id="patient-search-input" oninput="filterPatientsList()" placeholder="Cerca paziente per nome, telefono o email..." class="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-2xl text-xs focus:outline-none focus:ring-2 focus:ring-amber-500">
@@ -758,7 +762,6 @@
                     await signOut(auth);
                     appState.isLoggedIn = false;
                     showPublicView();
-                    showToast("Indirizzo email non autorizzato.");
                 }
             });
         } catch (e) {
@@ -1071,13 +1074,25 @@
             const form = document.getElementById('studio-event-form');
             form.reset();
             document.getElementById('studio-edit-event-id').value = '';
+            document.getElementById('studio-event-is-external').value = 'false';
             document.getElementById('studio-delete-btn').classList.add('hidden');
             document.getElementById('studio-modal-title').textContent = 'Nuovo Appuntamento Studio';
             
+            // Enable all fields by default
+            document.getElementById('studio-title').disabled = false;
+            document.getElementById('studio-date').disabled = false;
+            document.getElementById('studio-time-start').disabled = false;
+            document.getElementById('studio-time-end').disabled = false;
+            document.getElementById('studio-title').classList.remove('bg-slate-200', 'text-slate-500');
+            document.getElementById('studio-date').classList.remove('bg-slate-200', 'text-slate-500');
+            document.getElementById('studio-time-start').classList.remove('bg-slate-200', 'text-slate-500');
+            document.getElementById('studio-time-end').classList.remove('bg-slate-200', 'text-slate-500');
+
             const today = new Date().toISOString().split('T')[0];
             document.getElementById('studio-date').value = today;
             document.getElementById('studio-time-start').value = '09:00';
             onStartTimeChange();
+            document.getElementById('live-patient-notes-container').classList.add('hidden');
 
             if (editEv) {
                 document.getElementById('studio-modal-title').textContent = 'Modifica / Gestisci Appuntamento';
@@ -1096,7 +1111,24 @@
                 document.getElementById('studio-notes').value = editEv.extendedProps?.notes || '';
                 if (editEv.extendedProps?.patientId) {
                     document.getElementById('studio-patient-select').value = editEv.extendedProps.patientId;
+                    showLivePatientNotes(editEv.extendedProps.patientId);
                 }
+
+                // Check if external iCal event
+                if (editEv.id.startsWith('ical_')) {
+                    document.getElementById('studio-event-is-external').value = 'true';
+                    document.getElementById('studio-modal-title').textContent = 'Appuntamento Poliambulatorio (Esterno)';
+                    // Lock core fields to read-only as requested
+                    document.getElementById('studio-title').disabled = true;
+                    document.getElementById('studio-date').disabled = true;
+                    document.getElementById('studio-time-start').disabled = true;
+                    document.getElementById('studio-time-end').disabled = true;
+                    document.getElementById('studio-title').classList.add('bg-slate-200', 'text-slate-500');
+                    document.getElementById('studio-date').classList.add('bg-slate-200', 'text-slate-500');
+                    document.getElementById('studio-time-start').classList.add('bg-slate-200', 'text-slate-500');
+                    document.getElementById('studio-time-end').classList.add('bg-slate-200', 'text-slate-500');
+                }
+
                 document.getElementById('studio-delete-btn').classList.remove('hidden');
             }
 
@@ -1107,12 +1139,48 @@
 
         window.onPatientSelectChange = function() {
             const selId = document.getElementById('studio-patient-select').value;
-            if (!selId) return;
+            const isExternal = document.getElementById('studio-event-is-external').value === 'true';
+            
+            if (!selId) {
+                document.getElementById('live-patient-notes-container').classList.add('hidden');
+                return;
+            }
+
             const pat = appState.patients.find(p => p.id === selId);
             if (pat) {
-                document.getElementById('studio-title').value = `Visita / Trattamento - ${pat.name}`;
-                if (pat.phone || pat.email) {
-                    document.getElementById('studio-notes').value = `Contatti: ${pat.phone || ''} ${pat.email || ''}\nNote: ${pat.notes || ''}`;
+                // If it's a studio appointment, auto update title and notes if empty
+                if (!isExternal) {
+                    document.getElementById('studio-title').value = `Visita / Trattamento - ${pat.name}`;
+                    if (pat.phone || pat.email) {
+                        document.getElementById('studio-notes').value = `Contatti: ${pat.phone || ''} ${pat.email || ''}\nNote: ${pat.notes || ''}`;
+                    }
+                }
+                showLivePatientNotes(pat.id);
+            }
+        }
+
+        function showLivePatientNotes(patientId) {
+            const pat = appState.patients.find(p => p.id === patientId);
+            const container = document.getElementById('live-patient-notes-container');
+            const textarea = document.getElementById('live-patient-notes');
+            if (pat && container && textarea) {
+                textarea.value = pat.notes || '';
+                container.classList.remove('hidden');
+            } else if (container) {
+                container.classList.add('hidden');
+            }
+        }
+
+        window.onLivePatientNotesChange = function() {
+            const selId = document.getElementById('studio-patient-select').value;
+            const textareaVal = document.getElementById('live-patient-notes').value;
+            if (!selId) return;
+
+            const pat = appState.patients.find(p => p.id === selId);
+            if (pat) {
+                pat.notes = textareaVal;
+                if (db && userId) {
+                    setDoc(doc(db, 'artifacts', appId, 'users', userId, 'patients_list', selId), pat).catch(()=>{});
                 }
             }
         }
@@ -1120,6 +1188,7 @@
         window.handleStudioEventSubmit = async function(e) {
             e.preventDefault();
             const id = document.getElementById('studio-edit-event-id').value || 'evt_' + Date.now();
+            const isExternal = document.getElementById('studio-event-is-external').value === 'true';
             const title = document.getElementById('studio-title').value.trim();
             const date = document.getElementById('studio-date').value;
             const startH = document.getElementById('studio-time-start').value;
@@ -1130,16 +1199,31 @@
             const start = `${date}T${startH}:00`;
             const end = `${date}T${endH}:00`;
 
-            const newEv = { 
-                id, 
-                title, 
-                start, 
-                end, 
-                backgroundColor: '#3f5e4e',
-                borderColor: '#3f5e4e',
-                textColor: '#ffffff',
-                extendedProps: { notes, centerName: 'Studio Privato', patientId } 
-            };
+            let existingEv = appState.events.find(ev => ev.id === id);
+
+            let newEv;
+            if (isExternal && existingEv) {
+                // Keep external event properties intact, only update patientId and notes
+                newEv = {
+                    ...existingEv,
+                    extendedProps: {
+                        ...existingEv.extendedProps,
+                        patientId: patientId || null,
+                        notes: notes
+                    }
+                };
+            } else {
+                newEv = { 
+                    id, 
+                    title, 
+                    start, 
+                    end, 
+                    backgroundColor: '#3f5e4e',
+                    borderColor: '#3f5e4e',
+                    textColor: '#ffffff',
+                    extendedProps: { notes, centerName: 'Studio Privato', patientId: patientId || null } 
+                };
+            }
 
             const idx = appState.events.findIndex(ev => ev.id === id);
             if (idx >= 0) appState.events[idx] = newEv;
@@ -1582,7 +1666,7 @@
             });
         }
 
-        // --- iCal Multi-Center Sync (Isolated & Robust with Smart Patient Matching) ---
+        // --- iCal Multi-Center Sync (Smart Matching & Event Preservation) ---
         window.triggerIcalSync = async function() {
             openIcalChangelogModal({ status: 'loading', centersReport: [], added: [], modified: [], deleted: [] });
             
@@ -1646,8 +1730,6 @@
                                 activeIcalEventIds.add(eventId);
 
                                 const eventTitleClean = currentEvent.summary || 'Appuntamento';
-                                const formattedTitle = `${eventTitleClean} (${center.name})`;
-                                
                                 const parsedStart = parseIcalDateTime(currentEvent.start);
                                 let parsedEnd = currentEvent.end ? parseIcalDateTime(currentEvent.end) : null;
                                 
@@ -1655,31 +1737,37 @@
                                     parsedEnd = new Date(new Date(parsedStart).getTime() + 3600000).toISOString();
                                 }
 
-                                // Smart Patient Matching
-                                let matchedPatientId = null;
-                                for (let p of appState.patients) {
-                                    if (eventTitleClean.toLowerCase().includes(p.name.toLowerCase())) {
-                                        matchedPatientId = p.id;
-                                        break;
+                                // Check if event already exists to preserve patient association and notes
+                                let existingEv = oldEventsMap.get(eventId);
+                                let matchedPatientId = existingEv?.extendedProps?.patientId || null;
+                                let customNotes = existingEv?.extendedProps?.notes || currentEvent.description || 'Sincronizzato da iCal';
+
+                                // Smart Patient Matching if not already associated
+                                if (!matchedPatientId) {
+                                    for (let p of appState.patients) {
+                                        if (eventTitleClean.toLowerCase().includes(p.name.toLowerCase())) {
+                                            matchedPatientId = p.id;
+                                            break;
+                                        }
                                     }
                                 }
 
                                 const parsedEvent = {
                                     id: eventId,
-                                    title: formattedTitle,
+                                    title: eventTitleClean,
                                     start: parsedStart,
                                     end: parsedEnd,
                                     backgroundColor: center.color,
                                     borderColor: center.color,
                                     textColor: '#ffffff',
-                                    extendedProps: { centerId: center.id, centerName: center.name, notes: currentEvent.description || 'Sincronizzato da iCal', patientId: matchedPatientId }
+                                    extendedProps: { centerId: center.id, centerName: center.name, notes: customNotes, patientId: matchedPatientId }
                                 };
 
                                 if (!oldEventsMap.has(eventId)) {
                                     addedEvents.push({ centerName: center.name, title: eventTitleClean, date: formatDateNice(parsedStart) });
                                 } else {
                                     const oldEv = oldEventsMap.get(eventId);
-                                    if (oldEv.title !== formattedTitle || oldEv.start !== parsedStart) {
+                                    if (oldEv.title !== eventTitleClean || oldEv.start !== parsedStart) {
                                         modifiedEvents.push({ centerName: center.name, title: eventTitleClean, date: formatDateNice(parsedStart) });
                                     }
                                 }
@@ -1789,7 +1877,6 @@
             const statusTitle = document.getElementById('sync-status-title');
             const progressText = document.getElementById('sync-progress-text');
             const centersSummary = document.getElementById('changelog-centers-summary');
-            const entriesContainer = document.getElementById('changelog-entries-container');
 
             if (data.status === 'loading') {
                 banner.className = 'p-4 bg-amber-50 border border-amber-200 rounded-2xl flex items-center gap-3 shadow-xs';
@@ -1817,41 +1904,6 @@
             } else {
                 centersSummary.innerHTML = `<div class="p-3 bg-slate-50 text-slate-400 text-xs italic rounded-xl">Nessun poliambulatorio con iCal associato.</div>`;
             }
-
-            let htmlVar = '';
-            const totalVars = (data.added?.length || 0) + (data.modified?.length || 0) + (data.deleted?.length || 0);
-            if (totalVars === 0) {
-                htmlVar = `<div class="p-3 bg-slate-50 rounded-xl text-center text-xs text-slate-500 italic">Nessuna variazione o modifica rilevata rispetto all'ultima sincronizzazione.</div>`;
-            } else {
-                if (data.added?.length > 0) {
-                    htmlVar += `<div class="text-[11px] font-bold text-nature-700 uppercase mb-1">Aggiunti (${data.added.length})</div>`;
-                    htmlVar += data.added.map(item => `
-                        <div class="p-2.5 bg-nature-50 border border-nature-200 rounded-2xl flex items-center justify-between text-xs mb-1.5">
-                            <div><strong class="text-slate-900">${item.title}</strong> <span class="text-nature-800 font-semibold bg-white px-2 py-0.5 rounded-md border border-nature-100 ml-1">${item.centerName}</span></div>
-                            <span class="text-[10px] text-nature-700 font-medium">${item.date}</span>
-                        </div>
-                    `).join('');
-                }
-                if (data.modified?.length > 0) {
-                    htmlVar += `<div class="text-[11px] font-bold text-water-700 uppercase mb-1 mt-2">Modificati (${data.modified.length})</div>`;
-                    htmlVar += data.modified.map(item => `
-                        <div class="p-2.5 bg-water-50 border border-water-200 rounded-2xl flex items-center justify-between text-xs mb-1.5">
-                            <div><strong class="text-slate-900">${item.title}</strong> <span class="text-water-800 font-semibold bg-white px-2 py-0.5 rounded-md border border-water-100 ml-1">${item.centerName}</span></div>
-                            <span class="text-[10px] text-water-700 font-medium">${item.date}</span>
-                        </div>
-                    `).join('');
-                }
-                if (data.deleted?.length > 0) {
-                    htmlVar += `<div class="text-[11px] font-bold text-rose-700 uppercase mb-1 mt-2">Cancellati (${data.deleted.length})</div>`;
-                    htmlVar += data.deleted.map(item => `
-                        <div class="p-2.5 bg-rose-50 border border-rose-200 rounded-2xl flex items-center justify-between text-xs mb-1.5">
-                            <div><strong class="text-slate-900">${item.title}</strong> <span class="text-rose-800 font-semibold bg-white px-2 py-0.5 rounded-md border border-rose-100 ml-1">${item.centerName}</span></div>
-                            <span class="text-[10px] text-rose-700 font-medium">${item.date}</span>
-                        </div>
-                    `).join('');
-                }
-            }
-            entriesContainer.innerHTML = htmlVar;
         }
 
         window.closeIcalChangelogModal = function() {
