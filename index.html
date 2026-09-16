@@ -247,11 +247,10 @@
 
                     <a href="mailto:silviachine@gmail.com" class="bg-water-50/80 p-6 sm:p-8 rounded-3xl border border-water-100 flex flex-col items-center text-center space-y-3 shadow-xs hover:shadow-md transition group">
                         <div class="w-14 h-14 rounded-2xl bg-water-600 text-white flex items-center justify-center text-xl shadow-md group-hover:scale-105 transition">
-                            <i class="fa-solid fa-envelope"></i>
+                            <h4 class="font-editorial text-xl font-bold text-slate-900 italic">Email</h4>
+                            <p class="text-xs text-slate-600 font-light leading-relaxed font-editorial italic text-sm">Scrivi comodamente per prendere un appuntamento o per richieste.</p>
+                            <span class="text-xs font-bold text-water-700 underline font-editorial italic text-lg">silviachine@gmail.com</span>
                         </div>
-                        <h4 class="font-editorial text-xl font-bold text-slate-900 italic">Email</h4>
-                        <p class="text-xs text-slate-600 font-light leading-relaxed font-editorial italic text-sm">Scrivi comodamente per prendere un appuntamento o per richieste.</p>
-                        <span class="text-xs font-bold text-water-700 underline font-editorial italic text-lg">silviachine@gmail.com</span>
                     </a>
                 </div>
             </section>
@@ -403,7 +402,7 @@
                     </div>
                 </div>
 
-                <!-- Patient notes container (live synced) -->
+                <!-- Patient notes container -->
                 <div id="live-patient-notes-container" class="space-y-1 hidden bg-amber-50/60 p-3.5 rounded-2xl border border-amber-200">
                     <label class="text-[11px] font-bold text-amber-900 flex items-center justify-between">
                         <span><i class="fa-solid fa-user-pen mr-1"></i> Note Anamnestiche Paziente</span>
@@ -494,7 +493,7 @@
         </div>
     </div>
 
-    <!-- Sync Progress & Detailed Report Modal with instant live steps -->
+    <!-- Sync Progress & Detailed Report Modal -->
     <div id="sync-report-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-md hidden z-[80] flex items-center justify-center p-4">
         <div class="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-xl overflow-hidden flex flex-col border border-water-100">
             <div class="px-6 py-4 border-b border-water-100 flex items-center justify-between bg-water-50/50">
@@ -759,7 +758,7 @@
                     showPrivateView();
                     await loadAllDataFromFirestore();
                     setTimeout(() => {
-                        triggerIcalSync(true); // Automatic sync immediately after login with visible progress modal
+                        triggerIcalSync(true); // Automatic sync immediately after login with progress modal
                     }, 500);
                 } else if (user && user.email) {
                     await signOut(auth);
@@ -1696,7 +1695,7 @@
             let addedCount = 0;
             let modifiedCount = 0;
             let deletedCount = 0;
-            let reportDetails = []; // Structured detailed log items { type, title, centerName, dateStr, timeStr }
+            let reportDetails = [];
 
             let activeIcalEventIds = new Set();
             let oldEventsMap = new Map(appState.events.filter(e => e.id.startsWith('ical_')).map(ev => [ev.id, ev]));
@@ -1879,12 +1878,12 @@
                                     let badgeColor = item.type === 'added' ? 'bg-emerald-100 text-emerald-800' : (item.type === 'modified' ? 'bg-amber-100 text-amber-800' : 'bg-rose-100 text-rose-800');
                                     let labelText = item.type === 'added' ? 'Aggiunto' : (item.type === 'modified' ? 'Modificato' : 'Rimosso');
                                     return `
-                                        <div class="p-3 bg-white border border-slate-200 rounded-xl text-xs space-y-1 shadow-2xs">
+                                        <div class="p-3 bg-white border border-slate-200 rounded-xl text-xs space-y-1.5 shadow-2xs">
                                             <div class="flex items-center justify-between">
-                                                <span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${badgeColor}">${labelText}</span>
-                                                <span class="text-[11px] font-bold text-slate-700 bg-nature-50 px-2 py-0.5 rounded-md"><i class="fa-regular fa-calendar text-nature-600 mr-1"></i> ${item.dateStr} • ${item.timeStr}</span>
+                                                <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold ${badgeColor}">${labelText}</span>
+                                                <span class="text-[11px] font-bold text-slate-700 bg-nature-50 px-2 py-0.5 rounded-md"><i class="fa-regular fa-calendar text-nature-600 mr-1"></i> ${item.dateStr} • ore ${item.timeStr}</span>
                                             </div>
-                                            <p class="font-editorial text-sm font-bold text-slate-900 italic pt-0.5">${item.title}</p>
+                                            <p class="font-editorial text-sm font-bold text-slate-900 italic">${item.title}</p>
                                             <p class="text-[11px] text-nature-700 font-medium"><i class="fa-solid fa-hospital text-nature-600 mr-1"></i> ${item.centerName}</p>
                                         </div>
                                     `;
@@ -2002,7 +2001,6 @@
                         const center = appState.centers.find(c => c.id === ev.extendedProps?.centerId);
                         let color = center ? center.color : (ev.backgroundColor || '#3f5e4e');
                         
-                        // Check if this event overlaps with any other event
                         let hasConflict = false;
                         let start1 = new Date(ev.start).getTime();
                         let end1 = new Date(ev.end || ev.start).getTime();
@@ -2031,7 +2029,6 @@
                     successCallback(mappedEvents);
                 },
                 eventClick: function(info) {
-                    // Strip conflict tag if present in title for modal editing
                     let cleanEv = {
                         ...info.event,
                         title: info.event.title.replace('⚠️ [CONFLITTO] ', '')
