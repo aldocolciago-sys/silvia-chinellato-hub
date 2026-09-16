@@ -2,7 +2,7 @@
 <html lang="it" class="h-full">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Silvia Chinellato | Osteopata & Idrocolonterapia</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
@@ -78,6 +78,124 @@
         }
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+
+        /* ===== MOBILE EXPERIENCE: aligned with desktop features ===== */
+        :root { --mobile-nav-h: 72px; }
+        button, a, input, select, textarea { -webkit-tap-highlight-color: transparent; }
+        button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible {
+            outline: 3px solid rgba(74,143,168,.45); outline-offset: 2px;
+        }
+        .mobile-only { display: none; }
+        #mobile-admin-nav, #mobile-admin-more { display: none; }
+
+        @media (max-width: 767px) {
+            html { scroll-padding-top: 116px; }
+            body { background-attachment: scroll; }
+            .mobile-only { display: flex; }
+
+            /* Public header: same destinations as desktop, optimized for touch */
+            #public-view > header { padding-top: env(safe-area-inset-top); }
+            #public-view > header > div:first-child { padding-top: .65rem; padding-bottom: .65rem; gap: .5rem; }
+            #public-view > header .w-11 { width: 2.75rem; height: 2.75rem; }
+            #public-view > header h1 { font-size: 1.2rem; }
+            #public-view > header .flex.items-center.gap-2 { gap: .35rem; }
+            #public-firebase-status { display: none; }
+            #public-view > header button[onclick="openLoginModal()"] { min-height: 44px; padding: .65rem .85rem; }
+            #public-view > header .md\:hidden { gap: .45rem; padding: .55rem .75rem; scroll-snap-type: x proximity; }
+            #public-view > header .md\:hidden a {
+                min-height: 40px; display: inline-flex; align-items: center; padding: .45rem .8rem;
+                border-radius: 999px; background: rgba(245,239,230,.8); scroll-snap-align: start;
+            }
+
+            /* Public content: stronger hierarchy, less "old mobile web" feeling */
+            #public-view main { padding: 1rem .75rem 2rem; gap: 0; }
+            #public-view main > section { margin-bottom: 1.25rem; }
+            #profilo-pubblica { padding: 1.25rem; border-radius: 2rem; gap: 1.1rem; }
+            #profilo-pubblica > div:nth-of-type(3) { width: min(68vw, 16rem); height: min(68vw, 16rem); }
+            #profilo-pubblica h2 { font-size: 2.35rem; }
+            #profilo-pubblica p { font-size: .92rem; }
+            #profilo-pubblica a { min-height: 48px; flex: 1 1 150px; justify-content: center; display: inline-flex; align-items: center; }
+            #filosofia-pubblica, #contatti-pubblica { padding: 1.25rem; border-radius: 2rem; }
+            #public-view h3 { font-size: 2rem; line-height: 1.05; }
+            #public-view p, #public-view li { font-size: .9rem; }
+            #public-view [id$="-grid"] > div { border-radius: 1.75rem; padding: 1.25rem; }
+            #public-view footer { margin-top: 1rem; padding-bottom: calc(2rem + env(safe-area-inset-bottom)); }
+
+            /* Private header: calm summary bar. Full controls move to bottom navigation. */
+            #private-view { padding-bottom: calc(var(--mobile-nav-h) + env(safe-area-inset-bottom)); }
+            #private-view > header { padding: calc(.55rem + env(safe-area-inset-top)) .75rem .55rem; flex-direction: row; align-items: center; }
+            #private-view > header > div:first-child { min-width: 0; }
+            #private-view > header > div:first-child h2 { font-size: 1rem; }
+            #private-view > header > div:first-child > div { min-width: 0; }
+            #logged-user-email-display { max-width: 48vw; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+            #firebase-status-indicator { display: none; }
+            #sync-ical-btn { display: none; }
+            #private-view > header > div:last-child { display: none; }
+            #header-centers-legend { padding: .45rem .75rem; }
+            #calendar-conflict-banner { align-items: center; padding: .6rem .75rem; }
+            #calendar-conflict-banner span { font-size: .72rem; line-height: 1.2; }
+            #calendar-conflict-banner button { min-height: 40px; }
+            #private-view > main { padding: .5rem; overflow: auto; }
+            #calendar { min-height: calc(100dvh - 220px); }
+
+            /* FullCalendar mobile-first list view */
+            .fc .fc-header-toolbar { display: grid; grid-template-columns: auto 1fr auto; gap: .4rem; align-items: center; }
+            .fc .fc-toolbar-chunk { display: flex; justify-content: center; }
+            .fc .fc-toolbar-title { font-size: 1rem !important; white-space: nowrap; }
+            .fc .fc-button { min-width: 42px; min-height: 42px; font-size: .72rem !important; padding: .45rem .55rem !important; }
+            .fc .fc-list { border-radius: 1rem; overflow: hidden; background: rgba(255,255,255,.92); }
+            .fc .fc-list-day-cushion { padding: .7rem .85rem; }
+            .fc .fc-list-event td { padding-top: .8rem; padding-bottom: .8rem; }
+            .fc .fc-list-event-title a { white-space: normal; font-size: .82rem; }
+            .fc .fc-list-event-time { font-size: .75rem; }
+
+            /* Mobile admin navigation: all PC functions remain reachable */
+            body.mobile-admin-active #mobile-admin-nav {
+                display: grid; grid-template-columns: repeat(5, 1fr); position: fixed; z-index: 55;
+                left: 0; right: 0; bottom: 0; min-height: var(--mobile-nav-h);
+                padding: .45rem .35rem calc(.35rem + env(safe-area-inset-bottom));
+                background: rgba(255,255,255,.96); backdrop-filter: blur(18px);
+                border-top: 1px solid #eae0d2; box-shadow: 0 -8px 30px rgba(23,34,29,.12);
+            }
+            #mobile-admin-nav button {
+                min-height: 56px; border-radius: 1rem; display: flex; flex-direction: column;
+                align-items: center; justify-content: center; gap: .22rem; color: #3f5e4e;
+                font-size: .64rem; font-weight: 700;
+            }
+            #mobile-admin-nav button i { font-size: 1rem; }
+            #mobile-admin-nav .mobile-primary { background: #3f5e4e; color: white; transform: translateY(-8px); box-shadow: 0 8px 18px rgba(63,94,78,.28); }
+            #mobile-admin-more {
+                position: fixed; z-index: 70; inset: 0; padding: 1rem; align-items: flex-end;
+                background: rgba(15,23,42,.48); backdrop-filter: blur(7px);
+            }
+            #mobile-admin-more.open { display: flex; }
+            #mobile-admin-more-panel {
+                width: 100%; border-radius: 2rem 2rem 1rem 1rem; background: white; padding: 1rem;
+                padding-bottom: calc(1rem + env(safe-area-inset-bottom)); box-shadow: 0 20px 60px rgba(0,0,0,.28);
+            }
+            #mobile-admin-more-panel .mobile-menu-grid { display: grid; grid-template-columns: repeat(2,1fr); gap: .65rem; }
+            #mobile-admin-more-panel .mobile-menu-grid button {
+                min-height: 64px; padding: .7rem; border-radius: 1rem; background: #f8fafc;
+                border: 1px solid #e2e8f0; font-size: .75rem; font-weight: 700; color: #334155;
+                display: flex; align-items: center; gap: .65rem; text-align: left;
+            }
+            #mobile-admin-more-panel .mobile-menu-grid i { width: 1.5rem; text-align: center; color: #3f5e4e; font-size: 1rem; }
+
+            /* Modals become app-like full-screen sheets */
+            [id$="-modal"].fixed { padding: 0; align-items: flex-end; }
+            [id$="-modal"].fixed > div {
+                width: 100%; max-width: none; max-height: 94dvh; border-radius: 1.6rem 1.6rem 0 0;
+            }
+            [id$="-modal"].fixed form, [id$="-modal"].fixed > div > div { scrollbar-width: thin; }
+            [id$="-modal"] input, [id$="-modal"] select, [id$="-modal"] textarea { font-size: 16px !important; min-height: 46px; }
+            [id$="-modal"] button { min-height: 44px; }
+            #studio-event-form .grid-cols-2, #patient-form .grid-cols-2 { grid-template-columns: 1fr; }
+            #patient-contact-info-container { grid-template-columns: 1fr; }
+            #patients-alphabetical-list > div { padding: 1rem; }
+            #patients-alphabetical-list > div > div:first-child > div { align-items: flex-start; flex-wrap: wrap; }
+            #toast { left: .75rem; right: .75rem; bottom: calc(var(--mobile-nav-h) + .75rem + env(safe-area-inset-bottom)); justify-content: center; }
+        }
     </style>
 </head>
 <body class="h-full text-slate-800 flex flex-col selection:bg-nature-200 selection:text-nature-900 scroll-smooth">
@@ -327,6 +445,29 @@
         </main>
     </div>
 
+    <!-- MOBILE ADMIN NAVIGATION: mirrors every desktop admin function -->
+    <nav id="mobile-admin-nav" aria-label="Navigazione amministrazione mobile">
+        <button type="button" onclick="mobileCalendarToday()"><i class="fa-regular fa-calendar"></i><span>Agenda</span></button>
+        <button type="button" onclick="openPatientsModal()"><i class="fa-solid fa-user-group"></i><span>Pazienti</span></button>
+        <button type="button" class="mobile-primary" onclick="openStudioModal()"><i class="fa-solid fa-plus"></i><span>Appuntamento</span></button>
+        <button type="button" onclick="triggerIcalSync()"><i class="fa-solid fa-rotate"></i><span>Sincronizza</span></button>
+        <button type="button" onclick="toggleMobileAdminMore(true)"><i class="fa-solid fa-ellipsis"></i><span>Altro</span></button>
+    </nav>
+    <div id="mobile-admin-more" role="dialog" aria-modal="true" aria-labelledby="mobile-more-title" onclick="if(event.target===this) toggleMobileAdminMore(false)">
+        <div id="mobile-admin-more-panel">
+            <div class="flex items-center justify-between mb-3 px-1">
+                <h3 id="mobile-more-title" class="font-editorial text-xl font-bold italic text-slate-900">Gestione contenuti</h3>
+                <button type="button" onclick="toggleMobileAdminMore(false)" class="w-11 h-11 rounded-full bg-slate-100" aria-label="Chiudi"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="mobile-menu-grid">
+                <button type="button" onclick="mobileOpenAdmin(openCentersModal)"><i class="fa-solid fa-hospital"></i>Poliambulatori</button>
+                <button type="button" onclick="mobileOpenAdmin(openTreatmentsAdminModal)"><i class="fa-solid fa-hand-holding-medical"></i>Trattamenti</button>
+                <button type="button" onclick="mobileOpenAdmin(openNewsAdminModal)"><i class="fa-solid fa-bullhorn"></i>News e offerte</button>
+                <button type="button" onclick="mobileOpenAdmin(openPrepAdminModal)"><i class="fa-solid fa-book-medical"></i>Preparazione</button>
+                <button type="button" onclick="handleLogout()"><i class="fa-solid fa-right-from-bracket text-rose-600"></i>Esci</button>
+            </div>
+        </div>
+    </div>
     <div id="login-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-md hidden z-50 flex items-center justify-center p-4">
         <div class="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-sm overflow-hidden flex flex-col border border-nature-100">
             <div class="px-6 py-5 border-b border-slate-100 flex items-center justify-between bg-nature-50/50">
@@ -906,6 +1047,7 @@
             } catch (err) {}
         }
 
+        document.addEventListener('keydown', (e) => { if (e.key === 'Escape') toggleMobileAdminMore(false); });
         document.addEventListener('DOMContentLoaded', () => {
             loadPublicDataFromFirestore();
             if (!appState.isLoggedIn) showPublicView();
@@ -2185,8 +2327,11 @@
             const calendarEl = document.getElementById('calendar');
             if (!calendarEl) return;
             calendarInstance = new FullCalendar.Calendar(calendarEl, {
-                initialView: 'dayGridMonth',
-                headerToolbar: { left: 'prev,next today', center: 'title', right: 'dayGridMonth,timeGridWeek,timeGridDay' },
+                initialView: window.innerWidth < 768 ? 'listWeek' : 'dayGridMonth',
+                headerToolbar: window.innerWidth < 768
+                    ? { left: 'prev', center: 'title', right: 'next today' }
+                    : { left: 'prev,next today', center: 'title', right: 'dayGridMonth,timeGridWeek,timeGridDay' },
+                buttonText: { today: 'Oggi', month: 'Mese', week: 'Settimana', day: 'Giorno', list: 'Agenda' },
                 locale: 'it',
                 events: function(fetchInfo, successCallback) {
                     const events = appState.events;
@@ -2237,12 +2382,45 @@
                     }
                 },
                 editable: false,
-                height: '100%'
+                height: window.innerWidth < 768 ? 'auto' : '100%',
+                stickyHeaderDates: true,
+                nowIndicator: true
             });
             calendarInstance.render();
+            let mobileMode = window.innerWidth < 768;
+            window.addEventListener('resize', () => {
+                if (!calendarInstance) return;
+                const nextMobileMode = window.innerWidth < 768;
+                if (nextMobileMode !== mobileMode) {
+                    mobileMode = nextMobileMode;
+                    calendarInstance.changeView(mobileMode ? 'listWeek' : 'dayGridMonth');
+                    calendarInstance.setOption('height', mobileMode ? 'auto' : '100%');
+                    calendarInstance.setOption('headerToolbar', mobileMode
+                        ? { left: 'prev', center: 'title', right: 'next today' }
+                        : { left: 'prev,next today', center: 'title', right: 'dayGridMonth,timeGridWeek,timeGridDay' });
+                }
+            }, { passive: true });
             checkCalendarConflicts();
         }
 
+
+        window.toggleMobileAdminMore = function(open) {
+            const menu = document.getElementById('mobile-admin-more');
+            if (!menu) return;
+            menu.classList.toggle('open', !!open);
+            document.body.style.overflow = open ? 'hidden' : '';
+        }
+        window.mobileOpenAdmin = function(openFunction) {
+            toggleMobileAdminMore(false);
+            if (typeof openFunction === 'function') openFunction();
+        }
+        window.mobileCalendarToday = function() {
+            if (!calendarInstance) return;
+            calendarInstance.today();
+            if (window.innerWidth < 768 && calendarInstance.view.type !== 'listWeek') {
+                calendarInstance.changeView('listWeek');
+            }
+        }
         window.showToast = function(message) {
             const toast = document.getElementById('toast');
             document.getElementById('toast-message').textContent = message;
