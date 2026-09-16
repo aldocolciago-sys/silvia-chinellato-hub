@@ -339,19 +339,14 @@
                     <span>Accedi con Google</span>
                 </button>
 
-                <button onclick="simulateAdminLogin()" class="w-full py-2.5 bg-nature-700 hover:bg-nature-800 text-white font-semibold rounded-2xl shadow-sm transition flex items-center justify-center gap-2 text-xs italic-title">
-                    <i class="fa-solid fa-user-gear"></i>
-                    <span>Simula Accesso Admin (Test)</span>
-                </button>
-
                 <div id="login-error-msg" class="text-xs text-rose-600 font-medium hidden"></div>
             </div>
         </div>
     </div>
 
-    <!-- iCal Changelog Advanced Modal (without debug logs frame) -->
+    <!-- iCal Changelog Modal (Without debug logs frame) -->
     <div id="ical-changelog-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-md hidden z-[60] flex items-center justify-center p-4">
-        <div class="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-2xl overflow-hidden flex flex-col max-h-[90vh]">
+        <div class="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-lg overflow-hidden flex flex-col max-h-[90vh]">
             <div class="px-5 sm:px-6 py-4 sm:py-5 border-b border-water-100 flex items-center justify-between bg-water-50/50">
                 <div class="flex items-center gap-3">
                     <div class="w-9 h-9 rounded-2xl bg-water-100 text-water-700 flex items-center justify-center"><i class="fa-solid fa-rotate text-sm"></i></div>
@@ -375,7 +370,7 @@
                 </div>
 
                 <div class="space-y-3">
-                    <h4 class="font-editorial font-bold text-xs text-slate-500 uppercase tracking-wide italic">Variazioni Rilevate (Aggiunti / Modificati / Cancellati)</h4>
+                    <h4 class="font-editorial font-bold text-xs text-slate-500 uppercase tracking-wide italic">Variazioni Rilevate</h4>
                     <div id="changelog-entries-container" class="space-y-2"></div>
                 </div>
             </div>
@@ -386,7 +381,7 @@
         </div>
     </div>
 
-    <!-- Studio / Appointment Modal with Flexible Hours (07:00 to 22:30) and Patient Linking -->
+    <!-- Studio / Appointment Modal with Flexible Hours (07:00 to 23:00) and Patient Linking -->
     <div id="studio-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-md hidden z-50 flex items-center justify-center p-4">
         <div class="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-md overflow-hidden flex flex-col border border-nature-100 max-h-[90vh]">
             <div class="px-5 sm:px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-nature-50/50">
@@ -495,7 +490,24 @@
         </div>
     </div>
 
-    <!-- Trattamenti Admin Modal with Icon Selector & Customization -->
+    <!-- Patient Appointments History Modal -->
+    <div id="patient-history-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-md hidden z-[65] flex items-center justify-center p-4">
+        <div class="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-2xl overflow-hidden flex flex-col max-h-[90vh]">
+            <div class="px-5 sm:px-6 py-4 border-b border-amber-100 flex items-center justify-between bg-amber-50/50">
+                <div class="flex items-center gap-2">
+                    <div class="w-8 h-8 rounded-full bg-amber-100 text-amber-800 flex items-center justify-center font-bold text-xs"><i class="fa-solid fa-calendar-days"></i></div>
+                    <h3 id="patient-history-title" class="font-editorial text-base sm:text-lg font-bold text-slate-900 italic">Storico Appuntamenti Paziente</h3>
+                </div>
+                <button type="button" onclick="closePatientHistoryModal()" class="text-slate-400 hover:text-slate-600 w-8 h-8 rounded-full flex items-center justify-center"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="p-4 sm:p-6 overflow-y-auto space-y-3 flex-1" id="patient-history-list"></div>
+            <div class="px-5 sm:px-6 py-4 border-t border-slate-100 bg-slate-50 flex justify-end">
+                <button type="button" onclick="closePatientHistoryModal()" class="px-6 py-2.5 bg-slate-900 text-white font-semibold rounded-2xl text-xs">Chiudi</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Trattamenti Admin Modal with Icon Selector -->
     <div id="treatments-admin-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-md hidden z-50 flex items-center justify-center p-4">
         <div class="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-2xl overflow-hidden flex flex-col max-h-[90vh]">
             <div class="px-5 sm:px-6 py-4 sm:py-5 border-b border-nature-100 flex items-center justify-between bg-nature-50/50">
@@ -735,6 +747,9 @@
                     userId = user.uid;
                     showPrivateView();
                     await loadAllDataFromFirestore();
+                    setTimeout(() => {
+                        triggerIcalSync();
+                    }, 500);
                 } else if (user && user.email) {
                     await signOut(auth);
                     appState.isLoggedIn = false;
@@ -984,6 +999,7 @@
                     showPrivateView();
                     await loadAllDataFromFirestore();
                     showToast('Accesso effettuato con successo!');
+                    setTimeout(() => triggerIcalSync(), 500);
                 } else {
                     await signOut(auth);
                     showToast(`Email ${email} non autorizzata.`);
@@ -993,15 +1009,6 @@
             }
         }
 
-        window.simulateAdminLogin = function() {
-            appState.isLoggedIn = true;
-            appState.currentUserEmail = 'aldo.colciago@gmail.com';
-            userId = auth?.currentUser?.uid || 'simulated-admin-uid';
-            closeLoginModal();
-            showPrivateView();
-            showToast('Accesso Admin simulato con successo!');
-        }
-
         window.handleLogout = async function() {
             if (auth) { try { await signOut(auth); } catch (e) {} }
             appState.isLoggedIn = false;
@@ -1009,16 +1016,15 @@
             showToast('Disconnesso');
         }
 
-        // --- Gestione Orari Flessibili e Intervalli di 30 minuti (07:00 - 22:30) ---
         function populateTimeSelects() {
             const startSel = document.getElementById('studio-time-start');
             const endSel = document.getElementById('studio-time-end');
             if (!startSel || !endSel) return;
 
             let optionsHtml = '<option value="">Seleziona ora...</option>';
-            for (let hour = 7; hour <= 22; hour++) {
+            for (let hour = 7; hour <= 23; hour++) {
                 for (let min of [0, 30]) {
-                    if (hour === 22 && min === 30) continue;
+                    if (hour === 23 && min === 30) continue;
                     let hStr = String(hour).padStart(2, '0');
                     let mStr = String(min).padStart(2, '0');
                     let timeVal = `${hStr}:${mStr}`;
@@ -1035,12 +1041,12 @@
             if (!startVal) return;
 
             let [h, m] = startVal.split(':').map(Number);
-            m += 60; // Default +1 ora
+            m += 60; // Default +1 hour
             if (m >= 60) {
                 h += Math.floor(m / 60);
                 m = m % 60;
             }
-            if (h > 23) { h = 23; m = 30; }
+            if (h > 23) { h = 23; m = 0; }
             let endVal = `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
             
             let found = false;
@@ -1158,7 +1164,7 @@
             });
         }
 
-        // --- Gestione Completa Pazienti in Anagrafica ---
+        // --- Patients Management & History ---
         window.openPatientsModal = function() {
             renderPatientsList();
             document.getElementById('patients-modal').classList.remove('hidden');
@@ -1218,6 +1224,42 @@
             });
         }
 
+        window.openPatientHistoryModal = function(patientId) {
+            const pat = appState.patients.find(p => p.id === patientId);
+            if (!pat) return;
+            document.getElementById('patient-history-title').textContent = `Storico: ${pat.name}`;
+            
+            const listEl = document.getElementById('patient-history-list');
+            const patientEvents = appState.events.filter(ev => ev.extendedProps?.patientId === patientId);
+
+            if (patientEvents.length === 0) {
+                listEl.innerHTML = `<p class="text-xs text-slate-400 italic text-center py-6">Nessun appuntamento registrato per questo paziente.</p>`;
+            } else {
+                let sortedEvts = [...patientEvents].sort((a,b) => new Date(b.start) - new Date(a.start));
+                listEl.innerHTML = sortedEvts.map(ev => {
+                    let d = new Date(ev.start);
+                    let dateStr = d.toLocaleDateString('it-IT', { day: 'numeric', month: 'long', year: 'numeric' });
+                    let timeStr = `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+                    let isPast = d < new Date();
+                    return `
+                        <div class="p-3.5 bg-slate-50 border border-slate-200 rounded-2xl flex items-center justify-between text-xs">
+                            <div class="space-y-1">
+                                <div class="flex items-center gap-2">
+                                    <strong class="font-editorial text-slate-900 text-sm italic">${ev.title}</strong>
+                                    <span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${isPast ? 'bg-slate-200 text-slate-700' : 'bg-emerald-100 text-emerald-800'}">${isPast ? 'Passato' : 'Futuro'}</span>
+                                </div>
+                                <p class="text-slate-500"><i class="fa-regular fa-calendar text-nature-600 mr-1"></i> ${dateStr} alle ${timeStr} • <span class="font-medium text-slate-700">${ev.extendedProps?.centerName || 'Studio Privato'}</span></p>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
+            document.getElementById('patient-history-modal').classList.remove('hidden');
+        }
+        window.closePatientHistoryModal = function() {
+            document.getElementById('patient-history-modal').classList.add('hidden');
+        }
+
         function renderPatientsList() {
             const container = document.getElementById('patients-alphabetical-list');
             if (!container) return;
@@ -1236,7 +1278,8 @@
                         </div>
                         ${p.notes ? `<p class="text-slate-600 font-light text-[11px] bg-slate-50 p-2 rounded-xl">${p.notes}</p>` : ''}
                     </div>
-                    <div class="flex items-center gap-1.5 self-end sm:self-center">
+                    <div class="flex items-center gap-1.5 self-end sm:self-center flex-wrap">
+                        <button onclick="openPatientHistoryModal('${p.id}')" class="px-3 py-1.5 bg-amber-50 text-amber-800 font-semibold rounded-xl hover:bg-amber-100 transition"><i class="fa-solid fa-calendar-days mr-1"></i> Storico</button>
                         <button onclick='openPatientEditModal(${JSON.stringify(p)})' class="px-3 py-1.5 bg-nature-50 text-nature-700 font-semibold rounded-xl hover:bg-nature-100 transition">Modifica</button>
                         <button onclick="confirmDeletePatient('${p.id}')" class="px-3 py-1.5 bg-rose-50 text-rose-600 font-semibold rounded-xl hover:bg-rose-100 transition">Elimina</button>
                     </div>
@@ -1323,7 +1366,7 @@
         }
 
         window.confirmDeleteTreatment = function(id) {
-            showConfirmDialog("Elimina Trattamento", "Sei sicura di voler eliminare questo trattamento dalla home page?", async () => {
+            showConfirmDialog("Elimina Trattamento", "Sei sicura di voler eliminare questo trattamento?", async () => {
                 appState.treatments = appState.treatments.filter(t => t.id !== id);
                 if (db) { try { await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'treatments_list', id)); } catch(e){} }
                 renderTreatmentsManagementList();
@@ -1524,7 +1567,7 @@
             });
         }
 
-        // --- Sincronizzazione iCal Isolata e Corretta per Poliambulatori Multipli ---
+        // --- iCal Multi-Center Sync (Isolated & Robust) ---
         window.triggerIcalSync = async function() {
             openIcalChangelogModal({ status: 'loading', centersReport: [], added: [], modified: [], deleted: [] });
             
@@ -1577,7 +1620,6 @@
                     
                     const lines = text.split(/\r\n|\n|\r/);
                     let currentEvent = null;
-                    let countAdded = 0;
 
                     for (let line of lines) {
                         if (line.startsWith('BEGIN:VEVENT')) {
@@ -1627,7 +1669,6 @@
                                 if (db && userId) {
                                     await setDoc(doc(db, 'artifacts', appId, 'users', userId, 'studio_events', eventId), parsedEvent).catch(()=>{});
                                 }
-                                countAdded++;
                             }
                             currentEvent = null;
                         } else if (currentEvent) {
@@ -1712,7 +1753,7 @@
             } catch(e) { return isoStr; }
         }
 
-        function openIcalChangelogModal(data) {
+        window.openIcalChangelogModal = function(data) {
             updateIcalChangelogModal(data);
             document.getElementById('ical-changelog-modal').classList.remove('hidden');
         }
@@ -1792,7 +1833,6 @@
             document.getElementById('ical-changelog-modal').classList.add('hidden');
         }
 
-        // --- Custom Confirmation Dialog Helper ---
         let confirmCallback = null;
         function showConfirmDialog(title, text, onOk) {
             document.getElementById('confirm-title').textContent = title;
