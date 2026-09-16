@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Silvia Chinellato | Osteopata & Idrocolonterapia</title>
+    <meta name="app-build" content="shared-data-v1">
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -194,6 +195,12 @@
             #patient-contact-info-container { grid-template-columns: 1fr; }
             #patients-alphabetical-list > div { padding: 1rem; }
             #patients-alphabetical-list > div > div:first-child > div { align-items: flex-start; flex-wrap: wrap; }
+            
+            body.modal-open #mobile-admin-nav { display:none !important; }
+
+            [id$="-modal"] form { padding-bottom: 120px !important; }
+            [id$="-modal"] .overflow-y-auto { padding-bottom: 120px !important; }
+
             #toast { left: .75rem; right: .75rem; bottom: calc(var(--mobile-nav-h) + .75rem + env(safe-area-inset-bottom)); justify-content: center; }
         }
     </style>
@@ -933,6 +940,62 @@
         let userId = null;
         let calendarInstance = null;
 
+        const SHARED_DATA_ROOT = ['artifacts', appId, 'shared', 'data'];
+        const sharedCollection = (name) => collection(db, ...SHARED_DATA_ROOT, name);
+        const sharedDocument = (name, id) => doc(db, ...SHARED_DATA_ROOT, name, id);
+        let sharedUnsubscribers = [];
+
+        function refreshPrivateUI() {
+            renderHeaderLegend();
+            renderCentersManagementList();
+            renderPatientsList();
+            populatePatientDropdown();
+            populateCenterDropdown();
+            if (calendarInstance) calendarInstance.refetchEvents();
+            checkCalendarConflicts();
+        }
+
+        async function migrateCurrentUserDataToShared() {
+            if (!db || !userId || !appState.isLoggedIn) return;
+            const mappings = [
+                ['centers_list', 'centers_list'],
+                ['studio_events', 'studio_events'],
+                ['patients_list', 'patients_list']
+            ];
+            for (const [legacyName, sharedName] of mappings) {
+                try {
+                    const oldSnap = await getDocs(collection(db, 'artifacts', appId, 'users', userId, legacyName));
+                    for (const oldDoc of oldSnap.docs) {
+                        const item = oldDoc.data();
+                        const itemId = item.id || oldDoc.id;
+                        await setDoc(sharedDocument(sharedName, itemId), item, { merge: true });
+                    }
+                } catch (err) {
+                    console.warn(`Migrazione ${legacyName} non completata:`, err);
+                }
+            }
+        }
+
+        function startSharedRealtimeSync() {
+            sharedUnsubscribers.forEach(unsubscribe => unsubscribe());
+            sharedUnsubscribers = [];
+            if (!db || !appState.isLoggedIn) return;
+
+            sharedUnsubscribers.push(onSnapshot(sharedCollection('centers_list'), snapshot => {
+                if (!snapshot.empty) appState.centers = snapshot.docs.map(d => d.data());
+                refreshPrivateUI();
+                renderPublicCenters();
+            }));
+            sharedUnsubscribers.push(onSnapshot(sharedCollection('studio_events'), snapshot => {
+                appState.events = snapshot.docs.map(d => d.data());
+                refreshPrivateUI();
+            }));
+            sharedUnsubscribers.push(onSnapshot(sharedCollection('patients_list'), snapshot => {
+                appState.patients = snapshot.docs.map(d => d.data());
+                refreshPrivateUI();
+            }));
+        }
+
         try {
             const app = initializeApp(firebaseConfig);
             db = getFirestore(app);
@@ -1020,34 +1083,31 @@
             if (!db || !userId) return;
             try {
                 await loadPublicDataFromFirestore();
-                const centersSnap = await getDocs(collection(db, 'artifacts', appId, 'users', userId, 'centers_list'));
-                if (!centersSnap.empty) {
-                    appState.centers = [];
-                    centersSnap.forEach(d => appState.centers.push(d.data()));
+                if (appState.isLoggedIn) {
+                    await migrateCurrentUserDataToShared();
+
+                    const centersSnap = await getDocs(sharedCollection('centers_list'));
+                    if (!centersSnap.empty) appState.centers = centersSnap.docs.map(d => d.data());
+
+                    const eventsSnap = await getDocs(sharedCollection('studio_events'));
+                    appState.events = eventsSnap.docs.map(d => d.data());
+
+                    const patientsSnap = await getDocs(sharedCollection('patients_list'));
+                    appState.patients = patientsSnap.docs.map(d => d.data());
+
+                    startSharedRealtimeSync();
                 }
-                const eventsSnap = await getDocs(collection(db, 'artifacts', appId, 'users', userId, 'studio_events'));
-                appState.events = [];
-                eventsSnap.forEach(d => appState.events.push(d.data()));
-
-                const patientsSnap = await getDocs(collection(db, 'artifacts', appId, 'users', userId, 'patients_list'));
-                appState.patients = [];
-                patientsSnap.forEach(d => appState.patients.push(d.data()));
-
                 renderAllPublicUI();
-                renderHeaderLegend();
                 renderNewsManagementList();
                 renderPrepManagementList();
-                renderCentersManagementList();
                 renderTreatmentsManagementList();
-                renderPatientsList();
-                populatePatientDropdown();
-                populateCenterDropdown();
-                if (calendarInstance) calendarInstance.refetchEvents();
-                checkCalendarConflicts();
-            } catch (err) {}
+                refreshPrivateUI();
+            } catch (err) {
+                console.error('Errore caricamento dati condivisi:', err);
+            }
         }
 
-        document.addEventListener('keydown', (e) => { if (e.key === 'Escape') toggleMobileAdminMore(false); });
+        document.addEventListener('keydown' , (e) => { if (e.key === 'Escape') toggleMobileAdminMore(false); });
         document.addEventListener('DOMContentLoaded', () => {
             loadPublicDataFromFirestore();
             if (!appState.isLoggedIn) showPublicView();
@@ -1248,6 +1308,8 @@
         window.handleLogout = async function() {
             if (auth) { try { await signOut(auth); } catch (e) {} }
             appState.isLoggedIn = false;
+            sharedUnsubscribers.forEach(unsubscribe => unsubscribe());
+            sharedUnsubscribers = [];
             showPublicView();
             showToast('Disconnesso');
         }
@@ -1391,7 +1453,7 @@
             appState.patients.push(newPat);
 
             if (db && userId) {
-                try { await setDoc(doc(db, 'artifacts', appId, 'users', userId, 'patients_list', id), newPat); } catch(e){}
+                try { await setDoc(sharedDocument('patients_list', id), newPat); } catch(e){}
             }
 
             populatePatientDropdown();
@@ -1455,7 +1517,7 @@
             if (pat) {
                 pat.notes = textareaVal;
                 if (db && userId) {
-                    setDoc(doc(db, 'artifacts', appId, 'users', userId, 'patients_list', selId), pat).catch(()=>{});
+                    setDoc(sharedDocument('patients_list', selId), pat).catch(()=>{});
                 }
             }
         }
@@ -1507,7 +1569,7 @@
             else appState.events.push(newEv);
 
             if (db && userId) {
-                try { await setDoc(doc(db, 'artifacts', appId, 'users', userId, 'studio_events', id), newEv); } catch(e){}
+                try { await setDoc(sharedDocument('studio_events', id), newEv); } catch(e){}
             }
 
             closeStudioModal();
@@ -1522,7 +1584,7 @@
             showConfirmDialog("Elimina Appuntamento", "Sei sicura di voler eliminare questo appuntamento?", async () => {
                 appState.events = appState.events.filter(ev => ev.id !== id);
                 if (db && userId) {
-                    try { await deleteDoc(doc(db, 'artifacts', appId, 'users', userId, 'studio_events', id)); } catch(e){}
+                    try { await deleteDoc(sharedDocument('studio_events', id)); } catch(e){}
                 }
                 closeStudioModal();
                 if (calendarInstance) calendarInstance.refetchEvents();
@@ -1569,7 +1631,7 @@
             else appState.patients.push(newPat);
 
             if (db && userId) {
-                try { await setDoc(doc(db, 'artifacts', appId, 'users', userId, 'patients_list', id), newPat); } catch(e){}
+                try { await setDoc(sharedDocument('patients_list', id), newPat); } catch(e){}
             }
 
             closePatientEditModal();
@@ -1582,7 +1644,7 @@
             showConfirmDialog("Elimina Paziente", "Sei sicura di voler eliminare questo paziente dall'anagrafica?", async () => {
                 appState.patients = appState.patients.filter(p => p.id !== id);
                 if (db && userId) {
-                    try { await deleteDoc(doc(db, 'artifacts', appId, 'users', userId, 'patients_list', id)); } catch(e){}
+                    try { await deleteDoc(sharedDocument('patients_list', id)); } catch(e){}
                 }
                 renderPatientsList();
                 populatePatientDropdown();
@@ -1790,7 +1852,7 @@
             if (db && userId) {
                 try {
                     await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'centers_list', id), newC);
-                    await setDoc(doc(db, 'artifacts', appId, 'users', userId, 'centers_list', id), newC);
+                    await setDoc(sharedDocument('centers_list', id), newC);
                 } catch(e) {}
             }
 
@@ -1881,7 +1943,7 @@
                 if (db && userId) {
                     try {
                         await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'centers_list', id));
-                        await deleteDoc(doc(db, 'artifacts', appId, 'users', userId, 'centers_list', id));
+                        await deleteDoc(sharedDocument('centers_list', id));
                     } catch(e){}
                 }
                 renderCentersManagementList();
@@ -2164,7 +2226,7 @@
                                 }
 
                                 if (db && userId) {
-                                    await setDoc(doc(db, 'artifacts', appId, 'users', userId, 'studio_events', eventId), parsedEvent).catch(()=>{});
+                                    await setDoc(sharedDocument('studio_events', eventId), parsedEvent).catch(()=>{});
                                 }
                             }
                             currentEvent = null;
@@ -2207,7 +2269,7 @@
                 }
                 appState.events = appState.events.filter(e => e.id !== remId);
                 if (db && userId) {
-                    try { await deleteDoc(doc(db, 'artifacts', appId, 'users', userId, 'studio_events', remId)); } catch(e){}
+                    try { await deleteDoc(sharedDocument('studio_events', remId)); } catch(e){}
                 }
             }
 
@@ -2423,11 +2485,18 @@
         }
         window.mobileCalendarToday = function() {
             if (!calendarInstance) return;
+            calendarInstance.changeView('listWeek');
             calendarInstance.today();
-            if (window.innerWidth < 768 && calendarInstance.view.type !== 'listWeek') {
-                calendarInstance.changeView('listWeek');
-            }
+            document.getElementById('calendar')?.scrollIntoView({behavior:'smooth', block:'start'});
+            toggleMobileAdminMore(false);
         }
+
+        function updateModalState() {
+            const anyOpen = Array.from(document.querySelectorAll('[id$="-modal"]')).some(m => !m.classList.contains('hidden'));
+            document.body.classList.toggle('modal-open', anyOpen);
+        }
+        document.addEventListener('click', () => setTimeout(updateModalState, 0));
+
         window.showToast = function(message) {
             const toast = document.getElementById('toast');
             document.getElementById('toast-message').textContent = message;
