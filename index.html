@@ -316,7 +316,6 @@
             </div>
         </header>
 
-        <!-- Legend and compact view on mobile -->
         <div class="bg-white/70 border-b border-nature-100 px-3 py-1 flex items-center gap-2 text-xs flex-shrink-0 overflow-x-auto no-scrollbar" id="header-centers-legend"></div>
 
         <main class="flex-1 bg-white/40 backdrop-blur-sm p-1.5 sm:p-3 overflow-hidden flex flex-col">
@@ -346,7 +345,7 @@
         </div>
     </div>
 
-    <!-- Modal Avanzato iCal Changelog con Log, Pallini ed Esito -->
+    <!-- iCal Changelog Advanced Modal -->
     <div id="ical-changelog-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-md hidden z-[60] flex items-center justify-center p-4">
         <div class="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-2xl overflow-hidden flex flex-col max-h-[90vh]">
             <div class="px-5 sm:px-6 py-4 sm:py-5 border-b border-water-100 flex items-center justify-between bg-water-50/50">
@@ -492,6 +491,7 @@
                     <input type="hidden" id="news-edit-id">
                     <input type="text" id="new-news-title" required placeholder="Titolo della news *" class="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-2xl text-xs focus:outline-none focus:ring-2 focus:ring-water-500">
                     <textarea id="new-news-content" required placeholder="Contenuto completo..." class="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-2xl text-xs focus:outline-none focus:ring-2 focus:ring-water-500 h-24 resize-none"></textarea>
+                    <input type="url" id="new-news-link" placeholder="Link di approfondimento opzionale (es. https://...)" class="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-2xl text-xs focus:outline-none focus:ring-2 focus:ring-water-500">
                     <div class="flex justify-end gap-2">
                         <button type="button" id="news-cancel-edit" onclick="resetNewsForm()" class="hidden px-4 py-2.5 bg-slate-200 text-slate-700 font-semibold rounded-2xl text-xs">Annulla</button>
                         <button type="submit" class="px-5 py-2.5 bg-water-600 text-white font-semibold rounded-2xl text-xs"><span id="news-submit-btn-text">Pubblica News</span></button>
@@ -586,11 +586,11 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, setDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         const AUTHORIZED_EMAILS = ['silviachine@gmail.com', 'aldo.colciago@gmail.com'];
-        const firebaseConfig = {
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {
             apiKey: "AIzaSyBzrgpVFTVcdhGKawwjFPvxlkTs2iD6Xe8",
             authDomain: "silvia-chinellato-hub.firebaseapp.com",
             projectId: "silvia-chinellato-hub",
@@ -598,12 +598,13 @@
             messagingSenderId: "300800174413",
             appId: "1:300800174413:web:553023a2bd7a74bd5daf04"
         };
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'silvia-chinellato-app';
 
         let appState = {
             isLoggedIn: false,
             currentUserEmail: null,
             centers: [
-                { id: '1', name: 'Centro Polisaluite', service: 'Osteopatia & Visite', color: '#3f5e4e', icalUrl: '', showPublic: true, address: 'Via Roma 10, Milano', phone: '02 1234567', siteUrl: 'https://example.com', bookingUrl: 'https://example.com/booking' },
+                { id: '1', name: 'Centro Polisalute', service: 'Osteopatia & Visite', color: '#3f5e4e', icalUrl: '', showPublic: true, address: 'Via Roma 10, Milano', phone: '02 1234567', siteUrl: 'https://example.com', bookingUrl: '' },
                 { id: '2', name: 'Poliambulatorio San Benedetto', service: 'Idrocolonterapia', color: '#4a8fa8', icalUrl: '', showPublic: true, address: 'Corso Italia 45, Monza', phone: '039 7654321', siteUrl: 'https://example.com', bookingUrl: '' }
             ],
             treatments: [
@@ -611,8 +612,12 @@
                 { id: 't2', title: 'Osteopatia', icon: 'fa-hands-holding-child', desc: 'Trattamenti manipolativi mirati a risolvere dolori muscoloscheletrici, cervicalgie, lombalgie e disturbi posturali con tecniche dolci.' },
                 { id: 't3', title: 'Prevenzione & Equilibrio', icon: 'fa-heart-pulse', desc: 'Consulenze e percorsi personalizzati volti al mantenimento dello stato di salute e alla prevenzione dei disturbi cronici.' }
             ],
-            news: [],
-            preparations: [],
+            news: [
+                { id: 'n1', title: 'Chiusura Estiva Studio', content: 'Si avvisano i gentili pazienti che lo studio rimarrà chiuso per ferie estive dal 10 al 25 agosto. Le prenotazioni online restano attive.', link: '' }
+            ],
+            preparations: [
+                { id: 'p1', title: 'Preparazione Idrocolonterapia', tag: 'Idrocolonterapia', content: 'Nei 2 giorni precedenti il trattamento si consiglia un\'alimentazione leggera, ricca di acqua e povera di scorie.' }
+            ],
             patients: [],
             events: []
         };
@@ -621,35 +626,59 @@
         let auth = null;
         let userId = null;
         let calendarInstance = null;
-        let appId = typeof __app_id !== 'undefined' ? __app_id : 'silvia-chinellato-app';
 
         try {
-            if (firebaseConfig) {
-                const app = initializeApp(firebaseConfig);
-                db = getFirestore(app);
-                auth = getAuth(app);
-                
-                signInAnonymously(auth).then(async () => {
-                    await loadPublicDataFromFirestore();
-                }).catch(err => console.warn("Auth warning:", err));
-
-                onAuthStateChanged(auth, async (user) => {
-                    if (user && user.email && AUTHORIZED_EMAILS.includes(user.email.toLowerCase())) {
-                        appState.isLoggedIn = true;
-                        appState.currentUserEmail = user.email.toLowerCase();
-                        userId = user.uid;
-                        showPrivateView();
-                        await loadAllDataFromFirestore();
-                    } else if (user && user.email) {
-                        await signOut(auth);
-                        appState.isLoggedIn = false;
-                        showPublicView();
-                        showToast("Indirizzo email non autorizzato.");
+            const app = initializeApp(firebaseConfig);
+            db = getFirestore(app);
+            auth = getAuth(app);
+            
+            const initAuth = async () => {
+                try {
+                    if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                        await signInWithCustomToken(auth, __initial_auth_token);
+                    } else {
+                        await signInAnonymously(auth);
                     }
-                });
-            }
+                    userId = auth.currentUser?.uid || 'anonymous-user';
+                    updateFirebaseStatus(true, 'Connesso');
+                    await loadPublicDataFromFirestore();
+                } catch (err) {
+                    console.warn("Auth initialization warning:", err);
+                    updateFirebaseStatus(false, 'Offline Mode');
+                }
+            };
+            initAuth();
+
+            onAuthStateChanged(auth, async (user) => {
+                if (user && user.email && AUTHORIZED_EMAILS.includes(user.email.toLowerCase())) {
+                    appState.isLoggedIn = true;
+                    appState.currentUserEmail = user.email.toLowerCase();
+                    userId = user.uid;
+                    showPrivateView();
+                    await loadAllDataFromFirestore();
+                } else if (user && user.email) {
+                    await signOut(auth);
+                    appState.isLoggedIn = false;
+                    showPublicView();
+                    showToast("Indirizzo email non autorizzato.");
+                }
+            });
         } catch (e) {
+            console.warn("Firebase initialization error:", e);
             userId = 'offline-user';
+            updateFirebaseStatus(false, 'Non disponibile');
+        }
+
+        function updateFirebaseStatus(isOnline, text) {
+            const dot = document.getElementById('public-firebase-dot');
+            const label = document.getElementById('public-firebase-text');
+            const privDot = document.getElementById('firebase-dot');
+            const privText = document.getElementById('firebase-text');
+            
+            if (dot) dot.className = `w-2 h-2 rounded-full ${isOnline ? 'bg-emerald-500' : 'bg-rose-500'} inline-block flex-shrink-0`;
+            if (label) label.textContent = text;
+            if (privDot) privDot.className = `w-1.5 h-1.5 rounded-full ${isOnline ? 'bg-emerald-500' : 'bg-rose-500'} inline-block`;
+            if (privText) privText.textContent = text;
         }
 
         async function loadPublicDataFromFirestore() {
@@ -659,6 +688,16 @@
                 if (!pubCentersSnap.empty) {
                     appState.centers = [];
                     pubCentersSnap.forEach(d => appState.centers.push(d.data()));
+                }
+                const pubNewsSnap = await getDocs(collection(db, 'artifacts', appId, 'public', 'data', 'news_list'));
+                if (!pubNewsSnap.empty) {
+                    appState.news = [];
+                    pubNewsSnap.forEach(d => appState.news.push(d.data()));
+                }
+                const pubPrepSnap = await getDocs(collection(db, 'artifacts', appId, 'public', 'data', 'preparations_list'));
+                if (!pubPrepSnap.empty) {
+                    appState.preparations = [];
+                    pubPrepSnap.forEach(d => appState.preparations.push(d.data()));
                 }
                 renderPublicCenters();
                 renderPublicTreatments();
@@ -682,6 +721,9 @@
 
                 renderPublicCenters();
                 renderHeaderLegend();
+                renderNewsManagementList();
+                renderPrepManagementList();
+                renderCentersManagementList();
                 if (calendarInstance) calendarInstance.refetchEvents();
             } catch (err) {}
         }
@@ -747,13 +789,60 @@
         function renderPublicNews() {
             const grid = document.getElementById('public-news-grid');
             if (!grid) return;
-            grid.innerHTML = `<p class="text-xs text-slate-400 italic col-span-2 text-center py-6">Nessuna news pubblicata al momento.</p>`;
+            if (appState.news.length === 0) {
+                grid.innerHTML = `<p class="text-xs text-slate-400 italic col-span-2 text-center py-6">Nessuna news pubblicata al momento.</p>`;
+                return;
+            }
+            grid.innerHTML = appState.news.map((item, idx) => `
+                <div class="bg-white/90 backdrop-blur-md p-6 sm:p-8 rounded-[2.5rem] border border-white/80 shadow-lg space-y-3 flex flex-col justify-between">
+                    <div class="space-y-2">
+                        <span class="text-[10px] font-bold text-water-700 uppercase tracking-widest italic-title">Aggiornamento Studio</span>
+                        <h4 class="font-editorial text-xl font-bold text-slate-900 italic">${item.title}</h4>
+                        <div class="text-xs sm:text-sm text-slate-600 font-light leading-relaxed" id="news-content-${idx}">
+                            <p class="line-clamp-2">${item.content}</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center justify-between pt-2 border-t border-slate-100">
+                        <button onclick="toggleNewsExpand(${idx})" id="news-btn-${idx}" class="text-xs font-bold text-water-700 hover:text-water-900 transition flex items-center gap-1 italic-title">
+                            <span>Leggi tutto</span> <i class="fa-solid fa-chevron-down text-[10px]"></i>
+                        </button>
+                        ${item.link ? `<a href="${item.link}" target="_blank" class="px-3 py-1.5 bg-water-50 hover:bg-water-100 text-water-800 rounded-xl text-xs font-semibold transition"><i class="fa-solid fa-arrow-up-right-from-square"></i> Approfondisci</a>` : ''}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        window.toggleNewsExpand = function(idx) {
+            const container = document.getElementById(`news-content-${idx}`);
+            const btn = document.getElementById(`news-btn-${idx}`);
+            const item = appState.news[idx];
+            if (!container || !item) return;
+
+            if (container.classList.contains('expanded')) {
+                container.classList.remove('expanded');
+                container.innerHTML = `<p class="line-clamp-2">${item.content}</p>`;
+                btn.innerHTML = `<span>Leggi tutto</span> <i class="fa-solid fa-chevron-down text-[10px]"></i>`;
+            } else {
+                container.classList.add('expanded');
+                container.innerHTML = `<p>${item.content}</p>`;
+                btn.innerHTML = `<span>Riduci</span> <i class="fa-solid fa-chevron-up text-[10px]"></i>`;
+            }
         }
 
         function renderPublicPreparations() {
             const grid = document.getElementById('public-preparations-grid');
             if (!grid) return;
-            grid.innerHTML = `<p class="text-xs text-slate-400 italic col-span-2 text-center py-6">Nessuna guida di preparazione disponibile al momento.</p>`;
+            if (appState.preparations.length === 0) {
+                grid.innerHTML = `<p class="text-xs text-slate-400 italic col-span-2 text-center py-6">Nessuna guida di preparazione disponibile al momento.</p>`;
+                return;
+            }
+            grid.innerHTML = appState.preparations.map(prep => `
+                <div class="bg-white/90 backdrop-blur-md p-6 sm:p-8 rounded-[2.5rem] border border-white/80 shadow-lg space-y-3">
+                    <span class="px-3 py-1 rounded-full text-[10px] font-bold bg-nature-50 text-nature-800 italic-title">${prep.tag}</span>
+                    <h4 class="font-editorial text-xl font-bold text-slate-900 italic">${prep.title}</h4>
+                    <p class="text-xs sm:text-sm text-slate-600 font-light leading-relaxed">${prep.content}</p>
+                </div>
+            `).join('');
         }
 
         function renderHeaderLegend() {
@@ -813,7 +902,7 @@
         window.openPatientsModal = function() { document.getElementById('patients-modal').classList.remove('hidden'); }
         window.closePatientsModal = function() { document.getElementById('patients-modal').classList.add('hidden'); }
 
-        // Sincronizzazione iCal avanzata con Vercel Proxy e log dettagliati
+        // Sincronizzazione iCal avanzata con Proxy Vercel e log dettagliati
         window.triggerIcalSync = async function() {
             openIcalChangelogModal({ status: 'loading', centersReport: [], added: [], modified: [], deleted: [], logs: [] });
             
@@ -825,7 +914,7 @@
             let activeIcalEventIds = new Set();
             let oldEventsMap = new Map(appState.events.map(ev => [ev.id, ev]));
 
-            logs.push(`[${new Date().toLocaleTimeString()}] === INIZIO SINCRONIZZAZIONE ICAL (VERCEL API) ===`);
+            logs.push(`[${new Date().toLocaleTimeString()}] === INIZIO SINCRONIZZAZIONE CALENDARI (VERCEL/CORS PROXY) ===`);
 
             const icalCenters = appState.centers.filter(c => c.icalUrl && c.icalUrl.trim() !== '');
             if (icalCenters.length === 0) {
@@ -837,27 +926,43 @@
 
             for (let center of icalCenters) {
                 let rawUrl = center.icalUrl.trim();
-                logs.push(`[${new Date().toLocaleTimeString()}] Sincronizzazione struttura: "${center.name}"...`);
+                logs.push(`[${new Date().toLocaleTimeString()}] Tentativo fetch iCal per struttura: "${center.name}" URL: ${rawUrl}`);
                 
                 let text = null;
-                try {
-                    const proxyUrl = `/api/ical?url=${encodeURIComponent(rawUrl)}`;
-                    logs.push(`[${new Date().toLocaleTimeString()}] Chiamata proxy: ${proxyUrl}`);
-                    let response = await fetch(proxyUrl);
-                    if (response.ok) {
-                        const jsonData = await response.json();
-                        text = jsonData.icsContent;
-                    } else {
-                        const errData = await response.json().catch(() => ({}));
-                        logs.push(`[${new Date().toLocaleTimeString()}] Errore HTTP ${response.status}: ${errData.error || response.statusText}`);
+                const proxyEndpoints = [
+                    `/api/ical?url=${encodeURIComponent(rawUrl)}`,
+                    `https://api.allorigins.win/raw?url=${encodeURIComponent(rawUrl)}`,
+                    `https://corsproxy.io/?${encodeURIComponent(rawUrl)}`,
+                    rawUrl
+                ];
+
+                for (let endpoint of proxyEndpoints) {
+                    try {
+                        logs.push(`[${new Date().toLocaleTimeString()}] Richiesta via: ${endpoint.substring(0, 60)}...`);
+                        let response = await fetch(endpoint);
+                        if (response.ok) {
+                            const ct = response.headers.get('content-type') || '';
+                            if (ct.includes('application/json')) {
+                                const j = await response.json();
+                                text = j.icsContent || j.contents;
+                            } else {
+                                text = await response.text();
+                            }
+                            if (text && (text.includes('BEGIN:VCALENDAR') || text.includes('BEGIN:VEVENT'))) {
+                                logs.push(`[${new Date().toLocaleTimeString()}] Successo con endpoint: ${endpoint.substring(0, 40)}`);
+                                break;
+                            }
+                        } else {
+                            logs.push(`[${new Date().toLocaleTimeString()}] Errore HTTP: ${response.status}`);
+                        }
+                    } catch(err) {
+                        logs.push(`[${new Date().toLocaleTimeString()}] Eccezione rete: ${err.message}`);
                     }
-                } catch(err) {
-                    logs.push(`[${new Date().toLocaleTimeString()}] Eccezione rete: ${err.message}`);
                 }
 
                 if (text && (text.includes('BEGIN:VCALENDAR') || text.includes('BEGIN:VEVENT'))) {
                     centersReport.push({ name: center.name, success: true, message: 'Aggiornato con successo' });
-                    logs.push(`[${new Date().toLocaleTimeString()}] iCal scaricato correttamente per "${center.name}". Parsing in corso...`);
+                    logs.push(`[${new Date().toLocaleTimeString()}] Parsing eventi iCal per "${center.name}"...`);
                     
                     const lines = text.split(/\r\n|\n|\r/);
                     let currentEvent = null;
@@ -916,8 +1021,8 @@
                     }
                     logs.push(`[${new Date().toLocaleTimeString()}] Aggiunti/Aggiornati ${countAdded} eventi da "${center.name}".`);
                 } else {
-                    centersReport.push({ name: center.name, success: false, message: 'Link iCal non valido o errore serverless' });
-                    logs.push(`[${new Date().toLocaleTimeString()}] ERRORE: Fallito download o parsing per "${center.name}".`);
+                    centersReport.push({ name: center.name, success: false, message: 'Impossibile scaricare (CORS/URL non valido)' });
+                    logs.push(`[${new Date().toLocaleTimeString()}] ERRORE CRITICO: Fallito download iCal per ${center.name}.`);
                 }
             }
 
@@ -1017,6 +1122,24 @@
                         <div class="p-2.5 bg-nature-50 border border-nature-200 rounded-2xl flex items-center justify-between text-xs mb-1.5">
                             <div><strong class="text-slate-900">${item.title}</strong> <span class="text-nature-800 font-semibold bg-white px-2 py-0.5 rounded-md border border-nature-100 ml-1">${item.centerName}</span></div>
                             <span class="text-[10px] text-nature-700 font-medium">${item.date}</span>
+                        </div>
+                    `).join('');
+                }
+                if (data.modified?.length > 0) {
+                    htmlVar += `<div class="text-[11px] font-bold text-water-700 uppercase mb-1 mt-2">Modificati (${data.modified.length})</div>`;
+                    htmlVar += data.modified.map(item => `
+                        <div class="p-2.5 bg-water-50 border border-water-200 rounded-2xl flex items-center justify-between text-xs mb-1.5">
+                            <div><strong class="text-slate-900">${item.title}</strong> <span class="text-water-800 font-semibold bg-white px-2 py-0.5 rounded-md border border-water-100 ml-1">${item.centerName}</span></div>
+                            <span class="text-[10px] text-water-700 font-medium">${item.date}</span>
+                        </div>
+                    `).join('');
+                }
+                if (data.deleted?.length > 0) {
+                    htmlVar += `<div class="text-[11px] font-bold text-rose-700 uppercase mb-1 mt-2">Cancellati (${data.deleted.length})</div>`;
+                    htmlVar += data.deleted.map(item => `
+                        <div class="p-2.5 bg-rose-50 border border-rose-200 rounded-2xl flex items-center justify-between text-xs mb-1.5">
+                            <div><strong class="text-slate-900">${item.title}</strong> <span class="text-rose-800 font-semibold bg-white px-2 py-0.5 rounded-md border border-rose-100 ml-1">${item.centerName}</span></div>
+                            <span class="text-[10px] text-rose-700 font-medium">${item.date}</span>
                         </div>
                     `).join('');
                 }
