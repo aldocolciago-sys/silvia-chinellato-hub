@@ -129,7 +129,6 @@
         </header>
 
         <main class="max-w-6xl mx-auto px-4 sm:px-6 py-8 sm:py-14 space-y-14 sm:space-y-20 flex-1 w-full">
-            
             <section id="profilo-pubblica" class="bg-gradient-to-br from-nature-800 via-nature-700 to-water-700 rounded-[2.5rem] sm:rounded-[3.5rem] p-6 sm:p-14 text-white shadow-2xl relative overflow-hidden flex flex-col md:flex-row items-center gap-8 sm:gap-12 border border-white/10 scroll-mt-24">
                 <div class="absolute -right-20 -bottom-20 w-96 h-96 bg-water-500/15 rounded-full blur-3xl pointer-events-none"></div>
                 <div class="absolute -left-20 -top-20 w-80 h-80 bg-warmth-500/15 rounded-full blur-3xl pointer-events-none"></div>
@@ -284,7 +283,7 @@
                             <span id="firebase-dot" class="w-1.5 h-1.5 rounded-full bg-amber-500 inline-block"></span>
                             <span id="firebase-text">Connessione...</span>
                         </div>
-                        <button onclick="triggerIcalSync()" id="sync-ical-btn" class="inline-flex items-center gap-1 bg-water-50 hover:bg-water-100 text-water-800 px-2.5 py-0.5 rounded-full text-[10px] font-bold border border-water-200 transition shadow-2xs" title="Sincronizza Poliambulatori iCal">
+                        <button onclick="triggerIcalSync()" id="sync-ical-btn" class="inline-flex items-center gap-1 bg-water-50 hover:bg-water-100 text-water-800 px-2.5 py-0.5 rounded-full text-[10px] font-bold border border-water-200 transition shadow-2xs" title="Sincronizza Calendari Poliambulatori">
                             <i class="fa-solid fa-rotate text-[9px]"></i> <span>Sincronizza Calendari</span>
                         </button>
                     </div>
@@ -345,7 +344,7 @@
         </div>
     </div>
 
-    <!-- iCal Changelog Advanced Modal -->
+    <!-- iCal Changelog Advanced Modal with Realtime Logs -->
     <div id="ical-changelog-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-md hidden z-[60] flex items-center justify-center p-4">
         <div class="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-2xl overflow-hidden flex flex-col max-h-[90vh]">
             <div class="px-5 sm:px-6 py-4 sm:py-5 border-b border-water-100 flex items-center justify-between bg-water-50/50">
@@ -411,6 +410,8 @@
                             <option value="fa-hands-holding-child">🤲 Mani / Osteopatia</option>
                             <option value="fa-heart-pulse">💓 Cuore / Pulse</option>
                             <option value="fa-spa">🌿 Natura / Spa</option>
+                            <option value="fa-leaf">🍃 Foglia / Naturale</option>
+                            <option value="fa-feather">🪶 Delicatezza / Piuma</option>
                         </select>
                     </div>
                     <textarea id="new-treatment-desc" required placeholder="Descrizione del trattamento..." class="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-2xl text-xs focus:outline-none focus:ring-2 focus:ring-nature-500 h-24 resize-none"></textarea>
@@ -608,7 +609,7 @@
                 { id: '2', name: 'Poliambulatorio San Benedetto', service: 'Idrocolonterapia', color: '#4a8fa8', icalUrl: '', showPublic: true, address: 'Corso Italia 45, Monza', phone: '039 7654321', siteUrl: 'https://example.com', bookingUrl: '' }
             ],
             treatments: [
-                { id: 't1', title: 'Idrocolonterapia', icon: 'fa-droplet', desc: 'Depurazione profonda e delicata del colon, utile per eliminare tossine, ridurre l\'infiammazione e ripristinare la vitalità dell\'organismo.' },
+                { id: 't1', title: 'Idrocolonterapia', icon: 'fa-droplet', desc: "Depurazione profonda e delicata del colon, utile per eliminare tossine, ridurre l'infiammazione e ripristinare la vitalità dell'organismo." },
                 { id: 't2', title: 'Osteopatia', icon: 'fa-hands-holding-child', desc: 'Trattamenti manipolativi mirati a risolvere dolori muscoloscheletrici, cervicalgie, lombalgie e disturbi posturali con tecniche dolci.' },
                 { id: 't3', title: 'Prevenzione & Equilibrio', icon: 'fa-heart-pulse', desc: 'Consulenze e percorsi personalizzati volti al mantenimento dello stato di salute e alla prevenzione dei disturbi cronici.' }
             ],
@@ -616,7 +617,7 @@
                 { id: 'n1', title: 'Chiusura Estiva Studio', content: 'Si avvisano i gentili pazienti che lo studio rimarrà chiuso per ferie estive dal 10 al 25 agosto. Le prenotazioni online restano attive.', link: '' }
             ],
             preparations: [
-                { id: 'p1', title: 'Preparazione Idrocolonterapia', tag: 'Idrocolonterapia', content: 'Nei 2 giorni precedenti il trattamento si consiglia un\'alimentazione leggera, ricca di acqua e povera di scorie.' }
+                { id: 'p1', title: 'Preparazione Idrocolonterapia', tag: 'Idrocolonterapia', content: "Nei 2 giorni precedenti il trattamento si consiglia un'alimentazione leggera, ricca di acqua e povera di scorie." }
             ],
             patients: [],
             events: []
@@ -926,8 +927,6 @@
         window.openPatientsModal = function() { document.getElementById('patients-modal').classList.remove('hidden'); }
         window.closePatientsModal = function() { document.getElementById('patients-modal').classList.add('hidden'); }
 
-        // --- Gestione Admin & Salvataggio su Firestore (Trattamenti, Poliambulatori, News, Preparazioni) ---
-
         window.handleTreatmentSubmit = async function(e) {
             e.preventDefault();
             const id = document.getElementById('treatment-edit-id').value || 't_' + Date.now();
@@ -1217,7 +1216,7 @@
             showToast("Appuntamento studio salvato!");
         }
 
-        // Sincronizzazione iCal avanzata con Proxy Vercel e log dettagliati
+        // --- Sincronizzazione iCal avanzata e robusta (con normalizzazione Google Calendar e gestione corretta date/orari) ---
         window.triggerIcalSync = async function() {
             openIcalChangelogModal({ status: 'loading', centersReport: [], added: [], modified: [], deleted: [], logs: [] });
             
@@ -1229,7 +1228,7 @@
             let activeIcalEventIds = new Set();
             let oldEventsMap = new Map(appState.events.map(ev => [ev.id, ev]));
 
-            logs.push(`[${new Date().toLocaleTimeString()}] === INIZIO SINCRONIZZAZIONE CALENDARI (VERCEL/CORS PROXY) ===`);
+            logs.push(`[${new Date().toLocaleTimeString()}] === INIZIO SINCRONIZZAZIONE CALENDARI (ICS) ===`);
 
             const icalCenters = appState.centers.filter(c => c.icalUrl && c.icalUrl.trim() !== '');
             if (icalCenters.length === 0) {
@@ -1241,19 +1240,19 @@
 
             for (let center of icalCenters) {
                 let rawUrl = center.icalUrl.trim();
-                logs.push(`[${new Date().toLocaleTimeString()}] Tentativo fetch iCal per struttura: "${center.name}" URL: ${rawUrl}`);
+                let targetUrl = normalizeGoogleCalendarUrl(rawUrl);
+                logs.push(`[${new Date().toLocaleTimeString()}] Contatto per "${center.name}" URL: ${targetUrl}`);
                 
                 let text = null;
                 const proxyEndpoints = [
-                    `/api/ical?url=${encodeURIComponent(rawUrl)}`,
-                    `https://api.allorigins.win/raw?url=${encodeURIComponent(rawUrl)}`,
-                    `https://corsproxy.io/?${encodeURIComponent(rawUrl)}`,
-                    rawUrl
+                    `/api/ical?url=${encodeURIComponent(targetUrl)}`,
+                    `https://api.allorigins.win/raw?url=${encodeURIComponent(targetUrl)}`,
+                    `https://corsproxy.io/?${encodeURIComponent(targetUrl)}`,
+                    targetUrl
                 ];
 
                 for (let endpoint of proxyEndpoints) {
                     try {
-                        logs.push(`[${new Date().toLocaleTimeString()}] Richiesta via: ${endpoint.substring(0, 60)}...`);
                         let response = await fetch(endpoint);
                         if (response.ok) {
                             const ct = response.headers.get('content-type') || '';
@@ -1264,20 +1263,18 @@
                                 text = await response.text();
                             }
                             if (text && (text.includes('BEGIN:VCALENDAR') || text.includes('BEGIN:VEVENT'))) {
-                                logs.push(`[${new Date().toLocaleTimeString()}] Successo con endpoint: ${endpoint.substring(0, 40)}`);
+                                logs.push(`[${new Date().toLocaleTimeString()}] Connessione riuscita per "${center.name}"`);
                                 break;
                             }
-                        } else {
-                            logs.push(`[${new Date().toLocaleTimeString()}] Errore HTTP: ${response.status}`);
                         }
                     } catch(err) {
-                        logs.push(`[${new Date().toLocaleTimeString()}] Eccezione rete: ${err.message}`);
+                        // continua con il prossimo proxy
                     }
                 }
 
                 if (text && (text.includes('BEGIN:VCALENDAR') || text.includes('BEGIN:VEVENT'))) {
                     centersReport.push({ name: center.name, success: true, message: 'Aggiornato con successo' });
-                    logs.push(`[${new Date().toLocaleTimeString()}] Parsing eventi iCal per "${center.name}"...`);
+                    logs.push(`[${new Date().toLocaleTimeString()}] Parsing eventi ICS per "${center.name}"...`);
                     
                     const lines = text.split(/\r\n|\n|\r/);
                     let currentEvent = null;
@@ -1294,8 +1291,15 @@
 
                                 const eventTitleClean = currentEvent.summary || 'Appuntamento';
                                 const formattedTitle = `${eventTitleClean} (${center.name})`;
-                                const parsedStart = parseIcalDate(currentEvent.start);
-                                const parsedEnd = currentEvent.end ? parseIcalDate(currentEvent.end) : new Date(new Date(parsedStart).getTime() + 3600000).toISOString();
+                                
+                                // Gestione accurata orari di inizio e fine
+                                const parsedStart = parseIcalDateTime(currentEvent.start);
+                                let parsedEnd = currentEvent.end ? parseIcalDateTime(currentEvent.end) : null;
+                                
+                                if (!parsedEnd) {
+                                    // Durata predefinita di 1 ora se DTEND non è specificato
+                                    parsedEnd = new Date(new Date(parsedStart).getTime() + 3600000).toISOString();
+                                }
 
                                 const parsedEvent = {
                                     id: eventId,
@@ -1334,11 +1338,13 @@
                             else if (line.startsWith('DESCRIPTION:')) currentEvent.description = line.substring(12).trim();
                         }
                     }
-                    logs.push(`[${new Date().toLocaleTimeString()}] Aggiunti/Aggiornati ${countAdded} eventi da "${center.name}".`);
+                    logs.push(`[${new Date().toLocaleTimeString()}] Importati ${countAdded} eventi da "${center.name}".`);
                 } else {
-                    centersReport.push({ name: center.name, success: false, message: 'Impossibile scaricare (CORS/URL)' });
-                    logs.push(`[${new Date().toLocaleTimeString()}] ERRORE CRITICO: Fallito download iCal per ${center.name}.`);
+                    centersReport.push({ name: center.name, success: false, message: 'Fallito (Verifica URL pubblico)' });
+                    logs.push(`[${new Date().toLocaleTimeString()}] ERRORE: Impossibile scaricare il calendario per "${center.name}".`);
                 }
+
+                updateIcalChangelogModal({ status: 'loading', centersReport, added: addedEvents, modified: modifiedEvents, deleted: deletedEvents, logs });
             }
 
             appState.events.forEach(ev => {
@@ -1354,13 +1360,32 @@
                 }
             }
 
-            logs.push(`[${new Date().toLocaleTimeString()}] === FINE SINCRONIZZAZIONE ICAL ===`);
+            logs.push(`[${new Date().toLocaleTimeString()}] === FINE SINCRONIZZAZIONE ===`);
             if (calendarInstance) calendarInstance.refetchEvents();
+            
             updateIcalChangelogModal({ status: 'completed', centersReport, added: addedEvents, modified: modifiedEvents, deleted: deletedEvents, logs });
             showToast('Sincronizzazione completata!');
         }
 
-        function parseIcalDate(str) {
+        function normalizeGoogleCalendarUrl(url) {
+            try {
+                const urlObj = new URL(url);
+                if (!url.includes('calendar.google.com')) return url;
+                const cid = urlObj.searchParams.get('cid');
+                if (!cid) return url;
+                let calendarId = cid;
+                try {
+                    const decoded = atob(cid);
+                    if (decoded && decoded.includes('@')) calendarId = decoded;
+                } catch (e) {}
+                calendarId = decodeURIComponent(calendarId);
+                return `https://calendar.google.com/calendar/ical/${calendarId}/public/basic.ics`;
+            } catch (e) {
+                return url;
+            }
+        }
+
+        function parseIcalDateTime(str) {
             if (!str) return new Date().toISOString();
             try {
                 let clean = str.replace(/[^0-9T]/g, '');
@@ -1403,13 +1428,13 @@
                 banner.className = 'p-4 bg-amber-50 border border-amber-200 rounded-2xl flex items-center gap-3 shadow-xs';
                 spinner.className = 'w-6 h-6 rounded-full bg-amber-500 animate-ping flex-shrink-0';
                 statusTitle.textContent = 'Aggiornamento in corso';
-                progressText.textContent = 'Contatto dei server iCal dei poliambulatori in corso...';
+                progressText.textContent = 'Sincronizzazione dei calendari dei poliambulatori in corso...';
             } else {
                 banner.className = 'p-4 bg-nature-50 border border-nature-200 rounded-2xl flex items-center gap-3 shadow-xs';
                 spinner.className = 'w-6 h-6 rounded-full bg-nature-600 flex items-center justify-center text-white text-xs flex-shrink-0 font-bold';
                 spinner.innerHTML = '<i class="fa-solid fa-check"></i>';
                 statusTitle.textContent = 'Sincronizzazione completata';
-                progressText.textContent = 'Tutti i flussi iCal sono stati analizzati.';
+                progressText.textContent = 'Tutti i calendari sono stati analizzati con successo.';
             }
 
             if (data.centersReport && data.centersReport.length > 0) {
@@ -1429,7 +1454,7 @@
             let htmlVar = '';
             const totalVars = (data.added?.length || 0) + (data.modified?.length || 0) + (data.deleted?.length || 0);
             if (totalVars === 0) {
-                htmlVar = `<div class="p-3 bg-slate-50 rounded-xl text-center text-xs text-slate-500 italic">Nessuna nuova variazione o modifica rilevata rispetto all'ultima sincronizzazione.</div>`;
+                htmlVar = `<div class="p-3 bg-slate-50 rounded-xl text-center text-xs text-slate-500 italic">Nessuna variazione o modifica rilevata rispetto all'ultima sincronizzazione.</div>`;
             } else {
                 if (data.added?.length > 0) {
                     htmlVar += `<div class="text-[11px] font-bold text-nature-700 uppercase mb-1">Aggiunti (${data.added.length})</div>`;
