@@ -485,20 +485,24 @@
         </div>
     </div>
 
-    <!-- Sync Result Report Modal -->
+    <!-- Sync Progress & Report Modal -->
     <div id="sync-report-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-md hidden z-[80] flex items-center justify-center p-4">
         <div class="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-md overflow-hidden flex flex-col border border-water-100">
             <div class="px-6 py-4 border-b border-water-100 flex items-center justify-between bg-water-50/50">
                 <div class="flex items-center gap-2.5">
-                    <div class="w-8 h-8 rounded-full bg-water-100 text-water-700 flex items-center justify-center font-bold text-xs"><i class="fa-solid fa-rotate"></i></div>
-                    <h3 class="font-editorial text-base font-bold text-slate-900 italic">Esito Sincronizzazione Calendari</h3>
+                    <div class="w-8 h-8 rounded-full bg-water-100 text-water-700 flex items-center justify-center font-bold text-xs"><i class="fa-solid fa-rotate animate-spin" id="sync-spinner"></i></div>
+                    <h3 id="sync-modal-title" class="font-editorial text-base font-bold text-slate-900 italic">Sincronizzazione Calendari in corso...</h3>
                 </div>
-                <button type="button" onclick="closeSyncReportModal()" class="text-slate-400 hover:text-slate-600 w-8 h-8 rounded-full flex items-center justify-center"><i class="fa-solid fa-xmark"></i></button>
             </div>
             <div class="p-6 space-y-4 overflow-y-auto max-h-[60vh]">
-                <div id="sync-report-content" class="text-xs space-y-3"></div>
+                <div id="sync-report-content" class="text-xs space-y-3">
+                    <div class="flex items-center gap-3 py-4 text-slate-600">
+                        <i class="fa-solid fa-circle-notch animate-spin text-water-600 text-base"></i>
+                        <span id="sync-status-text">Connessione ai calendari dei poliambulatori...</span>
+                    </div>
+                </div>
             </div>
-            <div class="px-6 py-4 border-t border-slate-100 bg-slate-50 flex justify-end">
+            <div id="sync-modal-footer" class="px-6 py-4 border-t border-slate-100 bg-slate-50 flex justify-end hidden">
                 <button type="button" onclick="closeSyncReportModal()" class="px-6 py-2.5 bg-water-700 hover:bg-water-800 text-white font-semibold rounded-2xl text-xs transition">Ho capito</button>
             </div>
         </div>
@@ -746,8 +750,8 @@
                     showPrivateView();
                     await loadAllDataFromFirestore();
                     setTimeout(() => {
-                        triggerIcalSync(true); // Automatic sync immediately after login
-                    }, 600);
+                        triggerIcalSync(true); // Automatic sync immediately after login with visible progress modal
+                    }, 500);
                 } else if (user && user.email) {
                     await signOut(auth);
                     appState.isLoggedIn = false;
@@ -996,7 +1000,7 @@
                     showPrivateView();
                     await loadAllDataFromFirestore();
                     showToast('Accesso effettuato con successo!');
-                    setTimeout(() => triggerIcalSync(true), 600);
+                    setTimeout(() => triggerIcalSync(true), 500);
                 } else {
                     await signOut(auth);
                     showToast(`Email ${email} non autorizzata.`);
@@ -1658,8 +1662,24 @@
             });
         }
 
-        // --- iCal Multi-Center Sync with Detailed Report Log ---
+        // --- iCal Multi-Center Sync with Real-time Progress & Detailed Log ---
         window.triggerIcalSync = async function(isAutomatic = false) {
+            const modal = document.getElementById('sync-report-modal');
+            const titleEl = document.getElementById('sync-modal-title');
+            const contentEl = document.getElementById('sync-report-content');
+            const spinner = document.getElementById('sync-spinner');
+            const footer = document.getElementById('sync-modal-footer');
+
+            if (modal) modal.classList.remove('hidden');
+            if (titleEl) titleEl.textContent = 'Sincronizzazione Calendari in corso...';
+            if (spinner) spinner.classList.add('animate-spin');
+            if (footer) footer.classList.add('hidden');
+
+            let progressHtml = `<div class="space-y-2"><p class="font-bold text-slate-800">Stato avanzamento:</p><div id="sync-steps" class="space-y-1.5 text-slate-600">`;
+            progressHtml += `<div class="flex items-center gap-2"><i class="fa-solid fa-spinner animate-spin text-water-600"></i> Preparazione connessione poliambulatori...</div>`;
+            progressHtml += `</div></div>`;
+            if (contentEl) contentEl.innerHTML = progressHtml;
+
             let addedCount = 0;
             let modifiedCount = 0;
             let deletedCount = 0;
@@ -1670,11 +1690,22 @@
 
             const icalCenters = appState.centers.filter(c => c.icalUrl && c.icalUrl.trim() !== '');
             if (icalCenters.length === 0) {
-                if (!isAutomatic) showToast('Nessun link iCal configurato.');
+                if (contentEl) {
+                    contentEl.innerHTML = `<div class="p-4 bg-amber-50 border border-amber-100 rounded-2xl text-center text-amber-800 font-medium text-xs">Nessun link iCal configurato nei poliambulatori.</div>`;
+                }
+                if (spinner) spinner.classList.remove('animate-spin');
+                if (titleEl) titleEl.textContent = 'Sincronizzazione completata';
+                if (footer) footer.classList.remove('hidden');
                 return;
             }
 
+            let stepsContainer = document.getElementById('sync-steps');
+
             for (let center of icalCenters) {
+                if (stepsContainer) {
+                    stepsContainer.innerHTML += `<div class="flex items-center gap-2 text-slate-700"><i class="fa-solid fa-spinner animate-spin text-water-600"></i> Download calendario: <strong>${center.name}</strong>...</div>`;
+                }
+
                 let rawUrl = center.icalUrl.trim();
                 let targetUrl = normalizeGoogleCalendarUrl(rawUrl);
                 
@@ -1798,6 +1829,10 @@
             if (calendarInstance) calendarInstance.refetchEvents();
             checkCalendarConflicts();
 
+            if (spinner) spinner.classList.remove('animate-spin');
+            if (titleEl) titleEl.textContent = 'Esito Sincronizzazione Calendari';
+            if (footer) footer.classList.remove('hidden');
+
             showSyncReportModal(addedCount, modifiedCount, deletedCount, reportDetails);
         }
 
@@ -1826,7 +1861,6 @@
                 `;
             }
             content.innerHTML = html;
-            document.getElementById('sync-report-modal').classList.remove('hidden');
         }
 
         window.closeSyncReportModal = function() {
