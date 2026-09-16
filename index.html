@@ -344,38 +344,6 @@
         </div>
     </div>
 
-    <!-- iCal Changelog Modal -->
-    <div id="ical-changelog-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-md hidden z-[60] flex items-center justify-center p-4">
-        <div class="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-lg overflow-hidden flex flex-col max-h-[90vh]">
-            <div class="px-5 sm:px-6 py-4 sm:py-5 border-b border-water-100 flex items-center justify-between bg-water-50/50">
-                <div class="flex items-center gap-3">
-                    <div class="w-9 h-9 rounded-2xl bg-water-100 text-water-700 flex items-center justify-center"><i class="fa-solid fa-rotate text-sm"></i></div>
-                    <h3 class="font-editorial text-base sm:text-lg font-bold text-slate-900 italic">Sincronizzazione Calendari Poliambulatori</h3>
-                </div>
-                <button type="button" onclick="closeIcalChangelogModal()" class="text-slate-400 hover:text-slate-600 w-8 h-8 rounded-full flex items-center justify-center hover:bg-slate-200/60 transition"><i class="fa-solid fa-xmark"></i></button>
-            </div>
-
-            <div class="p-4 sm:p-6 overflow-y-auto space-y-5 flex-1">
-                <div id="sync-progress-banner" class="p-4 bg-amber-50 border border-amber-200 rounded-2xl flex items-center gap-3 shadow-xs">
-                    <div id="sync-spinner" class="w-6 h-6 rounded-full bg-amber-500 animate-ping flex-shrink-0"></div>
-                    <div class="flex-1">
-                        <h4 id="sync-status-title" class="text-xs font-bold text-amber-900 uppercase tracking-wide">Aggiornamento in corso</h4>
-                        <p id="sync-progress-text" class="text-xs text-slate-700">Contatto dei server iCal in corso...</p>
-                    </div>
-                </div>
-
-                <div class="space-y-3">
-                    <h4 class="font-editorial font-bold text-xs text-slate-500 uppercase tracking-wide italic">Esito per Poliambulatorio</h4>
-                    <div id="changelog-centers-summary" class="space-y-2"></div>
-                </div>
-            </div>
-
-            <div class="px-5 sm:px-6 py-4 border-t border-slate-100 bg-slate-50 flex justify-end">
-                <button type="button" onclick="closeIcalChangelogModal()" class="px-6 py-2.5 bg-slate-900 hover:bg-slate-800 text-white font-semibold rounded-2xl text-xs transition italic-title">Chiudi</button>
-            </div>
-        </div>
-    </div>
-
     <!-- Studio / Appointment Modal -->
     <div id="studio-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-md hidden z-50 flex items-center justify-center p-4">
         <div class="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-md overflow-hidden flex flex-col border border-nature-100 max-h-[90vh]">
@@ -392,6 +360,18 @@
                     <select id="studio-patient-select" onchange="onPatientSelectChange()" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-2xl text-xs">
                         <option value="">-- Seleziona Paziente --</option>
                     </select>
+                </div>
+
+                <!-- Phone and Email read-only fields populated from patient -->
+                <div id="patient-contact-info-container" class="grid grid-cols-2 gap-3 hidden">
+                    <div class="space-y-1">
+                        <label class="text-[10px] font-bold text-slate-500">Telefono Paziente</label>
+                        <input type="text" id="studio-patient-phone" readonly class="w-full px-3 py-2 bg-slate-100 border border-slate-200 rounded-xl text-xs text-slate-600">
+                    </div>
+                    <div class="space-y-1">
+                        <label class="text-[10px] font-bold text-slate-500">Email Paziente</label>
+                        <input type="text" id="studio-patient-email" readonly class="w-full px-3 py-2 bg-slate-100 border border-slate-200 rounded-xl text-xs text-slate-600">
+                    </div>
                 </div>
 
                 <div class="space-y-1">
@@ -419,15 +399,10 @@
                     </div>
                 </div>
 
-                <div class="space-y-1">
-                    <label class="text-[11px] font-bold text-slate-600">Note Appuntamento / Trattamento</label>
-                    <textarea id="studio-notes" placeholder="Note cliniche..." class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-xs h-20 resize-none"></textarea>
-                </div>
-
-                <!-- Dedicated live synced patient notes frame -->
+                <!-- Patient notes container without redundant subtitle -->
                 <div id="live-patient-notes-container" class="space-y-1 hidden bg-amber-50/60 p-3.5 rounded-2xl border border-amber-200">
                     <label class="text-[11px] font-bold text-amber-900 flex items-center justify-between">
-                        <span><i class="fa-solid fa-user-pen mr-1"></i> Note Anamnestiche Paziente (Sincronizzate in tempo reale)</span>
+                        <span><i class="fa-solid fa-user-pen mr-1"></i> Note Anamnestiche Paziente</span>
                     </label>
                     <textarea id="live-patient-notes" oninput="onLivePatientNotesChange()" placeholder="Modifica note anamnestiche del paziente..." class="w-full px-3 py-2.5 bg-white border border-amber-200 rounded-xl text-xs h-20 resize-none focus:outline-none focus:ring-2 focus:ring-amber-500"></textarea>
                 </div>
@@ -511,6 +486,25 @@
             <div class="p-4 sm:p-6 overflow-y-auto space-y-3 flex-1" id="patient-history-list"></div>
             <div class="px-5 sm:px-6 py-4 border-t border-slate-100 bg-slate-50 flex justify-end">
                 <button type="button" onclick="closePatientHistoryModal()" class="px-6 py-2.5 bg-slate-900 text-white font-semibold rounded-2xl text-xs">Chiudi</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sync Result Report Modal -->
+    <div id="sync-report-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-md hidden z-[80] flex items-center justify-center p-4">
+        <div class="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-md overflow-hidden flex flex-col border border-water-100">
+            <div class="px-6 py-4 border-b border-water-100 flex items-center justify-between bg-water-50/50">
+                <div class="flex items-center gap-2.5">
+                    <div class="w-8 h-8 rounded-full bg-water-100 text-water-700 flex items-center justify-center font-bold text-xs"><i class="fa-solid fa-rotate"></i></div>
+                    <h3 class="font-editorial text-base font-bold text-slate-900 italic">Esito Sincronizzazione Calendari</h3>
+                </div>
+                <button type="button" onclick="closeSyncReportModal()" class="text-slate-400 hover:text-slate-600 w-8 h-8 rounded-full flex items-center justify-center"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="p-6 space-y-4 overflow-y-auto max-h-[60vh]">
+                <div id="sync-report-content" class="text-xs space-y-3"></div>
+            </div>
+            <div class="px-6 py-4 border-t border-slate-100 bg-slate-50 flex justify-end">
+                <button type="button" onclick="closeSyncReportModal()" class="px-6 py-2.5 bg-water-700 hover:bg-water-800 text-white font-semibold rounded-2xl text-xs transition">Ho capito</button>
             </div>
         </div>
     </div>
@@ -677,6 +671,7 @@
         </div>
     </div>
 
+    <!-- Toast Notification -->
     <div id="toast" class="fixed bottom-6 right-6 z-50 bg-slate-900 text-white px-5 py-3 rounded-2xl shadow-2xl text-xs font-bold flex items-center gap-3 transition-all duration-300 transform translate-y-20 opacity-0 pointer-events-none">
         <i class="fa-solid fa-circle-check text-nature-400 text-sm"></i>
         <span id="toast-message">Operazione completata</span>
@@ -756,8 +751,8 @@
                     showPrivateView();
                     await loadAllDataFromFirestore();
                     setTimeout(() => {
-                        triggerIcalSync();
-                    }, 500);
+                        triggerIcalSync(true); // automatic sync on login
+                    }, 600);
                 } else if (user && user.email) {
                     await signOut(auth);
                     appState.isLoggedIn = false;
@@ -1006,7 +1001,7 @@
                     showPrivateView();
                     await loadAllDataFromFirestore();
                     showToast('Accesso effettuato con successo!');
-                    setTimeout(() => triggerIcalSync(), 500);
+                    setTimeout(() => triggerIcalSync(true), 600);
                 } else {
                     await signOut(auth);
                     showToast(`Email ${email} non autorizzata.`);
@@ -1083,16 +1078,19 @@
             document.getElementById('studio-date').disabled = false;
             document.getElementById('studio-time-start').disabled = false;
             document.getElementById('studio-time-end').disabled = false;
+            document.getElementById('studio-patient-select').disabled = false;
             document.getElementById('studio-title').classList.remove('bg-slate-200', 'text-slate-500');
             document.getElementById('studio-date').classList.remove('bg-slate-200', 'text-slate-500');
             document.getElementById('studio-time-start').classList.remove('bg-slate-200', 'text-slate-500');
             document.getElementById('studio-time-end').classList.remove('bg-slate-200', 'text-slate-500');
+            document.getElementById('studio-patient-select').classList.remove('bg-slate-200', 'text-slate-500');
 
             const today = new Date().toISOString().split('T')[0];
             document.getElementById('studio-date').value = today;
             document.getElementById('studio-time-start').value = '09:00';
             onStartTimeChange();
             document.getElementById('live-patient-notes-container').classList.add('hidden');
+            document.getElementById('patient-contact-info-container').classList.add('hidden');
 
             if (editEv) {
                 document.getElementById('studio-modal-title').textContent = 'Modifica / Gestisci Appuntamento';
@@ -1108,7 +1106,6 @@
                     let dEnd = new Date(editEv.end);
                     document.getElementById('studio-time-end').value = `${String(dEnd.getHours()).padStart(2, '0')}:${String(dEnd.getMinutes()).padStart(2, '0')}`;
                 }
-                document.getElementById('studio-notes').value = editEv.extendedProps?.notes || '';
                 if (editEv.extendedProps?.patientId) {
                     document.getElementById('studio-patient-select').value = editEv.extendedProps.patientId;
                     showLivePatientNotes(editEv.extendedProps.patientId);
@@ -1117,8 +1114,8 @@
                 // Check if external iCal event
                 if (editEv.id.startsWith('ical_')) {
                     document.getElementById('studio-event-is-external').value = 'true';
-                    document.getElementById('studio-modal-title').textContent = 'Appuntamento Poliambulatorio (Esterno)';
-                    // Lock core fields to read-only as requested
+                    document.getElementById('studio-modal-title').textContent = `Appuntamento Poliambulatorio (${editEv.extendedProps?.centerName || 'Esterno'})`;
+                    // Lock core appointment fields, allow only patient association & notes modification
                     document.getElementById('studio-title').disabled = true;
                     document.getElementById('studio-date').disabled = true;
                     document.getElementById('studio-time-start').disabled = true;
@@ -1143,17 +1140,14 @@
             
             if (!selId) {
                 document.getElementById('live-patient-notes-container').classList.add('hidden');
+                document.getElementById('patient-contact-info-container').classList.add('hidden');
                 return;
             }
 
             const pat = appState.patients.find(p => p.id === selId);
             if (pat) {
-                // If it's a studio appointment, auto update title and notes if empty
                 if (!isExternal) {
                     document.getElementById('studio-title').value = `Visita / Trattamento - ${pat.name}`;
-                    if (pat.phone || pat.email) {
-                        document.getElementById('studio-notes').value = `Contatti: ${pat.phone || ''} ${pat.email || ''}\nNote: ${pat.notes || ''}`;
-                    }
                 }
                 showLivePatientNotes(pat.id);
             }
@@ -1163,11 +1157,19 @@
             const pat = appState.patients.find(p => p.id === patientId);
             const container = document.getElementById('live-patient-notes-container');
             const textarea = document.getElementById('live-patient-notes');
-            if (pat && container && textarea) {
-                textarea.value = pat.notes || '';
-                container.classList.remove('hidden');
-            } else if (container) {
-                container.classList.add('hidden');
+            const contactContainer = document.getElementById('patient-contact-info-container');
+            const phoneInput = document.getElementById('studio-patient-phone');
+            const emailInput = document.getElementById('studio-patient-email');
+
+            if (pat) {
+                if (textarea) textarea.value = pat.notes || '';
+                if (container) container.classList.remove('hidden');
+                if (phoneInput) phoneInput.value = pat.phone || 'Non specificato';
+                if (emailInput) emailInput.value = pat.email || 'Non specificata';
+                if (contactContainer) contactContainer.classList.remove('hidden');
+            } else {
+                if (container) container.classList.add('hidden');
+                if (contactContainer) contactContainer.classList.add('hidden');
             }
         }
 
@@ -1193,7 +1195,6 @@
             const date = document.getElementById('studio-date').value;
             const startH = document.getElementById('studio-time-start').value;
             const endH = document.getElementById('studio-time-end').value;
-            const notes = document.getElementById('studio-notes').value.trim();
             const patientId = document.getElementById('studio-patient-select').value;
 
             const start = `${date}T${startH}:00`;
@@ -1203,13 +1204,11 @@
 
             let newEv;
             if (isExternal && existingEv) {
-                // Keep external event properties intact, only update patientId and notes
                 newEv = {
                     ...existingEv,
                     extendedProps: {
                         ...existingEv.extendedProps,
-                        patientId: patientId || null,
-                        notes: notes
+                        patientId: patientId || null
                     }
                 };
             } else {
@@ -1221,7 +1220,7 @@
                     backgroundColor: '#3f5e4e',
                     borderColor: '#3f5e4e',
                     textColor: '#ffffff',
-                    extendedProps: { notes, centerName: 'Studio Privato', patientId: patientId || null } 
+                    extendedProps: { centerName: 'Studio Privato', patientId: patientId || null } 
                 };
             }
 
@@ -1666,21 +1665,19 @@
             });
         }
 
-        // --- iCal Multi-Center Sync (Smart Matching & Event Preservation) ---
-        window.triggerIcalSync = async function() {
-            openIcalChangelogModal({ status: 'loading', centersReport: [], added: [], modified: [], deleted: [] });
-            
-            let centersReport = [];
-            let addedEvents = [];
-            let modifiedEvents = [];
-            let deletedEvents = [];
+        // --- iCal Multi-Center Sync with Detailed Report Log ---
+        window.triggerIcalSync = async function(isAutomatic = false) {
+            let addedCount = 0;
+            let modifiedCount = 0;
+            let deletedCount = 0;
+            let reportDetails = [];
+
             let activeIcalEventIds = new Set();
-            let oldEventsMap = new Map(appState.events.map(ev => [ev.id, ev]));
+            let oldEventsMap = new Map(appState.events.filter(e => e.id.startsWith('ical_')).map(ev => [ev.id, ev]));
 
             const icalCenters = appState.centers.filter(c => c.icalUrl && c.icalUrl.trim() !== '');
             if (icalCenters.length === 0) {
-                updateIcalChangelogModal({ status: 'completed', centersReport: [], added: [], modified: [], deleted: [] });
-                showToast('Nessun link iCal configurato.');
+                if (!isAutomatic) showToast('Nessun link iCal configurato.');
                 return;
             }
 
@@ -1715,8 +1712,6 @@
                 }
 
                 if (text && (text.includes('BEGIN:VCALENDAR') || text.includes('BEGIN:VEVENT'))) {
-                    centersReport.push({ name: center.name, success: true, message: 'Aggiornato con successo' });
-                    
                     const lines = text.split(/\r\n|\n|\r/);
                     let currentEvent = null;
 
@@ -1737,12 +1732,9 @@
                                     parsedEnd = new Date(new Date(parsedStart).getTime() + 3600000).toISOString();
                                 }
 
-                                // Check if event already exists to preserve patient association and notes
                                 let existingEv = oldEventsMap.get(eventId);
                                 let matchedPatientId = existingEv?.extendedProps?.patientId || null;
-                                let customNotes = existingEv?.extendedProps?.notes || currentEvent.description || 'Sincronizzato da iCal';
 
-                                // Smart Patient Matching if not already associated
                                 if (!matchedPatientId) {
                                     for (let p of appState.patients) {
                                         if (eventTitleClean.toLowerCase().includes(p.name.toLowerCase())) {
@@ -1760,24 +1752,23 @@
                                     backgroundColor: center.color,
                                     borderColor: center.color,
                                     textColor: '#ffffff',
-                                    extendedProps: { centerId: center.id, centerName: center.name, notes: customNotes, patientId: matchedPatientId }
+                                    extendedProps: { centerId: center.id, centerName: center.name, patientId: matchedPatientId }
                                 };
-
-                                if (!oldEventsMap.has(eventId)) {
-                                    addedEvents.push({ centerName: center.name, title: eventTitleClean, date: formatDateNice(parsedStart) });
-                                } else {
-                                    const oldEv = oldEventsMap.get(eventId);
-                                    if (oldEv.title !== eventTitleClean || oldEv.start !== parsedStart) {
-                                        modifiedEvents.push({ centerName: center.name, title: eventTitleClean, date: formatDateNice(parsedStart) });
-                                    }
-                                }
 
                                 const existingIdx = appState.events.findIndex(e => e.id === eventId);
                                 if (existingIdx >= 0) {
+                                    let oldEv = appState.events[existingIdx];
+                                    if (oldEv.title !== parsedEvent.title || oldEv.start !== parsedEvent.start || oldEv.end !== parsedEvent.end) {
+                                        modifiedCount++;
+                                        reportDetails.append ? null : reportDetails.push(`Modificato: ${parsedEvent.title} (${center.name})`);
+                                    }
                                     appState.events[existingIdx] = parsedEvent;
                                 } else {
+                                    addedCount++;
+                                    reportDetails.push(`Aggiunto: ${parsedEvent.title} (${center.name})`);
                                     appState.events.push(parsedEvent);
                                 }
+
                                 if (db && userId) {
                                     await setDoc(doc(db, 'artifacts', appId, 'users', userId, 'studio_events', eventId), parsedEvent).catch(()=>{});
                                 }
@@ -1797,20 +1788,14 @@
                             else if (line.startsWith('DESCRIPTION:')) currentEvent.description = line.substring(12).trim();
                         }
                     }
-                } else {
-                    centersReport.push({ name: center.name, success: false, message: 'Fallito (Verifica URL pubblico)' });
                 }
-
-                updateIcalChangelogModal({ status: 'loading', centersReport, added: addedEvents, modified: modifiedEvents, deleted: deletedEvents });
             }
 
-            appState.events.forEach(ev => {
-                if (ev.id.startsWith('ical_') && !activeIcalEventIds.has(ev.id)) {
-                    deletedEvents.push({ centerName: ev.extendedProps?.centerName || 'Poliambulatorio', title: ev.title, date: formatDateNice(ev.start) });
-                }
-            });
-
-            for (let remId of activeIcalEventIds.size > 0 ? Array.from(oldEventsMap.keys()).filter(id => id.startsWith('ical_') && !activeIcalEventIds.has(id)) : []) {
+            const removedIds = Array.from(oldEventsMap.keys()).filter(id => id.startsWith('ical_') && !activeIcalEventIds.has(id));
+            for (let remId of removedIds) {
+                let evToRem = oldEventsMap.get(remId);
+                deletedCount++;
+                reportDetails.push(`Rimosso: ${evToRem?.title || 'Appuntamento esterno'}`);
                 appState.events = appState.events.filter(e => e.id !== remId);
                 if (db && userId) {
                     try { await deleteDoc(doc(db, 'artifacts', appId, 'users', userId, 'studio_events', remId)); } catch(e){}
@@ -1819,8 +1804,42 @@
 
             if (calendarInstance) calendarInstance.refetchEvents();
             checkCalendarConflicts();
-            updateIcalChangelogModal({ status: 'completed', centersReport, added: addedEvents, modified: modifiedEvents, deleted: deletedEvents });
-            showToast('Sincronizzazione completata!');
+
+            if (!isAutomatic) {
+                showSyncReportModal(addedCount, modifiedCount, deletedCount, reportDetails);
+            }
+        }
+
+        function showSyncReportModal(added, modified, deleted, details) {
+            const content = document.getElementById('sync-report-content');
+            if (!content) return;
+
+            let html = '';
+            if (added === 0 && modified === 0 && deleted === 0) {
+                html = `<div class="p-4 bg-slate-50 border border-slate-200 rounded-2xl text-center text-slate-600 font-medium">Nessuna modifica avvenuta. I calendari sono già aggiornati.</div>`;
+            } else {
+                html = `
+                    <div class="space-y-2">
+                        <p class="font-bold text-slate-800">Riepilogo aggiornamenti:</p>
+                        <div class="grid grid-cols-3 gap-2 text-center">
+                            <div class="p-2.5 bg-emerald-50 border border-emerald-100 rounded-xl"><strong class="block text-sm text-emerald-800">${added}</strong><span class="text-[10px] text-emerald-600">Aggiunti</span></div>
+                            <div class="p-2.5 bg-amber-50 border border-amber-100 rounded-xl"><strong class="block text-sm text-amber-800">${modified}</strong><span class="text-[10px] text-amber-600">Modificati</span></div>
+                            <div class="p-2.5 bg-rose-50 border border-rose-100 rounded-xl"><strong class="block text-sm text-rose-800">${deleted}</strong><span class="text-[10px] text-rose-600">Rimossi</span></div>
+                        </div>
+                        ${details.length > 0 ? `
+                            <div class="mt-3 space-y-1 bg-slate-50 p-3 rounded-xl border border-slate-200 max-h-36 overflow-y-auto">
+                                ${details.map(d => `<div class="text-[11px] text-slate-600 flex items-center gap-1.5"><i class="fa-solid fa-circle text-[4px] text-nature-600"></i> ${d}</div>`).join('')}
+                            </div>
+                        ` : ''}
+                    </div>
+                `;
+            }
+            content.innerHTML = html;
+            document.getElementById('sync-report-modal').classList.remove('hidden');
+        }
+
+        window.closeSyncReportModal = function() {
+            document.getElementById('sync-report-modal').classList.add('hidden');
         }
 
         function normalizeGoogleCalendarUrl(url) {
@@ -1857,57 +1876,6 @@
             } catch(e) {
                 return new Date().toISOString();
             }
-        }
-
-        function formatDateNice(isoStr) {
-            try {
-                const d = new Date(isoStr);
-                return d.toLocaleDateString('it-IT', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' });
-            } catch(e) { return isoStr; }
-        }
-
-        window.openIcalChangelogModal = function(data) {
-            updateIcalChangelogModal(data);
-            document.getElementById('ical-changelog-modal').classList.remove('hidden');
-        }
-
-        function updateIcalChangelogModal(data) {
-            const banner = document.getElementById('sync-progress-banner');
-            const spinner = document.getElementById('sync-spinner');
-            const statusTitle = document.getElementById('sync-status-title');
-            const progressText = document.getElementById('sync-progress-text');
-            const centersSummary = document.getElementById('changelog-centers-summary');
-
-            if (data.status === 'loading') {
-                banner.className = 'p-4 bg-amber-50 border border-amber-200 rounded-2xl flex items-center gap-3 shadow-xs';
-                spinner.className = 'w-6 h-6 rounded-full bg-amber-500 animate-ping flex-shrink-0';
-                statusTitle.textContent = 'Aggiornamento in corso';
-                progressText.textContent = 'Sincronizzazione dei calendari dei poliambulatori in corso...';
-            } else {
-                banner.className = 'p-4 bg-nature-50 border border-nature-200 rounded-2xl flex items-center gap-3 shadow-xs';
-                spinner.className = 'w-6 h-6 rounded-full bg-nature-600 flex items-center justify-center text-white text-xs flex-shrink-0 font-bold';
-                spinner.innerHTML = '<i class="fa-solid fa-check"></i>';
-                statusTitle.textContent = 'Sincronizzazione completata';
-                progressText.textContent = 'Tutti i calendari sono stati analizzati con successo.';
-            }
-
-            if (data.centersReport && data.centersReport.length > 0) {
-                centersSummary.innerHTML = data.centersReport.map(c => `
-                    <div class="p-3 bg-white border border-slate-200 rounded-xl flex items-center justify-between text-xs shadow-2xs">
-                        <div class="flex items-center gap-2.5">
-                            <span class="w-3 h-3 rounded-full flex-shrink-0 ${c.success ? 'bg-emerald-500 shadow-xs shadow-emerald-200 animate-pulse' : 'bg-rose-500 shadow-xs shadow-rose-200'}"></span>
-                            <strong class="text-slate-900 font-editorial italic text-sm">${c.name}</strong>
-                        </div>
-                        <span class="text-[11px] font-semibold ${c.success ? 'text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full' : 'text-rose-600 bg-rose-50 px-2.5 py-0.5 rounded-full'}">${c.message}</span>
-                    </div>
-                `).join('');
-            } else {
-                centersSummary.innerHTML = `<div class="p-3 bg-slate-50 text-slate-400 text-xs italic rounded-xl">Nessun poliambulatorio con iCal associato.</div>`;
-            }
-        }
-
-        window.closeIcalChangelogModal = function() {
-            document.getElementById('ical-changelog-modal').classList.add('hidden');
         }
 
         let confirmCallback = null;
