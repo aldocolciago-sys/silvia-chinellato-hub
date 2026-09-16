@@ -175,7 +175,7 @@
                     </ul>
                 </div>
                 <div class="bg-gradient-to-br from-nature-50/90 via-water-50/70 to-warmth-50/60 p-6 sm:p-10 rounded-[2rem] sm:rounded-[2.5rem] border border-nature-100 space-y-6 shadow-inner text-center flex flex-col items-center justify-center">
-                    <div class="w-44 h-44 sm:w-60 sm:h-60 rounded-full bg-white border-4 border-nature-200 flex items-center justify-center shadow-2xl overflow-hidden mx-auto flex-shrink-0 hover:scale-105 transition duration-500">
+                    <div class="w-36 h-36 sm:w-48 sm:h-48 rounded-full bg-white border-4 border-nature-200 flex items-center justify-center shadow-2xl overflow-hidden mx-auto flex-shrink-0 hover:scale-105 transition duration-500">
                         <img src="Logo.jpeg" alt="Logo Silvia Chinellato" class="w-full h-full object-cover" onerror="this.onerror=null; this.src='https://placehold.co/300x300/3f5e4e/ffffff?text=SC'">
                     </div>
                     <blockquote class="text-xs sm:text-sm text-slate-700 leading-relaxed font-editorial italic text-base sm:text-lg max-w-sm">
@@ -261,7 +261,7 @@
             </section>
         </main>
 
-        <footer class="bg-white/70 border-t border-nature-100/80 py-8 sm:py-10 text-center text-slate-500 mt-16 font-editorial italic text-base px-4">
+        <footer class="bg-white/70 border-t border-nature-100/80 py-8 sm:py-10 text-center text-xs text-slate-500 mt-16 font-light italic-title text-sm px-4">
             <p>© 2026 Silvia Chinellato • Tutti i diritti riservati • Osteopata & Idrocolon Terapista</p>
         </footer>
     </div>
@@ -359,6 +359,7 @@
             </div>
             <form id="studio-event-form" class="p-5 sm:p-6 space-y-4 overflow-y-auto" onsubmit="handleStudioEventSubmit(event)">
                 <input type="hidden" id="studio-edit-event-id">
+                <input type="hidden" id="studio-event-is-external" value="false">
                 
                 <div class="space-y-1">
                     <label class="text-[11px] font-bold text-slate-600">Sede / Poliambulatorio</label>
@@ -430,7 +431,7 @@
         </div>
     </div>
 
-    <!-- QUICK PATIENT MODAL (CREATED FROM EVENT EDIT) -->
+    <!-- QUICK PATIENT MODAL -->
     <div id="quick-patient-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-md hidden z-[70] flex items-center justify-center p-4">
         <div class="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-sm overflow-hidden flex flex-col border border-amber-100">
             <div class="px-5 py-4 border-b border-amber-100 flex items-center justify-between bg-amber-50/50">
@@ -534,7 +535,7 @@
         </div>
     </div>
 
-    <!-- SYNC REPORT MODAL WITH PROGRESS & LOGS -->
+    <!-- SYNC REPORT MODAL -->
     <div id="sync-report-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-md hidden z-[80] flex items-center justify-center p-4">
         <div class="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-xl overflow-hidden flex flex-col border border-water-100 max-h-[90vh]">
             <div class="px-6 py-4 border-b border-water-100 flex items-center justify-between bg-water-50/50">
@@ -559,6 +560,7 @@
         </div>
     </div>
 
+    <!-- TREATMENTS ADMIN MODAL -->
     <div id="treatments-admin-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-md hidden z-50 flex items-center justify-center p-4">
         <div class="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-2xl overflow-hidden flex flex-col max-h-[90vh]">
             <div class="px-5 sm:px-6 py-4 sm:py-5 border-b border-nature-100 flex items-center justify-between bg-nature-50/50">
@@ -602,6 +604,7 @@
         </div>
     </div>
 
+    <!-- CENTERS ADMIN MODAL -->
     <div id="centers-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-md hidden z-50 flex items-center justify-center p-4">
         <div class="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-2xl overflow-hidden flex flex-col max-h-[90vh]">
             <div class="px-5 sm:px-6 py-4 sm:py-5 border-b border-nature-100 flex items-center justify-between bg-nature-50/50">
@@ -632,7 +635,7 @@
                             </select>
                         </div>
                         <div class="space-y-1">
-                            <label class="text-[10px] font-bold text-slate-600">Colore Identificativo (Preset Mobile)</label>
+                            <label class="text-[10px] font-bold text-slate-600">Colore Identificativo (Subset Semplice)</label>
                             <input type="hidden" id="new-center-color" value="#3f5e4e">
                             <div class="flex items-center gap-2.5 pt-1" id="center-color-preset-container">
                                 <button type="button" onclick="selectCenterColor('#3f5e4e', this)" class="w-7 h-7 rounded-full bg-[#3f5e4e] ring-offset-2 ring-2 ring-nature-600 transition shadow-xs" data-color="#3f5e4e" title="Verde Natura"></button>
@@ -675,6 +678,7 @@
         </div>
     </div>
 
+    <!-- NEWS ADMIN MODAL -->
     <div id="news-admin-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-md hidden z-50 flex items-center justify-center p-4">
         <div class="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-2xl overflow-hidden flex flex-col max-h-[90vh]">
             <div class="px-5 sm:px-6 py-4 sm:py-5 border-b border-nature-100 flex items-center justify-between bg-water-50/50">
@@ -706,6 +710,7 @@
         </div>
     </div>
 
+    <!-- PREP ADMIN MODAL -->
     <div id="prep-admin-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-md hidden z-50 flex items-center justify-center p-4">
         <div class="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-2xl overflow-hidden flex flex-col max-h-[90vh]">
             <div class="px-5 sm:px-6 py-4 border-b border-nature-100 flex items-center justify-between bg-nature-50/50">
@@ -733,6 +738,7 @@
         </div>
     </div>
 
+    <!-- CONFIRM MODAL -->
     <div id="confirm-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-md hidden z-[70] flex items-center justify-center p-4">
         <div class="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-sm overflow-hidden flex flex-col border border-nature-100 p-6 text-center space-y-4">
             <div class="w-14 h-14 rounded-full bg-rose-50 text-rose-600 flex items-center justify-center mx-auto text-xl shadow-inner">
@@ -813,7 +819,6 @@
                     updateFirebaseStatus(true, 'Connesso');
                     await loadAllDataFromFirestore();
                 } catch (err) {
-                    console.warn("Auth initialization warning:", err);
                     updateFirebaseStatus(false, 'Offline Mode');
                     renderAllPublicUI();
                 }
@@ -834,7 +839,6 @@
                 }
             });
         } catch (e) {
-            console.warn("Firebase initialization error:", e);
             userId = 'offline-user';
             updateFirebaseStatus(false, 'Non disponibile');
             renderAllPublicUI();
@@ -1136,7 +1140,7 @@
             if (!startVal) return;
 
             let [h, m] = startVal.split(':').map(Number);
-            m += 60; // Default +1 hour
+            m += 60;
             if (m >= 60) {
                 h += Math.floor(m / 60);
                 m = m % 60;
@@ -1163,8 +1167,20 @@
             const form = document.getElementById('studio-event-form');
             form.reset();
             document.getElementById('studio-edit-event-id').value = '';
+            document.getElementById('studio-event-is-external').value = 'false';
             document.getElementById('studio-delete-btn').classList.add('hidden');
             document.getElementById('studio-modal-title').textContent = 'Nuovo Appuntamento Studio / Sede';
+            
+            document.getElementById('studio-title').disabled = false;
+            document.getElementById('studio-date').disabled = false;
+            document.getElementById('studio-time-start').disabled = false;
+            document.getElementById('studio-time-end').disabled = false;
+            document.getElementById('studio-center-select').disabled = false;
+            document.getElementById('studio-title').classList.remove('bg-slate-200', 'text-slate-500');
+            document.getElementById('studio-date').classList.remove('bg-slate-200', 'text-slate-500');
+            document.getElementById('studio-time-start').classList.remove('bg-slate-200', 'text-slate-500');
+            document.getElementById('studio-time-end').classList.remove('bg-slate-200', 'text-slate-500');
+            document.getElementById('studio-center-select').classList.remove('bg-slate-200', 'text-slate-500');
 
             const today = new Date().toISOString().split('T')[0];
             document.getElementById('studio-date').value = today;
@@ -1196,7 +1212,18 @@
                 }
 
                 if (editEv.id && editEv.id.startsWith('ical_')) {
+                    document.getElementById('studio-event-is-external').value = 'true';
                     document.getElementById('studio-modal-title').textContent = `Appuntamento Poliambulatorio (${editEv.extendedProps?.centerName || 'Esterno'})`;
+                    document.getElementById('studio-title').disabled = true;
+                    document.getElementById('studio-date').disabled = true;
+                    document.getElementById('studio-time-start').disabled = true;
+                    document.getElementById('studio-time-end').disabled = true;
+                    document.getElementById('studio-center-select').disabled = true;
+                    document.getElementById('studio-title').classList.add('bg-slate-200', 'text-slate-500');
+                    document.getElementById('studio-date').classList.add('bg-slate-200', 'text-slate-500');
+                    document.getElementById('studio-time-start').classList.add('bg-slate-200', 'text-slate-500');
+                    document.getElementById('studio-time-end').classList.add('bg-slate-200', 'text-slate-500');
+                    document.getElementById('studio-center-select').classList.add('bg-slate-200', 'text-slate-500');
                 }
 
                 document.getElementById('studio-delete-btn').classList.remove('hidden');
@@ -1245,6 +1272,8 @@
 
         window.onPatientSelectChange = function() {
             const selId = document.getElementById('studio-patient-select').value;
+            const isExternal = document.getElementById('studio-event-is-external').value === 'true';
+            
             if (!selId) {
                 document.getElementById('live-patient-notes-container').classList.add('hidden');
                 document.getElementById('patient-contact-info-container').classList.add('hidden');
@@ -1253,7 +1282,9 @@
 
             const pat = appState.patients.find(p => p.id === selId);
             if (pat) {
-                document.getElementById('studio-title').value = `Visita / Trattamento - ${pat.name}`;
+                if (!isExternal) {
+                    document.getElementById('studio-title').value = `Visita / Trattamento - ${pat.name}`;
+                }
                 showLivePatientNotes(pat.id);
             }
         }
@@ -1295,6 +1326,7 @@
         window.handleStudioEventSubmit = async function(e) {
             e.preventDefault();
             const id = document.getElementById('studio-edit-event-id').value || 'evt_' + Date.now();
+            const isExternal = document.getElementById('studio-event-is-external').value === 'true';
             const title = document.getElementById('studio-title').value.trim();
             const date = document.getElementById('studio-date').value;
             const startH = document.getElementById('studio-time-start').value;
@@ -1312,7 +1344,7 @@
             let existingEv = appState.events.find(ev => ev.id === id);
 
             let newEv;
-            if (existingEv && existingEv.id.startsWith('ical_')) {
+            if (isExternal && existingEv) {
                 newEv = {
                     ...existingEv,
                     extendedProps: {
@@ -2065,7 +2097,6 @@
 
             const removedIds = Array.from(oldEventsMap.keys()).filter(id => id.startsWith('ical_') && !activeIcalEventIds.has(id));
             for (let remId of removedIds) {
-                let evToRem = oldEventsMap.get(remId);
                 deletedTotal++;
                 appState.events = appState.events.filter(e => e.id !== remId);
                 if (db && userId) {
