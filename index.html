@@ -194,7 +194,7 @@
                 <div class="max-w-xl mx-auto space-y-2">
                     <span class="text-xs font-bold text-nature-700 uppercase tracking-widest italic-title sm:text-sm">Strutture Partner</span>
                     <h3 class="font-editorial text-2xl sm:text-4xl font-bold text-slate-900 tracking-tight italic">Dove Ricevo (Poliambulatori)</h3>
-                    <p class="text-xs sm:text-sm text-slate-500 font-light">Prenotazioni dirette e link utili presso le singole strutture di fiducia</p>
+                    <p class="text-xs sm:text-sm text-slate-500 font-light">Informazioni e prenotazioni dirette presso le singole strutture di fiducia</p>
                 </div>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8 text-left" id="public-centers-grid"></div>
             </section>
@@ -343,16 +343,11 @@
                     <span>Accedi con Google</span>
                 </button>
 
-                <button onclick="handleTestAdminLogin()" class="w-full py-2.5 bg-nature-700 hover:bg-nature-800 text-white font-semibold rounded-2xl shadow-sm transition text-xs italic-title">
-                    <i class="fa-solid fa-bolt mr-1.5"></i> Accesso Rapido Test Admin
-                </button>
-
                 <div id="login-error-msg" class="text-xs text-rose-600 font-medium hidden"></div>
             </div>
         </div>
     </div>
 
-    <!-- Studio / Appointment Modal -->
     <div id="studio-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-md hidden z-50 flex items-center justify-center p-4">
         <div class="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-md overflow-hidden flex flex-col border border-nature-100 max-h-[90vh]">
             <div class="px-5 sm:px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-nature-50/50">
@@ -1022,16 +1017,6 @@
             } catch (err) {
                 showToast("Errore durante l'accesso Google.");
             }
-        }
-
-        window.handleTestAdminLogin = function() {
-            appState.isLoggedIn = true;
-            appState.currentUserEmail = 'silviachine@gmail.com';
-            userId = 'test-admin-uid';
-            closeLoginModal();
-            showPrivateView();
-            loadAllDataFromFirestore();
-            showToast('Accesso Test Admin effettuato!');
         }
 
         window.handleLogout = async function() {
