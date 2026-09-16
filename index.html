@@ -65,7 +65,7 @@
         .fc .fc-toolbar-title { font-family: 'Cormorant Garamond', Georgia, serif; font-size: 0.9rem !important; font-weight: 700; color: #22332b; font-style: italic; }
         .fc .fc-button-primary { background-color: #3f5e4e !important; border-color: #3f5e4e !important; border-radius: 0.5rem !important; font-size: 0.65rem !important; font-weight: 600 !important; text-transform: capitalize; padding: 0.25rem 0.5rem !important; box-shadow: 0 1px 2px rgba(63, 94, 78, 0.15); }
         .fc .fc-button-primary:hover { background-color: #2f473c !important; border-color: #2f473c !important; }
-        .fc-event { border-radius: 8px !important; padding: 2px 4px !important; font-size: 0.68rem !important; border: none !important; font-weight: 500; box-shadow: 0 1px 3px rgba(0,0,0,0.06); cursor: pointer; }
+        .fc-event { border-radius: 8px !important; padding: 2px 4px !important; font-size: 0.68rem !important; font-weight: 500; box-shadow: 0 1px 3px rgba(0,0,0,0.06); cursor: pointer; }
         
         @media (max-width: 640px) {
             .fc .fc-toolbar { flex-direction: row; flex-wrap: wrap; gap: 0.2rem; justify-content: center; }
@@ -171,8 +171,8 @@
                     </ul>
                 </div>
                 <div class="bg-gradient-to-br from-nature-50/90 via-water-50/70 to-warmth-50/60 p-6 sm:p-10 rounded-[2rem] sm:rounded-[2.5rem] border border-nature-100 space-y-6 shadow-inner text-center flex flex-col items-center justify-center">
-                    <div class="w-56 h-56 sm:w-72 sm:h-72 rounded-full bg-white border-4 border-nature-200 flex items-center justify-center shadow-2xl overflow-hidden mx-auto flex-shrink-0 hover:scale-105 transition duration-500">
-                        <img src="Logo.jpeg" alt="Logo Silvia Chinellato" class="w-full h-full object-cover" onerror="this.onerror=null; this.src='https://placehold.co/300x300/3f5e4e/ffffff?text=Silvia+Chinellato'">
+                    <div class="w-36 h-36 sm:w-48 sm:h-48 rounded-full bg-white border-4 border-nature-200 flex items-center justify-center shadow-2xl overflow-hidden mx-auto flex-shrink-0 hover:scale-105 transition duration-500">
+                        <img src="Logo.jpeg" alt="Logo Silvia Chinellato" class="w-full h-full object-cover" onerror="this.onerror=null; this.src='https://placehold.co/300x300/3f5e4e/ffffff?text=SC'">
                     </div>
                     <blockquote class="text-xs sm:text-sm text-slate-700 leading-relaxed font-editorial italic text-base sm:text-lg max-w-sm">
                         "La salute non è solo assenza di malattia, ma uno stato di profonda armonia tra corpo, mente ed energia vitale."
@@ -310,6 +310,15 @@
             </div>
         </header>
 
+        <!-- Conflict Warning Banner Container -->
+        <div id="calendar-conflict-banner" class="hidden bg-rose-50 border-b border-rose-200 px-4 py-2 flex items-center justify-between gap-3 text-xs text-rose-800 flex-shrink-0 z-20 shadow-xs">
+            <div class="flex items-center gap-2">
+                <i class="fa-solid fa-triangle-exclamation text-rose-600 text-sm animate-bounce"></i>
+                <span id="conflict-banner-text" class="font-bold">Attenzione: Rilevate sovrapposizioni orarie in agenda!</span>
+            </div>
+            <button onclick="scrollToConflict()" class="px-3 py-1 bg-rose-600 text-white rounded-lg font-semibold hover:bg-rose-700 transition">Verifica</button>
+        </div>
+
         <div class="bg-white/70 border-b border-nature-100 px-3 py-1 flex items-center gap-2 text-xs flex-shrink-0 overflow-x-auto no-scrollbar" id="header-centers-legend"></div>
 
         <main class="flex-1 bg-white/40 backdrop-blur-sm p-1.5 sm:p-3 overflow-hidden flex flex-col">
@@ -357,6 +366,18 @@
                     </select>
                 </div>
 
+                <!-- Patient Contact Phone and Email fields -->
+                <div id="patient-contact-info-container" class="grid grid-cols-2 gap-3 hidden">
+                    <div class="space-y-1">
+                        <label class="text-[10px] font-bold text-slate-500">Telefono Paziente</label>
+                        <input type="text" id="studio-patient-phone" readonly class="w-full px-3 py-2 bg-slate-100 border border-slate-200 rounded-xl text-xs text-slate-600">
+                    </div>
+                    <div class="space-y-1">
+                        <label class="text-[10px] font-bold text-slate-500">Email Paziente</label>
+                        <input type="text" id="studio-patient-email" readonly class="w-full px-3 py-2 bg-slate-100 border border-slate-200 rounded-xl text-xs text-slate-600">
+                    </div>
+                </div>
+
                 <div class="space-y-1">
                     <label class="text-[11px] font-bold text-slate-600">Titolo / Trattamento *</label>
                     <input type="text" id="studio-title" required placeholder="Es. Trattamento Osteopatico" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-xs">
@@ -382,19 +403,7 @@
                     </div>
                 </div>
 
-                <!-- Patient Contact Phone and Email fields -->
-                <div id="patient-contact-info-container" class="grid grid-cols-2 gap-3 hidden">
-                    <div class="space-y-1">
-                        <label class="text-[10px] font-bold text-slate-500">Telefono Paziente</label>
-                        <input type="text" id="studio-patient-phone" readonly class="w-full px-3 py-2 bg-slate-100 border border-slate-200 rounded-xl text-xs text-slate-600">
-                    </div>
-                    <div class="space-y-1">
-                        <label class="text-[10px] font-bold text-slate-500">Email Paziente</label>
-                        <input type="text" id="studio-patient-email" readonly class="w-full px-3 py-2 bg-slate-100 border border-slate-200 rounded-xl text-xs text-slate-600">
-                    </div>
-                </div>
-
-                <!-- Patient notes container -->
+                <!-- Patient notes container (live synced) -->
                 <div id="live-patient-notes-container" class="space-y-1 hidden bg-amber-50/60 p-3.5 rounded-2xl border border-amber-200">
                     <label class="text-[11px] font-bold text-amber-900 flex items-center justify-between">
                         <span><i class="fa-solid fa-user-pen mr-1"></i> Note Anamnestiche Paziente</span>
@@ -485,9 +494,9 @@
         </div>
     </div>
 
-    <!-- Sync Progress & Detailed Report Modal -->
+    <!-- Sync Progress & Detailed Report Modal with instant live steps -->
     <div id="sync-report-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-md hidden z-[80] flex items-center justify-center p-4">
-        <div class="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-lg overflow-hidden flex flex-col border border-water-100">
+        <div class="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-xl overflow-hidden flex flex-col border border-water-100">
             <div class="px-6 py-4 border-b border-water-100 flex items-center justify-between bg-water-50/50">
                 <div class="flex items-center gap-2.5">
                     <div class="w-8 h-8 rounded-full bg-water-100 text-water-700 flex items-center justify-center font-bold text-xs"><i class="fa-solid fa-rotate animate-spin" id="sync-spinner"></i></div>
@@ -836,6 +845,7 @@
                 renderPatientsList();
                 populatePatientDropdown();
                 if (calendarInstance) calendarInstance.refetchEvents();
+                checkCalendarConflicts();
             } catch (err) {
                 console.warn("Error loading private data:", err);
             }
@@ -864,7 +874,10 @@
             renderPrepManagementList();
             renderPatientsList();
             populatePatientDropdown();
-            setTimeout(() => initCalendar(), 100);
+            setTimeout(() => {
+                initCalendar();
+                checkCalendarConflicts();
+            }, 100);
         }
 
         function renderAllPublicUI() {
@@ -1756,7 +1769,6 @@
                                     parsedEnd = new Date(new Date(parsedStart).getTime() + 3600000).toISOString();
                                 }
 
-                                // Format date & time for detailed reporting
                                 let dObj = new Date(parsedStart);
                                 let dateFormatted = dObj.toLocaleDateString('it-IT', { day: 'numeric', month: 'short', year: 'numeric' });
                                 let timeFormatted = `${String(dObj.getHours()).padStart(2,'0')}:${String(dObj.getMinutes()).padStart(2,'0')}`;
@@ -1862,18 +1874,18 @@
                             <div class="p-2.5 bg-rose-50 border border-rose-100 rounded-xl"><strong class="block text-sm text-rose-800">${deleted}</strong><span class="text-[10px] text-rose-600">Rimossi</span></div>
                         </div>
                         ${details.length > 0 ? `
-                            <div class="mt-3 space-y-2 bg-slate-50 p-3 rounded-2xl border border-slate-200 max-h-56 overflow-y-auto">
+                            <div class="mt-3 space-y-2 bg-slate-50 p-3 rounded-2xl border border-slate-200 max-h-64 overflow-y-auto">
                                 ${details.map(item => {
                                     let badgeColor = item.type === 'added' ? 'bg-emerald-100 text-emerald-800' : (item.type === 'modified' ? 'bg-amber-100 text-amber-800' : 'bg-rose-100 text-rose-800');
                                     let labelText = item.type === 'added' ? 'Aggiunto' : (item.type === 'modified' ? 'Modificato' : 'Rimosso');
                                     return `
-                                        <div class="p-2.5 bg-white border border-slate-200 rounded-xl text-xs space-y-1 shadow-2xs">
+                                        <div class="p-3 bg-white border border-slate-200 rounded-xl text-xs space-y-1 shadow-2xs">
                                             <div class="flex items-center justify-between">
                                                 <span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${badgeColor}">${labelText}</span>
-                                                <span class="text-[11px] font-semibold text-slate-700"><i class="fa-regular fa-calendar text-nature-600 mr-1"></i> ${item.dateStr} ore ${item.timeStr}</span>
+                                                <span class="text-[11px] font-bold text-slate-700 bg-nature-50 px-2 py-0.5 rounded-md"><i class="fa-regular fa-calendar text-nature-600 mr-1"></i> ${item.dateStr} • ${item.timeStr}</span>
                                             </div>
-                                            <p class="font-editorial text-sm font-bold text-slate-900 italic">${item.title}</p>
-                                            <p class="text-[10px] text-slate-500"><i class="fa-solid fa-hospital text-nature-600 mr-1"></i> ${item.centerName}</p>
+                                            <p class="font-editorial text-sm font-bold text-slate-900 italic pt-0.5">${item.title}</p>
+                                            <p class="text-[11px] text-nature-700 font-medium"><i class="fa-solid fa-hospital text-nature-600 mr-1"></i> ${item.centerName}</p>
                                         </div>
                                     `;
                                 }).join('')}
@@ -1945,6 +1957,9 @@
         function checkCalendarConflicts() {
             let conflictCount = 0;
             const events = appState.events;
+            let conflictBanner = document.getElementById('calendar-conflict-banner');
+            let bannerText = document.getElementById('conflict-banner-text');
+
             for (let i = 0; i < events.length; i++) {
                 for (let j = i + 1; j < events.length; j++) {
                     let e1 = events[i];
@@ -1959,8 +1974,18 @@
                     }
                 }
             }
+
             if (conflictCount > 0) {
-                console.warn(`Attenzione: rilevate ${conflictCount} sovrapposizioni orarie in agenda.`);
+                if (conflictBanner) conflictBanner.classList.remove('hidden');
+                if (bannerText) bannerText.textContent = `Attenzione: Rilevate ${conflictCount} sovrapposizioni orarie in agenda!`;
+            } else {
+                if (conflictBanner) conflictBanner.classList.add('hidden');
+            }
+        }
+
+        window.scrollToConflict = function() {
+            if (calendarInstance) {
+                calendarInstance.today();
             }
         }
 
@@ -1972,15 +1997,46 @@
                 headerToolbar: { left: 'prev,next today', center: 'title', right: 'dayGridMonth,timeGridWeek,timeGridDay' },
                 locale: 'it',
                 events: function(fetchInfo, successCallback) {
-                    const mappedEvents = appState.events.map(ev => {
+                    const events = appState.events;
+                    const mappedEvents = events.map((ev, index) => {
                         const center = appState.centers.find(c => c.id === ev.extendedProps?.centerId);
-                        const color = center ? center.color : (ev.backgroundColor || '#3f5e4e');
-                        return { ...ev, backgroundColor: color, borderColor: color, textColor: '#ffffff' };
+                        let color = center ? center.color : (ev.backgroundColor || '#3f5e4e');
+                        
+                        // Check if this event overlaps with any other event
+                        let hasConflict = false;
+                        let start1 = new Date(ev.start).getTime();
+                        let end1 = new Date(ev.end || ev.start).getTime();
+                        for (let k = 0; k < events.length; k++) {
+                            if (k === index) continue;
+                            let other = events[k];
+                            let start2 = new Date(other.start).getTime();
+                            let end2 = new Date(other.end || other.start).getTime();
+                            if (start1 < end2 && start2 < end1) {
+                                hasConflict = true;
+                                break;
+                            }
+                        }
+
+                        let titlePrefix = hasConflict ? '⚠️ [CONFLITTO] ' : '';
+                        return { 
+                            ...ev, 
+                            title: titlePrefix + ev.title,
+                            backgroundColor: color, 
+                            borderColor: hasConflict ? '#dc2626' : color, 
+                            borderWidth: hasConflict ? '3px' : '1px',
+                            textColor: '#ffffff',
+                            classNames: hasConflict ? ['ring-4', 'ring-rose-500', 'animate-pulse'] : []
+                        };
                     });
                     successCallback(mappedEvents);
                 },
                 eventClick: function(info) {
-                    openStudioModal(info.event);
+                    // Strip conflict tag if present in title for modal editing
+                    let cleanEv = {
+                        ...info.event,
+                        title: info.event.title.replace('⚠️ [CONFLITTO] ', '')
+                    };
+                    openStudioModal(cleanEv);
                 },
                 editable: false,
                 height: '100%'
