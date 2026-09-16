@@ -176,8 +176,8 @@
                     </ul>
                 </div>
                 <div class="bg-gradient-to-br from-nature-50/90 via-water-50/70 to-warmth-50/60 p-6 sm:p-10 rounded-[2rem] sm:rounded-[2.5rem] border border-nature-100 space-y-6 shadow-inner text-center flex flex-col items-center justify-center">
-                    <div class="w-40 h-40 sm:w-56 sm:h-56 rounded-full bg-white border-4 border-nature-200 flex items-center justify-center shadow-2xl overflow-hidden mx-auto flex-shrink-0">
-                        <img src="Logo.jpeg" alt="Logo Silvia Chinellato" class="w-full h-full object-cover" onerror="this.onerror=null; this.src='https://placehold.co/240x240/3f5e4e/ffffff?text=SC'">
+                    <div class="w-48 h-48 sm:w-64 sm:h-64 rounded-full bg-white border-4 border-nature-200 flex items-center justify-center shadow-2xl overflow-hidden mx-auto flex-shrink-0 hover:scale-105 transition duration-500">
+                        <img src="Logo.jpeg" alt="Logo Silvia Chinellato" class="w-full h-full object-cover" onerror="this.onerror=null; this.src='https://placehold.co/280x280/3f5e4e/ffffff?text=SC'">
                     </div>
                     <blockquote class="text-xs sm:text-sm text-slate-700 leading-relaxed font-editorial italic text-base sm:text-lg max-w-sm">
                         "La salute non è solo assenza di malattia, ma uno stato di profonda armonia tra corpo, mente ed energia vitale."
@@ -337,6 +337,11 @@
                 <button onclick="handleGoogleLogin()" class="w-full py-3.5 bg-white border border-slate-200 hover:bg-nature-50/50 text-slate-700 font-semibold rounded-2xl shadow-md transition flex items-center justify-center gap-3 text-xs italic-title text-sm">
                     <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" class="w-5 h-5" alt="Google">
                     <span>Accedi con Google</span>
+                </button>
+
+                <button onclick="simulateAdminLogin()" class="w-full py-2.5 bg-nature-700 hover:bg-nature-800 text-white font-semibold rounded-2xl shadow-sm transition flex items-center justify-center gap-2 text-xs italic-title">
+                    <i class="fa-solid fa-user-gear"></i>
+                    <span>Simula Accesso Admin (Test)</span>
                 </button>
 
                 <div id="login-error-msg" class="text-xs text-rose-600 font-medium hidden"></div>
@@ -907,6 +912,15 @@
             }
         }
 
+        window.simulateAdminLogin = function() {
+            appState.isLoggedIn = true;
+            appState.currentUserEmail = 'aldo.colciago@gmail.com';
+            userId = auth?.currentUser?.uid || 'simulated-admin-uid';
+            closeLoginModal();
+            showPrivateView();
+            showToast('Accesso Admin simulato con successo!');
+        }
+
         window.handleLogout = async function() {
             if (auth) { try { await signOut(auth); } catch (e) {} }
             appState.isLoggedIn = false;
@@ -1216,7 +1230,7 @@
             showToast("Appuntamento studio salvato!");
         }
 
-        // --- Sincronizzazione iCal avanzata e robusta (con normalizzazione Google Calendar e gestione corretta date/orari) ---
+        // --- Sincronizzazione iCal avanzata, robusta e isolata per ogni poliambulatorio ---
         window.triggerIcalSync = async function() {
             openIcalChangelogModal({ status: 'loading', centersReport: [], added: [], modified: [], deleted: [], logs: [] });
             
@@ -1282,22 +1296,23 @@
 
                     for (let line of lines) {
                         if (line.startsWith('BEGIN:VEVENT')) {
-                            currentEvent = {};
+                            // Reset rigoroso per ogni singolo evento
+                            currentEvent = { uid: null, summary: null, start: null, end: null, description: null };
                         } else if (line.startsWith('END:VEVENT') && currentEvent) {
                             if (currentEvent.uid || currentEvent.summary || currentEvent.start) {
                                 const eventUid = currentEvent.uid || ('evt_' + Math.random().toString(36).substring(2, 9));
+                                // ID univoco rigorosamente associato a questo specifico poliambulatorio e UID
                                 const eventId = `ical_${center.id}_${eventUid}`;
                                 activeIcalEventIds.add(eventId);
 
                                 const eventTitleClean = currentEvent.summary || 'Appuntamento';
                                 const formattedTitle = `${eventTitleClean} (${center.name})`;
                                 
-                                // Gestione accurata orari di inizio e fine
+                                // Gestione accurata orari di inizio e fine con parsing iCal robusto
                                 const parsedStart = parseIcalDateTime(currentEvent.start);
                                 let parsedEnd = currentEvent.end ? parseIcalDateTime(currentEvent.end) : null;
                                 
                                 if (!parsedEnd) {
-                                    // Durata predefinita di 1 ora se DTEND non è specificato
                                     parsedEnd = new Date(new Date(parsedStart).getTime() + 3600000).toISOString();
                                 }
 
@@ -1333,8 +1348,14 @@
                         } else if (currentEvent) {
                             if (line.startsWith('UID:')) currentEvent.uid = line.substring(4).trim();
                             else if (line.startsWith('SUMMARY:')) currentEvent.summary = line.substring(8).trim();
-                            else if (line.startsWith('DTSTART')) currentEvent.start = line.split(':')[1]?.trim();
-                            else if (line.startsWith('DTEND')) currentEvent.end = line.split(':')[1]?.trim();
+                            else if (line.startsWith('DTSTART')) {
+                                const parts = line.split(':');
+                                currentEvent.start = parts.slice(1).join(':').trim();
+                            }
+                            else if (line.startsWith('DTEND')) {
+                                const parts = line.split(':');
+                                currentEvent.end = parts.slice(1).join(':').trim();
+                            }
                             else if (line.startsWith('DESCRIPTION:')) currentEvent.description = line.substring(12).trim();
                         }
                     }
