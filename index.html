@@ -102,7 +102,7 @@
                     <a href="#contatti-pubblica" class="hover:text-nature-700 transition">Contatti</a>
                 </nav>
 
-                <div class="flex flex-col items-end gap-1">
+                <div class="flex items-center gap-2">
                     <button onclick="openLoginModal()" class="px-4 py-2 bg-gradient-to-r from-nature-600 to-nature-800 hover:from-nature-700 hover:to-nature-900 text-white font-medium rounded-full text-xs shadow-md shadow-nature-200/50 transition flex items-center gap-1.5 italic-title">
                         <i class="fa-solid fa-lock text-[10px]"></i> <span>Area Riservata</span>
                     </button>
@@ -247,10 +247,11 @@
 
                     <a href="mailto:silviachine@gmail.com" class="bg-water-50/80 p-6 sm:p-8 rounded-3xl border border-water-100 flex flex-col items-center text-center space-y-3 shadow-xs hover:shadow-md transition group">
                         <div class="w-14 h-14 rounded-2xl bg-water-600 text-white flex items-center justify-center text-xl shadow-md group-hover:scale-105 transition">
-                            <h4 class="font-editorial text-xl font-bold text-slate-900 italic">Email</h4>
-                            <p class="text-xs text-slate-600 font-light leading-relaxed font-editorial italic text-sm">Scrivi comodamente per prendere un appuntamento o per richieste.</p>
-                            <span class="text-xs font-bold text-water-700 underline font-editorial italic text-lg">silviachine@gmail.com</span>
+                            <i class="fa-solid fa-envelope"></i>
                         </div>
+                        <h4 class="font-editorial text-xl font-bold text-slate-900 italic">Email</h4>
+                        <p class="text-xs text-slate-600 font-light leading-relaxed font-editorial italic text-sm">Scrivi comodamente per prendere un appuntamento o per richieste.</p>
+                        <span class="text-xs font-bold text-water-700 underline font-editorial italic text-lg">silviachine@gmail.com</span>
                     </a>
                 </div>
             </section>
@@ -342,6 +343,11 @@
                     <span>Accedi con Google</span>
                 </button>
 
+                <!-- Quick Admin Simulation Test Button -->
+                <button onclick="handleTestAdminLogin()" class="w-full py-2.5 bg-nature-700 hover:bg-nature-800 text-white font-semibold rounded-2xl shadow-sm transition text-xs italic-title">
+                    <i class="fa-solid fa-bolt mr-1.5"></i> Accesso Rapido Test Admin
+                </button>
+
                 <div id="login-error-msg" class="text-xs text-rose-600 font-medium hidden"></div>
             </div>
         </div>
@@ -365,7 +371,6 @@
                     </select>
                 </div>
 
-                <!-- Patient Contact Phone and Email fields -->
                 <div id="patient-contact-info-container" class="grid grid-cols-2 gap-3 hidden">
                     <div class="space-y-1">
                         <label class="text-[10px] font-bold text-slate-500">Telefono Paziente</label>
@@ -402,7 +407,6 @@
                     </div>
                 </div>
 
-                <!-- Patient notes container -->
                 <div id="live-patient-notes-container" class="space-y-1 hidden bg-amber-50/60 p-3.5 rounded-2xl border border-amber-200">
                     <label class="text-[11px] font-bold text-amber-900 flex items-center justify-between">
                         <span><i class="fa-solid fa-user-pen mr-1"></i> Note Anamnestiche Paziente</span>
@@ -758,7 +762,7 @@
                     showPrivateView();
                     await loadAllDataFromFirestore();
                     setTimeout(() => {
-                        triggerIcalSync(true); // Automatic sync immediately after login with progress modal
+                        triggerIcalSync(true); // Automatic sync immediately after login with real-time modal progress
                     }, 500);
                 } else if (user && user.email) {
                     await signOut(auth);
@@ -1012,7 +1016,6 @@
                     showPrivateView();
                     await loadAllDataFromFirestore();
                     showToast('Accesso effettuato con successo!');
-                    setTimeout(() => triggerIcalSync(true), 500);
                 } else {
                     await signOut(auth);
                     showToast(`Email ${email} non autorizzata.`);
@@ -1020,6 +1023,16 @@
             } catch (err) {
                 showToast("Errore durante l'accesso Google.");
             }
+        }
+
+        window.handleTestAdminLogin = function() {
+            appState.isLoggedIn = true;
+            appState.currentUserEmail = 'silviachine@gmail.com';
+            userId = 'test-admin-uid';
+            closeLoginModal();
+            showPrivateView();
+            loadAllDataFromFirestore();
+            showToast('Accesso Test Admin effettuato!');
         }
 
         window.handleLogout = async function() {
@@ -1084,7 +1097,6 @@
             document.getElementById('studio-delete-btn').classList.add('hidden');
             document.getElementById('studio-modal-title').textContent = 'Nuovo Appuntamento Studio';
             
-            // Enable all fields by default
             document.getElementById('studio-title').disabled = false;
             document.getElementById('studio-date').disabled = false;
             document.getElementById('studio-time-start').disabled = false;
@@ -1104,7 +1116,7 @@
             if (editEv) {
                 document.getElementById('studio-modal-title').textContent = 'Modifica / Gestisci Appuntamento';
                 document.getElementById('studio-edit-event-id').value = editEv.id;
-                document.getElementById('studio-title').value = editEv.title || '';
+                document.getElementById('studio-title').value = (editEv.title || '').replace('⚠️ [CONFLITTO] ', '');
                 
                 if (editEv.start) {
                     let dStart = new Date(editEv.start);
@@ -1120,11 +1132,9 @@
                     showLivePatientNotes(editEv.extendedProps.patientId);
                 }
 
-                // Check if external iCal event
-                if (editEv.id.startsWith('ical_')) {
+                if (editEv.id && editEv.id.startsWith('ical_')) {
                     document.getElementById('studio-event-is-external').value = 'true';
                     document.getElementById('studio-modal-title').textContent = `Appuntamento Poliambulatorio (${editEv.extendedProps?.centerName || 'Esterno'})`;
-                    // Lock core appointment fields, allow only patient association & notes modification
                     document.getElementById('studio-title').disabled = true;
                     document.getElementById('studio-date').disabled = true;
                     document.getElementById('studio-time-start').disabled = true;
@@ -1881,10 +1891,10 @@
                                         <div class="p-3 bg-white border border-slate-200 rounded-xl text-xs space-y-1.5 shadow-2xs">
                                             <div class="flex items-center justify-between">
                                                 <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold ${badgeColor}">${labelText}</span>
-                                                <span class="text-[11px] font-bold text-slate-700 bg-nature-50 px-2 py-0.5 rounded-md"><i class="fa-regular fa-calendar text-nature-600 mr-1"></i> ${item.dateStr} • ore ${item.timeStr}</span>
+                                                <span class="text-[11px] font-bold text-slate-700 bg-nature-50 px-2.5 py-1 rounded-md"><i class="fa-regular fa-calendar text-nature-600 mr-1.5"></i> ${item.dateStr} • ore ${item.timeStr}</span>
                                             </div>
                                             <p class="font-editorial text-sm font-bold text-slate-900 italic">${item.title}</p>
-                                            <p class="text-[11px] text-nature-700 font-medium"><i class="fa-solid fa-hospital text-nature-600 mr-1"></i> ${item.centerName}</p>
+                                            <p class="text-[11px] text-nature-700 font-medium"><i class="fa-solid fa-hospital text-nature-600 mr-1.5"></i> ${item.centerName}</p>
                                         </div>
                                     `;
                                 }).join('')}
@@ -2016,9 +2026,10 @@
                         }
 
                         let titlePrefix = hasConflict ? '⚠️ [CONFLITTO] ' : '';
+                        let cleanTitle = (ev.title || '').replace('⚠️ [CONFLITTO] ', '');
                         return { 
                             ...ev, 
-                            title: titlePrefix + ev.title,
+                            title: titlePrefix + cleanTitle,
                             backgroundColor: color, 
                             borderColor: hasConflict ? '#dc2626' : color, 
                             borderWidth: hasConflict ? '3px' : '1px',
@@ -2029,11 +2040,19 @@
                     successCallback(mappedEvents);
                 },
                 eventClick: function(info) {
-                    let cleanEv = {
-                        ...info.event,
-                        title: info.event.title.replace('⚠️ [CONFLITTO] ', '')
-                    };
-                    openStudioModal(cleanEv);
+                    let clickedEventId = info.event.id;
+                    let originalEvent = appState.events.find(e => e.id === clickedEventId);
+                    if (originalEvent) {
+                        openStudioModal(originalEvent);
+                    } else {
+                        openStudioModal({
+                            id: info.event.id,
+                            title: info.event.title.replace('⚠️ [CONFLITTO] ', ''),
+                            start: info.event.start?.toISOString(),
+                            end: info.event.end?.toISOString(),
+                            extendedProps: info.event.extendedProps
+                        });
+                    }
                 },
                 editable: false,
                 height: '100%'
