@@ -70,7 +70,7 @@
         .fc .fc-toolbar-title { font-family: 'Cormorant Garamond', Georgia, serif; font-size: 0.9rem !important; font-weight: 700; color: #22332b; font-style: italic; }
         .fc .fc-button-primary { background-color: #3f5e4e !important; border-color: #3f5e4e !important; border-radius: 0.5rem !important; font-size: 0.65rem !important; font-weight: 600 !important; text-transform: capitalize; padding: 0.25rem 0.5rem !important; box-shadow: 0 1px 2px rgba(63, 94, 78, 0.15); }
         .fc .fc-button-primary:hover { background-color: #2f473c !important; border-color: #2f473c !important; }
-        .fc-event { border-radius: 8px !important; padding: 2px 4px !important; font-size: 0.68rem !important; border: none !important; font-weight: 500; box-shadow: 0 1px 3px rgba(0,0,0,0.06); }
+        .fc-event { border-radius: 8px !important; padding: 2px 4px !important; font-size: 0.68rem !important; border: none !important; font-weight: 500; box-shadow: 0 1px 3px rgba(0,0,0,0.06); cursor: pointer; }
         
         @media (max-width: 640px) {
             .fc .fc-toolbar { flex-direction: row; flex-wrap: wrap; gap: 0.2rem; justify-content: center; }
@@ -176,8 +176,8 @@
                     </ul>
                 </div>
                 <div class="bg-gradient-to-br from-nature-50/90 via-water-50/70 to-warmth-50/60 p-6 sm:p-10 rounded-[2rem] sm:rounded-[2.5rem] border border-nature-100 space-y-6 shadow-inner text-center flex flex-col items-center justify-center">
-                    <div class="w-48 h-48 sm:w-64 sm:h-64 rounded-full bg-white border-4 border-nature-200 flex items-center justify-center shadow-2xl overflow-hidden mx-auto flex-shrink-0 hover:scale-105 transition duration-500">
-                        <img src="Logo.jpeg" alt="Logo Silvia Chinellato" class="w-full h-full object-cover" onerror="this.onerror=null; this.src='https://placehold.co/280x280/3f5e4e/ffffff?text=SC'">
+                    <div class="w-56 h-56 sm:w-72 sm:h-72 rounded-full bg-white border-4 border-nature-200 flex items-center justify-center shadow-2xl overflow-hidden mx-auto flex-shrink-0 hover:scale-105 transition duration-500">
+                        <img src="Logo.jpeg" alt="Logo Silvia Chinellato" class="w-full h-full object-cover" onerror="this.onerror=null; this.src='https://placehold.co/300x300/3f5e4e/ffffff?text=Silvia+Chinellato'">
                     </div>
                     <blockquote class="text-xs sm:text-sm text-slate-700 leading-relaxed font-editorial italic text-base sm:text-lg max-w-sm">
                         "La salute non è solo assenza di malattia, ma uno stato di profonda armonia tra corpo, mente ed energia vitale."
@@ -349,7 +349,7 @@
         </div>
     </div>
 
-    <!-- iCal Changelog Advanced Modal with Realtime Logs -->
+    <!-- iCal Changelog Advanced Modal (without debug logs frame) -->
     <div id="ical-changelog-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-md hidden z-[60] flex items-center justify-center p-4">
         <div class="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-2xl overflow-hidden flex flex-col max-h-[90vh]">
             <div class="px-5 sm:px-6 py-4 sm:py-5 border-b border-water-100 flex items-center justify-between bg-water-50/50">
@@ -378,14 +378,6 @@
                     <h4 class="font-editorial font-bold text-xs text-slate-500 uppercase tracking-wide italic">Variazioni Rilevate (Aggiunti / Modificati / Cancellati)</h4>
                     <div id="changelog-entries-container" class="space-y-2"></div>
                 </div>
-
-                <div class="pt-2 border-t border-slate-100">
-                    <button type="button" onclick="toggleSyncLogs()" class="flex items-center justify-between w-full text-xs font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 p-3 rounded-xl transition">
-                        <span class="flex items-center gap-2"><i class="fa-solid fa-terminal text-water-700"></i> Registro Log Dettagliati (Diagnostica)</span>
-                        <i id="log-chevron" class="fa-solid fa-chevron-down"></i>
-                    </button>
-                    <div id="sync-logs-container" class="hidden mt-2 p-3 bg-slate-900 text-slate-200 font-mono text-[10px] rounded-xl max-h-40 overflow-y-auto space-y-1"></div>
-                </div>
             </div>
 
             <div class="px-5 sm:px-6 py-4 border-t border-slate-100 bg-slate-50 flex justify-end">
@@ -394,7 +386,116 @@
         </div>
     </div>
 
-    <!-- Trattamenti Admin Modal -->
+    <!-- Studio / Appointment Modal with Flexible Hours (07:00 to 22:30) and Patient Linking -->
+    <div id="studio-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-md hidden z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-md overflow-hidden flex flex-col border border-nature-100 max-h-[90vh]">
+            <div class="px-5 sm:px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-nature-50/50">
+                <h3 id="studio-modal-title" class="font-editorial text-base sm:text-lg font-bold text-slate-900 italic">Nuovo Appuntamento Studio</h3>
+                <button type="button" onclick="closeStudioModal()" class="text-slate-400 hover:text-slate-600 w-8 h-8 rounded-full flex items-center justify-center"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <form id="studio-event-form" class="p-5 sm:p-6 space-y-4 overflow-y-auto" onsubmit="handleStudioEventSubmit(event)">
+                <input type="hidden" id="studio-edit-event-id">
+                
+                <div class="space-y-1">
+                    <label class="text-[11px] font-bold text-slate-600">Associa Paziente in Anagrafica (Opzionale)</label>
+                    <select id="studio-patient-select" onchange="onPatientSelectChange()" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-2xl text-xs">
+                        <option value="">-- Seleziona Paziente --</option>
+                    </select>
+                </div>
+
+                <div class="space-y-1">
+                    <label class="text-[11px] font-bold text-slate-600">Titolo / Trattamento *</label>
+                    <input type="text" id="studio-title" required placeholder="Es. Trattamento Osteopatico" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-xs">
+                </div>
+
+                <div class="space-y-1">
+                    <label class="text-[11px] font-bold text-slate-600">Data Appuntamento *</label>
+                    <input type="date" id="studio-date" required class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-xs">
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div class="space-y-1">
+                        <label class="text-[11px] font-bold text-slate-600">Ora Inizio *</label>
+                        <select id="studio-time-start" required onchange="onStartTimeChange()" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-xs">
+                            <option value="">Inizio...</option>
+                        </select>
+                    </div>
+                    <div class="space-y-1">
+                        <label class="text-[11px] font-bold text-slate-600">Ora Fine *</label>
+                        <select id="studio-time-end" required class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-xs">
+                            <option value="">Fine...</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="space-y-1">
+                    <label class="text-[11px] font-bold text-slate-600">Note Cliniche / Trattamento</label>
+                    <textarea id="studio-notes" placeholder="Note cliniche..." class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-xs h-20 resize-none"></textarea>
+                </div>
+
+                <div class="flex items-center gap-2 pt-2">
+                    <button type="button" id="studio-delete-btn" onclick="confirmDeleteStudioEvent()" class="hidden px-4 py-3 bg-rose-50 hover:bg-rose-100 text-rose-600 font-semibold rounded-2xl text-xs transition">Elimina</button>
+                    <button type="submit" class="flex-1 py-3 bg-nature-700 hover:bg-nature-800 text-white font-semibold rounded-2xl text-xs transition">Salva Appuntamento</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Patients Modal & Editor -->
+    <div id="patients-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-md hidden z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-4xl overflow-hidden flex flex-col max-h-[90vh]">
+            <div class="px-5 sm:px-6 py-4 border-b border-amber-100 flex items-center justify-between bg-amber-50/50">
+                <h3 class="font-editorial text-base sm:text-lg font-bold text-slate-900 italic">Anagrafe & Anamnesi Pazienti</h3>
+                <div class="flex items-center gap-2">
+                    <button onclick="openPatientEditModal()" class="px-3 py-2 bg-amber-600 hover:bg-amber-700 text-white font-semibold rounded-xl text-xs transition">Nuovo Paziente</button>
+                    <button type="button" onclick="closePatientsModal()" class="text-slate-400 hover:text-slate-600 w-8 h-8 rounded-full flex items-center justify-center"><i class="fa-solid fa-xmark"></i></button>
+                </div>
+            </div>
+            <div class="p-4 sm:p-6 overflow-y-auto space-y-4 flex-1">
+                <div id="patients-alphabetical-list" class="space-y-2.5"></div>
+            </div>
+            <div class="px-5 sm:px-6 py-4 border-t border-slate-100 bg-slate-50 flex justify-end">
+                <button type="button" onclick="closePatientsModal()" class="px-6 py-2.5 bg-slate-900 text-white font-semibold rounded-2xl text-xs">Chiudi</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Patient Edit/Create Modal -->
+    <div id="patient-edit-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-md hidden z-[60] flex items-center justify-center p-4">
+        <div class="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-md overflow-hidden flex flex-col border border-amber-100 max-h-[90vh]">
+            <div class="px-5 sm:px-6 py-4 border-b border-amber-100 flex items-center justify-between bg-amber-50/50">
+                <h3 id="patient-edit-modal-title" class="font-editorial text-base sm:text-lg font-bold text-slate-900 italic">Scheda Paziente</h3>
+                <button type="button" onclick="closePatientEditModal()" class="text-slate-400 hover:text-slate-600 w-8 h-8 rounded-full flex items-center justify-center"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <form id="patient-form" class="p-5 sm:p-6 space-y-4 overflow-y-auto" onsubmit="handlePatientSubmit(event)">
+                <input type="hidden" id="patient-edit-id">
+                <div class="space-y-1">
+                    <label class="text-[11px] font-bold text-slate-600">Nome e Cognome *</label>
+                    <input type="text" id="patient-name" required placeholder="Nome e Cognome" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-xs">
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div class="space-y-1">
+                        <label class="text-[11px] font-bold text-slate-600">Telefono</label>
+                        <input type="text" id="patient-phone" placeholder="Telefono" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-xs">
+                    </div>
+                    <div class="space-y-1">
+                        <label class="text-[11px] font-bold text-slate-600">Email</label>
+                        <input type="email" id="patient-email" placeholder="Email" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-xs">
+                    </div>
+                </div>
+                <div class="space-y-1">
+                    <label class="text-[11px] font-bold text-slate-600">Note Anamnestiche & Cliniche</label>
+                    <textarea id="patient-notes" placeholder="Anamnesi, patologie, interventi..." class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-xs h-28 resize-none"></textarea>
+                </div>
+                <div class="flex justify-end gap-2 pt-2">
+                    <button type="button" onclick="closePatientEditModal()" class="px-4 py-3 bg-slate-200 text-slate-700 font-semibold rounded-2xl text-xs">Annulla</button>
+                    <button type="submit" class="px-5 py-3 bg-amber-600 hover:bg-amber-700 text-white font-semibold rounded-2xl text-xs transition">Salva Paziente</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Trattamenti Admin Modal with Icon Selector & Customization -->
     <div id="treatments-admin-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-md hidden z-50 flex items-center justify-center p-4">
         <div class="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-2xl overflow-hidden flex flex-col max-h-[90vh]">
             <div class="px-5 sm:px-6 py-4 sm:py-5 border-b border-nature-100 flex items-center justify-between bg-nature-50/50">
@@ -417,6 +518,8 @@
                             <option value="fa-spa">🌿 Natura / Spa</option>
                             <option value="fa-leaf">🍃 Foglia / Naturale</option>
                             <option value="fa-feather">🪶 Delicatezza / Piuma</option>
+                            <option value="fa-child-reaching">🤸 Postura / Movimento</option>
+                            <option value="fa-seedling">🌱 Germoglio / Vitalità</option>
                         </select>
                     </div>
                     <textarea id="new-treatment-desc" required placeholder="Descrizione del trattamento..." class="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-2xl text-xs focus:outline-none focus:ring-2 focus:ring-nature-500 h-24 resize-none"></textarea>
@@ -539,49 +642,18 @@
         </div>
     </div>
 
-    <!-- Patients Modal -->
-    <div id="patients-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-md hidden z-50 flex items-center justify-center p-4">
-        <div class="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-4xl overflow-hidden flex flex-col max-h-[90vh]">
-            <div class="px-5 sm:px-6 py-4 border-b border-amber-100 flex items-center justify-between bg-amber-50/50">
-                <h3 class="font-editorial text-base sm:text-lg font-bold text-slate-900 italic">Anagrafe & Anamnesi Pazienti</h3>
-                <div class="flex items-center gap-2">
-                    <button onclick="openPatientEditModal()" class="px-3 py-2 bg-amber-600 text-white font-semibold rounded-xl text-xs">Nuovo Paziente</button>
-                    <button type="button" onclick="closePatientsModal()" class="text-slate-400 hover:text-slate-600 w-8 h-8 rounded-full flex items-center justify-center"><i class="fa-solid fa-xmark"></i></button>
-                </div>
+    <!-- Custom Confirmation Dialog Modal -->
+    <div id="confirm-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-md hidden z-[70] flex items-center justify-center p-4">
+        <div class="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-sm overflow-hidden flex flex-col border border-nature-100 p-6 text-center space-y-4">
+            <div class="w-14 h-14 rounded-full bg-rose-50 text-rose-600 flex items-center justify-center mx-auto text-xl shadow-inner">
+                <i class="fa-solid fa-triangle-exclamation"></i>
             </div>
-            <div class="p-4 sm:p-6 overflow-y-auto space-y-4 flex-1">
-                <div id="patients-alphabetical-list" class="space-y-2.5"></div>
+            <h3 id="confirm-title" class="font-editorial text-lg font-bold text-slate-900 italic">Conferma Eliminazione</h3>
+            <p id="confirm-text" class="text-xs text-slate-600 leading-relaxed font-light">Sei sicura di voler procedere con l'eliminazione?</p>
+            <div class="grid grid-cols-2 gap-3 pt-2">
+                <button type="button" id="confirm-cancel-btn" class="py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-2xl text-xs transition">Annulla</button>
+                <button type="button" id="confirm-ok-btn" class="py-3 bg-rose-600 hover:bg-rose-700 text-white font-semibold rounded-2xl text-xs transition shadow-md shadow-rose-200">Elimina</button>
             </div>
-            <div class="px-5 sm:px-6 py-4 border-t border-slate-100 bg-slate-50 flex justify-end">
-                <button type="button" onclick="closePatientsModal()" class="px-6 py-2.5 bg-slate-900 text-white font-semibold rounded-2xl text-xs">Chiudi</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Studio Modal -->
-    <div id="studio-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-md hidden z-50 flex items-center justify-center p-4">
-        <div class="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-md overflow-hidden flex flex-col border border-nature-100">
-            <div class="px-5 sm:px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-nature-50/50">
-                <h3 class="font-editorial text-base sm:text-lg font-bold text-slate-900 italic">Studio Privato</h3>
-                <button type="button" onclick="closeStudioModal()" class="text-slate-400 hover:text-slate-600 w-8 h-8 rounded-full flex items-center justify-center"><i class="fa-solid fa-xmark"></i></button>
-            </div>
-            <form id="studio-event-form" class="p-5 sm:p-6 space-y-4" onsubmit="handleStudioEventSubmit(event)">
-                <input type="hidden" id="studio-edit-event-id">
-                <input type="text" id="studio-title" required placeholder="Nome Paziente / Trattamento" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-xs">
-                <input type="date" id="studio-date" required class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-xs">
-                <div class="grid grid-cols-2 gap-3">
-                    <select id="studio-time-start" required class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-xs">
-                        <option value="">Ora Inizio...</option>
-                        <option value="08:00">08:00</option><option value="09:00">09:00</option><option value="10:00">10:00</option><option value="11:00">11:00</option><option value="12:00">12:00</option><option value="14:00">14:00</option><option value="15:00">15:00</option><option value="16:00">16:00</option><option value="17:00">17:00</option><option value="18:00">18:00</option><option value="19:00">19:00</option>
-                    </select>
-                    <select id="studio-time-end" required class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-xs">
-                        <option value="">Ora Fine...</option>
-                        <option value="09:00">09:00</option><option value="10:00">10:00</option><option value="11:00">11:00</option><option value="12:00">12:00</option><option value="13:00">13:00</option><option value="15:00">15:00</option><option value="16:00">16:00</option><option value="17:00">17:00</option><option value="18:00">18:00</option><option value="19:00">19:00</option><option value="20:00">20:00</option>
-                    </select>
-                </div>
-                <textarea id="studio-notes" placeholder="Note cliniche..." class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-xs h-20 resize-none"></textarea>
-                <button type="submit" class="w-full py-3 bg-nature-700 text-white font-semibold rounded-2xl text-xs">Salva Appuntamento</button>
-            </form>
         </div>
     </div>
 
@@ -610,8 +682,8 @@
             isLoggedIn: false,
             currentUserEmail: null,
             centers: [
-                { id: '1', name: 'Centro Polisalute', service: 'Osteopatia & Visite', color: '#3f5e4e', icalUrl: '', showPublic: true, address: 'Via Roma 10, Milano', phone: '02 1234567', siteUrl: 'https://example.com', bookingUrl: '' },
-                { id: '2', name: 'Poliambulatorio San Benedetto', service: 'Idrocolonterapia', color: '#4a8fa8', icalUrl: '', showPublic: true, address: 'Corso Italia 45, Monza', phone: '039 7654321', siteUrl: 'https://example.com', bookingUrl: '' }
+                { id: '1', name: 'Centro Polisalute', service: 'Osteopatia & Visite', color: '#3f5e4e', icalUrl: '', showPublic: true, address: 'Via Roma 10, Milano', phone: '02 1234567', siteUrl: 'https://example.com', bookingUrl: 'https://example.com/book' },
+                { id: '2', name: 'Poliambulatorio San Benedetto', service: 'Idrocolonterapia', color: '#4a8fa8', icalUrl: '', showPublic: true, address: 'Corso Italia 45, Monza', phone: '039 7654321', siteUrl: 'https://example.com', bookingUrl: 'https://example.com/book' }
             ],
             treatments: [
                 { id: 't1', title: 'Idrocolonterapia', icon: 'fa-droplet', desc: "Depurazione profonda e delicata del colon, utile per eliminare tossine, ridurre l'infiammazione e ripristinare la vitalità dell'organismo." },
@@ -647,7 +719,7 @@
                     }
                     userId = auth.currentUser?.uid || 'anonymous-user';
                     updateFirebaseStatus(true, 'Connesso');
-                    await loadPublicDataFromFirestore();
+                    await loadAllDataFromFirestore();
                 } catch (err) {
                     console.warn("Auth initialization warning:", err);
                     updateFirebaseStatus(false, 'Offline Mode');
@@ -735,12 +807,18 @@
                 appState.events = [];
                 eventsSnap.forEach(d => appState.events.push(d.data()));
 
+                const patientsSnap = await getDocs(collection(db, 'artifacts', appId, 'users', userId, 'patients_list'));
+                appState.patients = [];
+                patientsSnap.forEach(d => appState.patients.push(d.data()));
+
                 renderAllPublicUI();
                 renderHeaderLegend();
                 renderNewsManagementList();
                 renderPrepManagementList();
                 renderCentersManagementList();
                 renderTreatmentsManagementList();
+                renderPatientsList();
+                populatePatientDropdown();
                 if (calendarInstance) calendarInstance.refetchEvents();
             } catch (err) {
                 console.warn("Error loading private data:", err);
@@ -750,6 +828,7 @@
         document.addEventListener('DOMContentLoaded', () => {
             loadPublicDataFromFirestore();
             if (!appState.isLoggedIn) showPublicView();
+            populateTimeSelects();
         });
 
         function showPublicView() {
@@ -767,6 +846,8 @@
             renderCentersManagementList();
             renderNewsManagementList();
             renderPrepManagementList();
+            renderPatientsList();
+            populatePatientDropdown();
             setTimeout(() => initCalendar(), 100);
         }
 
@@ -797,8 +878,8 @@
                         ${center.phone ? `<p class="text-xs sm:text-sm text-slate-500 font-light flex items-center gap-2"><i class="fa-solid fa-phone text-nature-600"></i> ${center.phone}</p>` : ''}
                     </div>
                     <div class="flex flex-wrap items-center gap-3 pt-2">
-                        ${center.siteUrl ? `<a href="${center.siteUrl}" target="_blank" class="px-4 py-2 bg-water-50 hover:bg-water-100 text-water-800 font-semibold rounded-xl text-xs transition flex items-center gap-1.5"><i class="fa-solid fa-globe"></i> <span>Sito Web</span></a>` : ''}
-                        ${center.bookingUrl ? `<a href="${center.bookingUrl}" target="_blank" class="px-4 py-2 bg-nature-600 hover:bg-nature-700 text-white font-semibold rounded-xl text-xs transition flex items-center gap-1.5"><i class="fa-solid fa-calendar-check"></i> <span>Prenota Online</span></a>` : ''}
+                        ${center.siteUrl ? `<a href="${center.siteUrl}" target="_blank" class="px-4 py-2 bg-water-50 hover:bg-water-100 text-water-800 font-semibold rounded-xl text-xs transition flex items-center gap-1.5 shadow-2xs"><i class="fa-solid fa-globe"></i> <span>Sito Web</span></a>` : ''}
+                        ${center.bookingUrl ? `<a href="${center.bookingUrl}" target="_blank" class="px-4 py-2 bg-nature-600 hover:bg-nature-700 text-white font-semibold rounded-xl text-xs transition flex items-center gap-1.5 shadow-md"><i class="fa-solid fa-calendar-check"></i> <span>Prenota Online</span></a>` : ''}
                     </div>
                 </div>
             `).join('');
@@ -809,7 +890,7 @@
             if (!grid) return;
             grid.innerHTML = appState.treatments.map(t => `
                 <div class="bg-white/90 backdrop-blur-md p-6 sm:p-8 rounded-[2.5rem] border border-white/80 shadow-lg space-y-4 flex flex-col items-center text-center">
-                    <div class="w-16 h-16 rounded-2xl bg-nature-50 text-nature-600 flex items-center justify-center font-bold text-2xl shadow-inner"><i class="fa-solid ${t.icon || 'fa-spa'}"></i></div>
+                    <div class="w-16 h-16 rounded-2xl bg-nature-50 text-nature-600 flex items-center justify-center font-bold text-2xl shadow-inner mx-auto"><i class="fa-solid ${t.icon || 'fa-spa'}"></i></div>
                     <h4 class="font-editorial text-xl font-bold text-slate-900 italic">${t.title}</h4>
                     <p class="text-xs sm:text-sm text-slate-500 font-light">${t.desc}</p>
                 </div>
@@ -928,8 +1009,248 @@
             showToast('Disconnesso');
         }
 
-        window.openStudioModal = function() { document.getElementById('studio-modal').classList.remove('hidden'); }
+        // --- Gestione Orari Flessibili e Intervalli di 30 minuti (07:00 - 22:30) ---
+        function populateTimeSelects() {
+            const startSel = document.getElementById('studio-time-start');
+            const endSel = document.getElementById('studio-time-end');
+            if (!startSel || !endSel) return;
+
+            let optionsHtml = '<option value="">Seleziona ora...</option>';
+            for (let hour = 7; hour <= 22; hour++) {
+                for (let min of [0, 30]) {
+                    if (hour === 22 && min === 30) continue;
+                    let hStr = String(hour).padStart(2, '0');
+                    let mStr = String(min).padStart(2, '0');
+                    let timeVal = `${hStr}:${mStr}`;
+                    optionsHtml += `<option value="${timeVal}">${timeVal}</option>`;
+                }
+            }
+            startSel.innerHTML = optionsHtml;
+            endSel.innerHTML = optionsHtml;
+        }
+
+        window.onStartTimeChange = function() {
+            const startVal = document.getElementById('studio-time-start').value;
+            const endSel = document.getElementById('studio-time-end');
+            if (!startVal) return;
+
+            let [h, m] = startVal.split(':').map(Number);
+            m += 60; // Default +1 ora
+            if (m >= 60) {
+                h += Math.floor(m / 60);
+                m = m % 60;
+            }
+            if (h > 23) { h = 23; m = 30; }
+            let endVal = `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+            
+            let found = false;
+            for (let opt of endSel.options) {
+                if (opt.value === endVal) {
+                    endSel.value = endVal;
+                    found = true;
+                    break;
+                }
+            }
+            if (!found) {
+                endSel.value = startVal;
+            }
+        }
+
+        window.openStudioModal = function(editEv = null) {
+            populateTimeSelects();
+            const form = document.getElementById('studio-event-form');
+            form.reset();
+            document.getElementById('studio-edit-event-id').value = '';
+            document.getElementById('studio-delete-btn').classList.add('hidden');
+            document.getElementById('studio-modal-title').textContent = 'Nuovo Appuntamento Studio';
+            
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('studio-date').value = today;
+            document.getElementById('studio-time-start').value = '09:00';
+            onStartTimeChange();
+
+            if (editEv) {
+                document.getElementById('studio-modal-title').textContent = 'Modifica / Gestisci Appuntamento';
+                document.getElementById('studio-edit-event-id').value = editEv.id;
+                document.getElementById('studio-title').value = editEv.title || '';
+                
+                if (editEv.start) {
+                    let dStart = new Date(editEv.start);
+                    document.getElementById('studio-date').value = dStart.toISOString().split('T')[0];
+                    document.getElementById('studio-time-start').value = `${String(dStart.getHours()).padStart(2, '0')}:${String(dStart.getMinutes()).padStart(2, '0')}`;
+                }
+                if (editEv.end) {
+                    let dEnd = new Date(editEv.end);
+                    document.getElementById('studio-time-end').value = `${String(dEnd.getHours()).padStart(2, '0')}:${String(dEnd.getMinutes()).padStart(2, '0')}`;
+                }
+                document.getElementById('studio-notes').value = editEv.extendedProps?.notes || '';
+                if (editEv.extendedProps?.patientId) {
+                    document.getElementById('studio-patient-select').value = editEv.extendedProps.patientId;
+                }
+                document.getElementById('studio-delete-btn').classList.remove('hidden');
+            }
+
+            document.getElementById('studio-modal').classList.remove('hidden');
+        }
+
         window.closeStudioModal = function() { document.getElementById('studio-modal').classList.add('hidden'); }
+
+        window.onPatientSelectChange = function() {
+            const selId = document.getElementById('studio-patient-select').value;
+            if (!selId) return;
+            const pat = appState.patients.find(p => p.id === selId);
+            if (pat) {
+                document.getElementById('studio-title').value = `Visita / Trattamento - ${pat.name}`;
+                if (pat.phone || pat.email) {
+                    document.getElementById('studio-notes').value = `Contatti: ${pat.phone || ''} ${pat.email || ''}\nNote: ${pat.notes || ''}`;
+                }
+            }
+        }
+
+        window.handleStudioEventSubmit = async function(e) {
+            e.preventDefault();
+            const id = document.getElementById('studio-edit-event-id').value || 'evt_' + Date.now();
+            const title = document.getElementById('studio-title').value.trim();
+            const date = document.getElementById('studio-date').value;
+            const startH = document.getElementById('studio-time-start').value;
+            const endH = document.getElementById('studio-time-end').value;
+            const notes = document.getElementById('studio-notes').value.trim();
+            const patientId = document.getElementById('studio-patient-select').value;
+
+            const start = `${date}T${startH}:00`;
+            const end = `${date}T${endH}:00`;
+
+            const newEv = { 
+                id, 
+                title, 
+                start, 
+                end, 
+                backgroundColor: '#3f5e4e',
+                borderColor: '#3f5e4e',
+                textColor: '#ffffff',
+                extendedProps: { notes, centerName: 'Studio Privato', patientId } 
+            };
+
+            const idx = appState.events.findIndex(ev => ev.id === id);
+            if (idx >= 0) appState.events[idx] = newEv;
+            else appState.events.push(newEv);
+
+            if (db && userId) {
+                try { await setDoc(doc(db, 'artifacts', appId, 'users', userId, 'studio_events', id), newEv); } catch(e){}
+            }
+
+            closeStudioModal();
+            if (calendarInstance) calendarInstance.refetchEvents();
+            showToast("Appuntamento salvato con successo!");
+        }
+
+        window.confirmDeleteStudioEvent = function() {
+            const id = document.getElementById('studio-edit-event-id').value;
+            if (!id) return;
+            showConfirmDialog("Elimina Appuntamento", "Sei sicura di voler eliminare questo appuntamento?", async () => {
+                appState.events = appState.events.filter(ev => ev.id !== id);
+                if (db && userId) {
+                    try { await deleteDoc(doc(db, 'artifacts', appId, 'users', userId, 'studio_events', id)); } catch(e){}
+                }
+                closeStudioModal();
+                if (calendarInstance) calendarInstance.refetchEvents();
+                showToast("Appuntamento eliminato.");
+            });
+        }
+
+        // --- Gestione Completa Pazienti in Anagrafica ---
+        window.openPatientsModal = function() {
+            renderPatientsList();
+            document.getElementById('patients-modal').classList.remove('hidden');
+        }
+        window.closePatientsModal = function() { document.getElementById('patients-modal').classList.add('hidden'); }
+
+        window.openPatientEditModal = function(pat = null) {
+            const form = document.getElementById('patient-form');
+            form.reset();
+            document.getElementById('patient-edit-id').value = '';
+            document.getElementById('patient-edit-modal-title').textContent = 'Nuovo Paziente';
+
+            if (pat) {
+                document.getElementById('patient-edit-modal-title').textContent = 'Modifica Paziente';
+                document.getElementById('patient-edit-id').value = pat.id;
+                document.getElementById('patient-name').value = pat.name || '';
+                document.getElementById('patient-phone').value = pat.phone || '';
+                document.getElementById('patient-email').value = pat.email || '';
+                document.getElementById('patient-notes').value = pat.notes || '';
+            }
+            document.getElementById('patient-edit-modal').classList.remove('hidden');
+        }
+        window.closePatientEditModal = function() { document.getElementById('patient-edit-modal').classList.add('hidden'); }
+
+        window.handlePatientSubmit = async function(e) {
+            e.preventDefault();
+            const id = document.getElementById('patient-edit-id').value || 'pat_' + Date.now();
+            const name = document.getElementById('patient-name').value.trim();
+            const phone = document.getElementById('patient-phone').value.trim();
+            const email = document.getElementById('patient-email').value.trim();
+            const notes = document.getElementById('patient-notes').value.trim();
+
+            const newPat = { id, name, phone, email, notes };
+            const idx = appState.patients.findIndex(p => p.id === id);
+            if (idx >= 0) appState.patients[idx] = newPat;
+            else appState.patients.push(newPat);
+
+            if (db && userId) {
+                try { await setDoc(doc(db, 'artifacts', appId, 'users', userId, 'patients_list', id), newPat); } catch(e){}
+            }
+
+            closePatientEditModal();
+            renderPatientsList();
+            populatePatientDropdown();
+            showToast("Paziente salvato con successo!");
+        }
+
+        window.confirmDeletePatient = function(id) {
+            showConfirmDialog("Elimina Paziente", "Sei sicura di voler eliminare questo paziente dall'anagrafica?", async () => {
+                appState.patients = appState.patients.filter(p => p.id !== id);
+                if (db && userId) {
+                    try { await deleteDoc(doc(db, 'artifacts', appId, 'users', userId, 'patients_list', id)); } catch(e){}
+                }
+                renderPatientsList();
+                populatePatientDropdown();
+                showToast("Paziente eliminato.");
+            });
+        }
+
+        function renderPatientsList() {
+            const container = document.getElementById('patients-alphabetical-list');
+            if (!container) return;
+            if (appState.patients.length === 0) {
+                container.innerHTML = `<p class="text-xs text-slate-400 italic text-center py-6">Nessun paziente registrato in anagrafica.</p>`;
+                return;
+            }
+            let sorted = [...appState.patients].sort((a,b) => a.name.localeCompare(b.name));
+            container.innerHTML = sorted.map(p => `
+                <div class="p-4 bg-white border border-slate-200 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs shadow-2xs">
+                    <div class="space-y-1">
+                        <div class="flex items-center gap-2">
+                            <strong class="font-editorial text-slate-900 text-sm italic">${p.name}</strong>
+                            ${p.phone ? `<span class="text-slate-500"><i class="fa-solid fa-phone text-[10px] text-nature-600"></i> ${p.phone}</span>` : ''}
+                            ${p.email ? `<span class="text-slate-500"><i class="fa-solid fa-envelope text-[10px] text-water-600"></i> ${p.email}</span>` : ''}
+                        </div>
+                        ${p.notes ? `<p class="text-slate-600 font-light text-[11px] bg-slate-50 p-2 rounded-xl">${p.notes}</p>` : ''}
+                    </div>
+                    <div class="flex items-center gap-1.5 self-end sm:self-center">
+                        <button onclick='openPatientEditModal(${JSON.stringify(p)})' class="px-3 py-1.5 bg-nature-50 text-nature-700 font-semibold rounded-xl hover:bg-nature-100 transition">Modifica</button>
+                        <button onclick="confirmDeletePatient('${p.id}')" class="px-3 py-1.5 bg-rose-50 text-rose-600 font-semibold rounded-xl hover:bg-rose-100 transition">Elimina</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function populatePatientDropdown() {
+            const sel = document.getElementById('studio-patient-select');
+            if (!sel) return;
+            let sorted = [...appState.patients].sort((a,b) => a.name.localeCompare(b.name));
+            sel.innerHTML = '<option value="">-- Seleziona Paziente --</option>' + sorted.map(p => `<option value="${p.id}">${p.name}</option>`).join('');
+        }
+
         window.openCentersModal = function() { document.getElementById('centers-modal').classList.remove('hidden'); }
         window.closeCentersModal = function() { document.getElementById('centers-modal').classList.add('hidden'); }
         window.openTreatmentsAdminModal = function() { document.getElementById('treatments-admin-modal').classList.remove('hidden'); }
@@ -938,8 +1259,6 @@
         window.closeNewsAdminModal = function() { document.getElementById('news-admin-modal').classList.add('hidden'); }
         window.openPrepAdminModal = function() { document.getElementById('prep-admin-modal').classList.remove('hidden'); }
         window.closePrepAdminModal = function() { document.getElementById('prep-admin-modal').classList.add('hidden'); }
-        window.openPatientsModal = function() { document.getElementById('patients-modal').classList.remove('hidden'); }
-        window.closePatientsModal = function() { document.getElementById('patients-modal').classList.add('hidden'); }
 
         window.handleTreatmentSubmit = async function(e) {
             e.preventDefault();
@@ -954,9 +1273,7 @@
             else appState.treatments.push(newT);
 
             if (db) {
-                try {
-                    await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'treatments_list', id), newT);
-                } catch(err) { console.warn("Firestore write error:", err); }
+                try { await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'treatments_list', id), newT); } catch(err){}
             }
 
             resetTreatmentForm();
@@ -979,7 +1296,7 @@
                     </div>
                     <div class="flex items-center gap-1.5">
                         <button type="button" onclick="editTreatment('${t.id}')" class="px-2.5 py-1 bg-nature-50 text-nature-700 rounded-lg font-semibold hover:bg-nature-100">Modifica</button>
-                        <button type="button" onclick="deleteTreatment('${t.id}')" class="px-2.5 py-1 bg-rose-50 text-rose-600 rounded-lg font-semibold hover:bg-rose-100">Elimina</button>
+                        <button type="button" onclick="confirmDeleteTreatment('${t.id}')" class="px-2.5 py-1 bg-rose-50 text-rose-600 rounded-lg font-semibold hover:bg-rose-100">Elimina</button>
                     </div>
                 </div>
             `).join('');
@@ -1005,14 +1322,14 @@
             document.getElementById('treatment-cancel-edit').classList.add('hidden');
         }
 
-        window.deleteTreatment = async function(id) {
-            appState.treatments = appState.treatments.filter(t => t.id !== id);
-            if (db) {
-                try { await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'treatments_list', id)); } catch(e){}
-            }
-            renderTreatmentsManagementList();
-            renderPublicTreatments();
-            showToast("Trattamento eliminato.");
+        window.confirmDeleteTreatment = function(id) {
+            showConfirmDialog("Elimina Trattamento", "Sei sicura di voler eliminare questo trattamento dalla home page?", async () => {
+                appState.treatments = appState.treatments.filter(t => t.id !== id);
+                if (db) { try { await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'treatments_list', id)); } catch(e){} }
+                renderTreatmentsManagementList();
+                renderPublicTreatments();
+                showToast("Trattamento eliminato.");
+            });
         }
 
         window.handleCenterSubmit = async function(e) {
@@ -1066,7 +1383,7 @@
                     </div>
                     <div class="flex items-center gap-1.5">
                         <button type="button" onclick="editCenter('${c.id}')" class="px-2.5 py-1 bg-nature-50 text-nature-700 rounded-lg font-semibold">Modifica</button>
-                        <button type="button" onclick="deleteCenter('${c.id}')" class="px-2.5 py-1 bg-rose-50 text-rose-600 rounded-lg font-semibold">Elimina</button>
+                        <button type="button" onclick="confirmDeleteCenter('${c.id}')" class="px-2.5 py-1 bg-rose-50 text-rose-600 rounded-lg font-semibold">Elimina</button>
                     </div>
                 </div>
             `).join('');
@@ -1097,18 +1414,20 @@
             document.getElementById('center-cancel-edit').classList.add('hidden');
         }
 
-        window.deleteCenter = async function(id) {
-            appState.centers = appState.centers.filter(c => c.id !== id);
-            if (db && userId) {
-                try {
-                    await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'centers_list', id));
-                    await deleteDoc(doc(db, 'artifacts', appId, 'users', userId, 'centers_list', id));
-                } catch(e){}
-            }
-            renderCentersManagementList();
-            renderPublicCenters();
-            renderHeaderLegend();
-            showToast("Poliambulatorio eliminato.");
+        window.confirmDeleteCenter = function(id) {
+            showConfirmDialog("Elimina Poliambulatorio", "Sei sicura di voler eliminare questo poliambulatorio?", async () => {
+                appState.centers = appState.centers.filter(c => c.id !== id);
+                if (db && userId) {
+                    try {
+                        await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'centers_list', id));
+                        await deleteDoc(doc(db, 'artifacts', appId, 'users', userId, 'centers_list', id));
+                    } catch(e){}
+                }
+                renderCentersManagementList();
+                renderPublicCenters();
+                renderHeaderLegend();
+                showToast("Poliambulatorio eliminato.");
+            });
         }
 
         window.handleNewsSubmit = async function(e) {
@@ -1123,9 +1442,7 @@
             if (idx >= 0) appState.news[idx] = newN;
             else appState.news.push(newN);
 
-            if (db) {
-                try { await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'news_list', id), newN); } catch(e){}
-            }
+            if (db) { try { await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'news_list', id), newN); } catch(e){} }
             resetNewsForm();
             renderNewsManagementList();
             renderPublicNews();
@@ -1138,7 +1455,7 @@
             list.innerHTML = appState.news.map(n => `
                 <div class="p-3 bg-white border border-slate-200 rounded-2xl flex items-center justify-between text-xs">
                     <div><strong class="text-slate-900">${n.title}</strong><p class="text-slate-500 text-[11px] line-clamp-1">${n.content}</p></div>
-                    <button type="button" onclick="deleteNews('${n.id}')" class="px-2.5 py-1 bg-rose-50 text-rose-600 rounded-lg font-semibold">Elimina</button>
+                    <button type="button" onclick="confirmDeleteNews('${n.id}')" class="px-2.5 py-1 bg-rose-50 text-rose-600 rounded-lg font-semibold">Elimina</button>
                 </div>
             `).join('');
         }
@@ -1150,12 +1467,14 @@
             document.getElementById('news-cancel-edit').classList.add('hidden');
         }
 
-        window.deleteNews = async function(id) {
-            appState.news = appState.news.filter(n => n.id !== id);
-            if (db) { try { await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'news_list', id)); } catch(e){} }
-            renderNewsManagementList();
-            renderPublicNews();
-            showToast("News eliminata.");
+        window.confirmDeleteNews = function(id) {
+            showConfirmDialog("Elimina News", "Sei sicura di voler eliminare questa news?", async () => {
+                appState.news = appState.news.filter(n => n.id !== id);
+                if (db) { try { await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'news_list', id)); } catch(e){} }
+                renderNewsManagementList();
+                renderPublicNews();
+                showToast("News eliminata.");
+            });
         }
 
         window.handlePrepSubmit = async function(e) {
@@ -1183,7 +1502,7 @@
             list.innerHTML = appState.preparations.map(p => `
                 <div class="p-3 bg-white border border-slate-200 rounded-2xl flex items-center justify-between text-xs">
                     <div><span class="px-2 py-0.5 rounded bg-nature-50 text-nature-800 text-[10px] font-bold">${p.tag}</span> <strong class="text-slate-900 ml-1">${p.title}</strong></div>
-                    <button type="button" onclick="deletePrep('${p.id}')" class="px-2.5 py-1 bg-rose-50 text-rose-600 rounded-lg font-semibold">Elimina</button>
+                    <button type="button" onclick="confirmDeletePrep('${p.id}')" class="px-2.5 py-1 bg-rose-50 text-rose-600 rounded-lg font-semibold">Elimina</button>
                 </div>
             `).join('');
         }
@@ -1195,46 +1514,20 @@
             document.getElementById('prep-cancel-edit').classList.add('hidden');
         }
 
-        window.deletePrep = async function(id) {
-            appState.preparations = appState.preparations.filter(p => p.id !== id);
-            if (db) { try { await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'preparations_list', id)); } catch(e){} }
-            renderPrepManagementList();
-            renderPublicPreparations();
-            showToast("Guida eliminata.");
+        window.confirmDeletePrep = function(id) {
+            showConfirmDialog("Elimina Guida", "Sei sicura di voler eliminare questa guida?", async () => {
+                appState.preparations = appState.preparations.filter(p => p.id !== id);
+                if (db) { try { await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'preparations_list', id)); } catch(e){} }
+                renderPrepManagementList();
+                renderPublicPreparations();
+                showToast("Guida eliminata.");
+            });
         }
 
-        window.handleStudioEventSubmit = async function(e) {
-            e.preventDefault();
-            const id = document.getElementById('studio-edit-event-id').value || 'evt_' + Date.now();
-            const title = document.getElementById('studio-title').value.trim();
-            const date = document.getElementById('studio-date').value;
-            const startH = document.getElementById('studio-time-start').value;
-            const endH = document.getElementById('studio-time-end').value;
-            const notes = document.getElementById('studio-notes').value.trim();
-
-            const start = `${date}T${startH}:00`;
-            const end = `${date}T${endH}:00`;
-
-            const newEv = { id, title, start, end, extendedProps: { notes, centerName: 'Studio Privato' } };
-            const idx = appState.events.findIndex(ev => ev.id === id);
-            if (idx >= 0) appState.events[idx] = newEv;
-            else appState.events.push(newEv);
-
-            if (db && userId) {
-                try { await setDoc(doc(db, 'artifacts', appId, 'users', userId, 'studio_events', id), newEv); } catch(e){}
-            }
-
-            closeStudioModal();
-            document.getElementById('studio-event-form').reset();
-            if (calendarInstance) calendarInstance.refetchEvents();
-            showToast("Appuntamento studio salvato!");
-        }
-
-        // --- Sincronizzazione iCal avanzata, robusta e isolata per ogni poliambulatorio ---
+        // --- Sincronizzazione iCal Isolata e Corretta per Poliambulatori Multipli ---
         window.triggerIcalSync = async function() {
-            openIcalChangelogModal({ status: 'loading', centersReport: [], added: [], modified: [], deleted: [], logs: [] });
+            openIcalChangelogModal({ status: 'loading', centersReport: [], added: [], modified: [], deleted: [] });
             
-            let logs = [];
             let centersReport = [];
             let addedEvents = [];
             let modifiedEvents = [];
@@ -1242,12 +1535,9 @@
             let activeIcalEventIds = new Set();
             let oldEventsMap = new Map(appState.events.map(ev => [ev.id, ev]));
 
-            logs.push(`[${new Date().toLocaleTimeString()}] === INIZIO SINCRONIZZAZIONE CALENDARI (ICS) ===`);
-
             const icalCenters = appState.centers.filter(c => c.icalUrl && c.icalUrl.trim() !== '');
             if (icalCenters.length === 0) {
-                logs.push(`[${new Date().toLocaleTimeString()}] Nessun poliambulatorio con link iCal configurato.`);
-                updateIcalChangelogModal({ status: 'completed', centersReport: [], added: [], modified: [], deleted: [], logs });
+                updateIcalChangelogModal({ status: 'completed', centersReport: [], added: [], modified: [], deleted: [] });
                 showToast('Nessun link iCal configurato.');
                 return;
             }
@@ -1255,7 +1545,6 @@
             for (let center of icalCenters) {
                 let rawUrl = center.icalUrl.trim();
                 let targetUrl = normalizeGoogleCalendarUrl(rawUrl);
-                logs.push(`[${new Date().toLocaleTimeString()}] Contatto per "${center.name}" URL: ${targetUrl}`);
                 
                 let text = null;
                 const proxyEndpoints = [
@@ -1277,18 +1566,14 @@
                                 text = await response.text();
                             }
                             if (text && (text.includes('BEGIN:VCALENDAR') || text.includes('BEGIN:VEVENT'))) {
-                                logs.push(`[${new Date().toLocaleTimeString()}] Connessione riuscita per "${center.name}"`);
                                 break;
                             }
                         }
-                    } catch(err) {
-                        // continua con il prossimo proxy
-                    }
+                    } catch(err) {}
                 }
 
                 if (text && (text.includes('BEGIN:VCALENDAR') || text.includes('BEGIN:VEVENT'))) {
                     centersReport.push({ name: center.name, success: true, message: 'Aggiornato con successo' });
-                    logs.push(`[${new Date().toLocaleTimeString()}] Parsing eventi ICS per "${center.name}"...`);
                     
                     const lines = text.split(/\r\n|\n|\r/);
                     let currentEvent = null;
@@ -1296,19 +1581,16 @@
 
                     for (let line of lines) {
                         if (line.startsWith('BEGIN:VEVENT')) {
-                            // Reset rigoroso per ogni singolo evento
                             currentEvent = { uid: null, summary: null, start: null, end: null, description: null };
                         } else if (line.startsWith('END:VEVENT') && currentEvent) {
                             if (currentEvent.uid || currentEvent.summary || currentEvent.start) {
                                 const eventUid = currentEvent.uid || ('evt_' + Math.random().toString(36).substring(2, 9));
-                                // ID univoco rigorosamente associato a questo specifico poliambulatorio e UID
                                 const eventId = `ical_${center.id}_${eventUid}`;
                                 activeIcalEventIds.add(eventId);
 
                                 const eventTitleClean = currentEvent.summary || 'Appuntamento';
                                 const formattedTitle = `${eventTitleClean} (${center.name})`;
                                 
-                                // Gestione accurata orari di inizio e fine con parsing iCal robusto
                                 const parsedStart = parseIcalDateTime(currentEvent.start);
                                 let parsedEnd = currentEvent.end ? parseIcalDateTime(currentEvent.end) : null;
                                 
@@ -1321,6 +1603,9 @@
                                     title: formattedTitle,
                                     start: parsedStart,
                                     end: parsedEnd,
+                                    backgroundColor: center.color,
+                                    borderColor: center.color,
+                                    textColor: '#ffffff',
                                     extendedProps: { centerId: center.id, centerName: center.name, notes: currentEvent.description || 'Sincronizzato da iCal' }
                                 };
 
@@ -1359,13 +1644,11 @@
                             else if (line.startsWith('DESCRIPTION:')) currentEvent.description = line.substring(12).trim();
                         }
                     }
-                    logs.push(`[${new Date().toLocaleTimeString()}] Importati ${countAdded} eventi da "${center.name}".`);
                 } else {
                     centersReport.push({ name: center.name, success: false, message: 'Fallito (Verifica URL pubblico)' });
-                    logs.push(`[${new Date().toLocaleTimeString()}] ERRORE: Impossibile scaricare il calendario per "${center.name}".`);
                 }
 
-                updateIcalChangelogModal({ status: 'loading', centersReport, added: addedEvents, modified: modifiedEvents, deleted: deletedEvents, logs });
+                updateIcalChangelogModal({ status: 'loading', centersReport, added: addedEvents, modified: modifiedEvents, deleted: deletedEvents });
             }
 
             appState.events.forEach(ev => {
@@ -1381,10 +1664,8 @@
                 }
             }
 
-            logs.push(`[${new Date().toLocaleTimeString()}] === FINE SINCRONIZZAZIONE ===`);
             if (calendarInstance) calendarInstance.refetchEvents();
-            
-            updateIcalChangelogModal({ status: 'completed', centersReport, added: addedEvents, modified: modifiedEvents, deleted: deletedEvents, logs });
+            updateIcalChangelogModal({ status: 'completed', centersReport, added: addedEvents, modified: modifiedEvents, deleted: deletedEvents });
             showToast('Sincronizzazione completata!');
         }
 
@@ -1443,7 +1724,6 @@
             const progressText = document.getElementById('sync-progress-text');
             const centersSummary = document.getElementById('changelog-centers-summary');
             const entriesContainer = document.getElementById('changelog-entries-container');
-            const logsContainer = document.getElementById('sync-logs-container');
 
             if (data.status === 'loading') {
                 banner.className = 'p-4 bg-amber-50 border border-amber-200 rounded-2xl flex items-center gap-3 shadow-xs';
@@ -1506,27 +1786,29 @@
                 }
             }
             entriesContainer.innerHTML = htmlVar;
-
-            if (data.logs) {
-                logsContainer.innerHTML = data.logs.map(l => `<div>${l}</div>`).join('');
-            }
-        }
-
-        window.toggleSyncLogs = function() {
-            const container = document.getElementById('sync-logs-container');
-            const chevron = document.getElementById('log-chevron');
-            if (container.classList.contains('hidden')) {
-                container.classList.remove('hidden');
-                chevron.className = 'fa-solid fa-chevron-up';
-            } else {
-                container.classList.add('hidden');
-                chevron.className = 'fa-solid fa-chevron-down';
-            }
         }
 
         window.closeIcalChangelogModal = function() {
             document.getElementById('ical-changelog-modal').classList.add('hidden');
         }
+
+        // --- Custom Confirmation Dialog Helper ---
+        let confirmCallback = null;
+        function showConfirmDialog(title, text, onOk) {
+            document.getElementById('confirm-title').textContent = title;
+            document.getElementById('confirm-text').textContent = text;
+            confirmCallback = onOk;
+            document.getElementById('confirm-modal').classList.remove('hidden');
+        }
+        document.getElementById('confirm-cancel-btn').addEventListener('click', () => {
+            document.getElementById('confirm-modal').classList.add('hidden');
+            confirmCallback = null;
+        });
+        document.getElementById('confirm-ok-btn').addEventListener('click', () => {
+            document.getElementById('confirm-modal').classList.add('hidden');
+            if (confirmCallback) confirmCallback();
+            confirmCallback = null;
+        });
 
         function initCalendar() {
             const calendarEl = document.getElementById('calendar');
@@ -1538,10 +1820,13 @@
                 events: function(fetchInfo, successCallback) {
                     const mappedEvents = appState.events.map(ev => {
                         const center = appState.centers.find(c => c.id === ev.extendedProps?.centerId);
-                        const color = center ? center.color : '#3f5e4e';
+                        const color = center ? center.color : (ev.backgroundColor || '#3f5e4e');
                         return { ...ev, backgroundColor: color, borderColor: color, textColor: '#ffffff' };
                     });
                     successCallback(mappedEvents);
+                },
+                eventClick: function(info) {
+                    openStudioModal(info.event);
                 },
                 editable: false,
                 height: '100%'
