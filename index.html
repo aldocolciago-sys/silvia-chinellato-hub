@@ -12,9 +12,9 @@
                 extend: {
                     colors: {
                         nature: {
-                            50: '#f7faf7',
-                            100: '#edf4ee',
-                            200: '#d7e8db',
+                            50: '#fcfaf7',
+                            100: '#f5efe6',
+                            200: '#eae0d2',
                             500: '#527965',
                             600: '#3f5e4e',
                             700: '#2f473c',
@@ -22,17 +22,22 @@
                             900: '#17221d',
                         },
                         water: {
-                            50: '#f3f7f9',
+                            50: '#f4f8f9',
                             100: '#e4edf2',
                             500: '#4a8fa8',
                             600: '#387085',
                             700: '#295363',
                         },
                         warmth: {
-                            50: '#fcfaf7',
-                            100: '#f5efe6',
-                            200: '#eae0d2',
-                            500: '#c29b93',
+                            50: '#fdfbf7',
+                            100: '#f7f1e5',
+                            200: '#eddcd2',
+                            500: '#d5bdaf',
+                        },
+                        roseSoft: {
+                            50: '#fdf8f8',
+                            100: '#f9f0f0',
+                            500: '#d4a3a3',
                         }
                     },
                     fontFamily: {
@@ -55,23 +60,23 @@
     <style>
         body { 
             font-family: 'Plus Jakarta Sans', sans-serif; 
-            background: linear-gradient(135deg, #f5efe6 0%, #edf4ee 35%, #e4edf2 70%, #f7faf7 100%); 
+            background: linear-gradient(135deg, #f7f3ee 0%, #edf4ee 35%, #e6edf2 70%, #faf8f5 100%); 
             background-attachment: fixed;
             min-height: 100vh; 
         }
         h1, h2, h3, h4, .font-editorial { font-family: 'Cormorant Garamond', Georgia, serif; }
         .italic-title { font-family: 'Cormorant Garamond', Georgia, serif; font-style: italic; }
         
-        .fc .fc-toolbar-title { font-family: 'Cormorant Garamond', Georgia, serif; font-size: 0.95rem !important; font-weight: 700; color: #22332b; font-style: italic; }
-        .fc .fc-button-primary { background-color: #3f5e4e !important; border-color: #3f5e4e !important; border-radius: 0.5rem !important; font-size: 0.65rem !important; font-weight: 600 !important; text-transform: capitalize; padding: 0.25rem 0.6rem !important; box-shadow: 0 1px 2px rgba(63, 94, 78, 0.15); }
+        .fc .fc-toolbar-title { font-family: 'Cormorant Garamond', Georgia, serif; font-size: 0.9rem !important; font-weight: 700; color: #22332b; font-style: italic; }
+        .fc .fc-button-primary { background-color: #3f5e4e !important; border-color: #3f5e4e !important; border-radius: 0.5rem !important; font-size: 0.65rem !important; font-weight: 600 !important; text-transform: capitalize; padding: 0.25rem 0.5rem !important; box-shadow: 0 1px 2px rgba(63, 94, 78, 0.15); }
         .fc .fc-button-primary:hover { background-color: #2f473c !important; border-color: #2f473c !important; }
-        .fc-event { border-radius: 8px !important; padding: 3px 5px !important; font-size: 0.7rem !important; border: none !important; font-weight: 500; box-shadow: 0 1px 3px rgba(0,0,0,0.06); }
+        .fc-event { border-radius: 8px !important; padding: 2px 4px !important; font-size: 0.68rem !important; border: none !important; font-weight: 500; box-shadow: 0 1px 3px rgba(0,0,0,0.06); }
         
         @media (max-width: 640px) {
-            .fc .fc-toolbar { flex-direction: row; flex-wrap: wrap; gap: 0.25rem; justify-content: center; }
-            .fc .fc-toolbar-title { font-size: 0.8rem !important; }
-            .fc .fc-header-toolbar { margin-bottom: 0.4rem !important; }
-            .fc .fc-button { padding: 0.2rem 0.35rem !important; font-size: 0.6rem !important; }
+            .fc .fc-toolbar { flex-direction: row; flex-wrap: wrap; gap: 0.2rem; justify-content: center; }
+            .fc .fc-toolbar-title { font-size: 0.75rem !important; }
+            .fc .fc-header-toolbar { margin-bottom: 0.3rem !important; }
+            .fc .fc-button { padding: 0.15rem 0.3rem !important; font-size: 0.58rem !important; }
         }
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
@@ -195,7 +200,7 @@
                 <div class="max-w-xl mx-auto space-y-2">
                     <span class="text-xs font-bold text-nature-700 uppercase tracking-widest italic-title sm:text-sm">Strutture Partner</span>
                     <h3 class="font-editorial text-2xl sm:text-4xl font-bold text-slate-900 tracking-tight italic">Dove Ricevo (Poliambulatori)</h3>
-                    <p class="text-xs sm:text-sm text-slate-500 font-light">Prenotazioni dirette presso le singole strutture di fiducia</p>
+                    <p class="text-xs sm:text-sm text-slate-500 font-light">Prenotazioni dirette e link utili presso le singole strutture di fiducia</p>
                 </div>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8 text-left" id="public-centers-grid"></div>
             </section>
@@ -264,20 +269,20 @@
     </div>
 
     <div id="private-view" class="hidden flex-1 flex flex-col h-full overflow-hidden">
-        <header class="bg-white/95 backdrop-blur-md border-b border-nature-100 px-3 sm:px-6 py-2.5 flex flex-col sm:flex-row sm:items-center justify-between gap-2 z-30 shadow-xs flex-shrink-0">
-            <div class="flex items-center gap-3">
-                <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-white border border-nature-200 flex items-center justify-center shadow-md overflow-hidden flex-shrink-0">
+        <header class="bg-white/95 backdrop-blur-md border-b border-nature-100 px-3 sm:px-4 py-2 flex flex-col sm:flex-row sm:items-center justify-between gap-2 z-30 shadow-xs flex-shrink-0">
+            <div class="flex items-center gap-2.5">
+                <div class="w-8 h-8 rounded-full bg-white border border-nature-200 flex items-center justify-center shadow-xs overflow-hidden flex-shrink-0">
                     <img src="Logo.jpeg" alt="Logo" class="w-full h-full object-cover" onerror="this.onerror=null; this.src='https://placehold.co/100x100/3f5e4e/ffffff?text=SC'">
                 </div>
                 <div>
-                    <h2 class="font-editorial text-xs sm:text-sm font-bold text-slate-900 leading-tight italic">Agenda di Silvia Chinellato</h2>
-                    <div class="flex items-center gap-2 mt-0.5 flex-wrap">
-                        <p id="logged-user-email-display" class="text-[10px] text-nature-700 font-bold flex items-center gap-1.5 italic-title">
-                            <span class="w-2 h-2 rounded-full bg-nature-500 animate-pulse"></span> Autenticata
+                    <h2 class="font-editorial text-xs font-bold text-slate-900 leading-tight italic">Agenda Silvia Chinellato</h2>
+                    <div class="flex items-center gap-1.5 mt-0.5 flex-wrap">
+                        <p id="logged-user-email-display" class="text-[10px] text-nature-700 font-bold flex items-center gap-1 italic-title">
+                            <span class="w-2 h-2 rounded-full bg-nature-500 animate-pulse"></span>
                         </p>
-                        <div id="firebase-status-indicator" class="inline-flex items-center gap-1.5 bg-slate-100/90 px-2.5 py-0.5 rounded-full text-[10px] font-bold text-slate-700 border border-slate-200 shadow-2xs" title="Stato Firebase Firestore">
-                            <span id="firebase-dot" class="w-2 h-2 rounded-full bg-amber-500 inline-block flex-shrink-0"></span>
-                            <span id="firebase-text">Connessione in corso...</span>
+                        <div id="firebase-status-indicator" class="inline-flex items-center gap-1 bg-slate-100 px-2 py-0.2 rounded-full text-[9px] font-bold text-slate-700 border border-slate-200" title="Stato Firebase">
+                            <span id="firebase-dot" class="w-1.5 h-1.5 rounded-full bg-amber-500 inline-block"></span>
+                            <span id="firebase-text">Connessione...</span>
                         </div>
                         <button onclick="triggerIcalSync()" id="sync-ical-btn" class="inline-flex items-center gap-1 bg-water-50 hover:bg-water-100 text-water-800 px-2.5 py-0.5 rounded-full text-[10px] font-bold border border-water-200 transition shadow-2xs" title="Sincronizza Poliambulatori iCal">
                             <i class="fa-solid fa-rotate text-[9px]"></i> <span>Sincronizza Calendari</span>
@@ -286,38 +291,37 @@
                 </div>
             </div>
 
-            <div class="flex items-center flex-wrap gap-1.5">
-                <button onclick="openStudioModal()" class="px-3 py-1.5 bg-nature-600 hover:bg-nature-700 text-white font-semibold rounded-xl text-[10px] transition flex items-center gap-1 shadow-xs italic-title">
+            <div class="flex items-center flex-wrap gap-1">
+                <button onclick="openStudioModal()" class="px-2.5 py-1.5 bg-nature-600 hover:bg-nature-700 text-white font-semibold rounded-xl text-[10px] transition flex items-center gap-1 shadow-xs italic-title">
                     <i class="fa-solid fa-plus text-[9px]"></i> <span>Studio</span>
                 </button>
-                <button onclick="openCentersModal()" class="w-8 h-8 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl transition flex items-center justify-center border border-slate-200 shadow-xs" title="Gestisci Poliambulatori">
-                    <i class="fa-solid fa-hospital text-[11px]"></i>
+                <button onclick="openCentersModal()" class="w-7 h-7 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl transition flex items-center justify-center border border-slate-200 shadow-xs" title="Gestisci Poliambulatori">
+                    <i class="fa-solid fa-hospital text-[10px]"></i>
                 </button>
-                <button onclick="openTreatmentsAdminModal()" class="w-8 h-8 bg-nature-50 hover:bg-nature-100 text-nature-800 rounded-xl transition flex items-center justify-center border border-slate-200 shadow-xs" title="Gestisci Trattamenti">
-                    <i class="fa-solid fa-hand-holding-medical text-[11px]"></i>
+                <button onclick="openTreatmentsAdminModal()" class="w-7 h-7 bg-nature-50 hover:bg-nature-100 text-nature-800 rounded-xl transition flex items-center justify-center border border-slate-200 shadow-xs" title="Gestisci Trattamenti">
+                    <i class="fa-solid fa-hand-holding-medical text-[10px]"></i>
                 </button>
-                <button onclick="openNewsAdminModal()" class="w-8 h-8 bg-water-50 hover:bg-water-100 text-water-800 rounded-xl transition flex items-center justify-center border border-slate-200 shadow-xs" title="Gestisci News">
-                    <i class="fa-solid fa-bullhorn text-[11px]"></i>
+                <button onclick="openNewsAdminModal()" class="w-7 h-7 bg-water-50 hover:bg-water-100 text-water-800 rounded-xl transition flex items-center justify-center border border-slate-200 shadow-xs" title="Gestisci News">
+                    <i class="fa-solid fa-bullhorn text-[10px]"></i>
                 </button>
-                <button onclick="openPrepAdminModal()" class="w-8 h-8 bg-nature-50 hover:bg-nature-100 text-nature-800 rounded-xl transition flex items-center justify-center border border-slate-200 shadow-xs" title="Gestisci Preparazione">
-                    <i class="fa-solid fa-book-medical text-[11px]"></i>
+                <button onclick="openPrepAdminModal()" class="w-7 h-7 bg-nature-50 hover:bg-nature-100 text-nature-800 rounded-xl transition flex items-center justify-center border border-slate-200 shadow-xs" title="Gestisci Preparazione">
+                    <i class="fa-solid fa-book-medical text-[10px]"></i>
                 </button>
-                <button onclick="openPatientsModal()" class="px-3 py-1.5 bg-amber-50 hover:bg-amber-100 text-amber-800 font-semibold rounded-xl text-[10px] transition flex items-center gap-1 border border-amber-200 shadow-xs italic-title" title="Pazienti">
-                    <i class="fa-solid fa-user-group text-[9px]"></i> <span class="hidden xs:inline">Pazienti</span>
+                <button onclick="openPatientsModal()" class="px-2.5 py-1.5 bg-amber-50 hover:bg-amber-100 text-amber-800 font-semibold rounded-xl text-[10px] transition flex items-center gap-1 border border-amber-200 shadow-xs italic-title" title="Pazienti">
+                    <i class="fa-solid fa-user-group text-[9px]"></i> <span>Pazienti</span>
                 </button>
-                <button onclick="handleLogout()" class="w-7 h-7 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-600 flex items-center justify-center transition shadow-xs" title="Esci">
+                <button onclick="handleLogout()" class="w-6 h-6 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-600 flex items-center justify-center transition shadow-xs" title="Esci">
                     <i class="fa-solid fa-right-from-bracket text-[9px]"></i>
                 </button>
             </div>
         </header>
 
-        <div class="bg-white/60 border-b border-nature-100 px-3 py-1.5 flex items-center gap-2 text-xs flex-shrink-0 overflow-x-auto no-scrollbar" id="header-centers-legend"></div>
+        <!-- Legend and compact view on mobile -->
+        <div class="bg-white/70 border-b border-nature-100 px-3 py-1 flex items-center gap-2 text-xs flex-shrink-0 overflow-x-auto no-scrollbar" id="header-centers-legend"></div>
 
-        <div class="flex-1 flex flex-col overflow-hidden">
-            <main class="flex-1 bg-white/50 backdrop-blur-sm p-2 sm:p-4 overflow-y-auto flex flex-col">
-                <div id="calendar" class="flex-1 min-h-[440px]"></div>
-            </main>
-        </div>
+        <main class="flex-1 bg-white/40 backdrop-blur-sm p-1.5 sm:p-3 overflow-hidden flex flex-col">
+            <div id="calendar" class="flex-1 min-h-[400px]"></div>
+        </main>
     </div>
 
     <div id="login-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-md hidden z-50 flex items-center justify-center p-4">
@@ -342,6 +346,52 @@
         </div>
     </div>
 
+    <!-- Modal Avanzato iCal Changelog con Log, Pallini ed Esito -->
+    <div id="ical-changelog-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-md hidden z-[60] flex items-center justify-center p-4">
+        <div class="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-2xl overflow-hidden flex flex-col max-h-[90vh]">
+            <div class="px-5 sm:px-6 py-4 sm:py-5 border-b border-water-100 flex items-center justify-between bg-water-50/50">
+                <div class="flex items-center gap-3">
+                    <div class="w-9 h-9 rounded-2xl bg-water-100 text-water-700 flex items-center justify-center"><i class="fa-solid fa-rotate text-sm"></i></div>
+                    <h3 class="font-editorial text-base sm:text-lg font-bold text-slate-900 italic">Sincronizzazione Calendari Poliambulatori</h3>
+                </div>
+                <button type="button" onclick="closeIcalChangelogModal()" class="text-slate-400 hover:text-slate-600 w-8 h-8 rounded-full flex items-center justify-center hover:bg-slate-200/60 transition"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+
+            <div class="p-4 sm:p-6 overflow-y-auto space-y-5 flex-1">
+                <div id="sync-progress-banner" class="p-4 bg-amber-50 border border-amber-200 rounded-2xl flex items-center gap-3 shadow-xs">
+                    <div id="sync-spinner" class="w-6 h-6 rounded-full bg-amber-500 animate-ping flex-shrink-0"></div>
+                    <div class="flex-1">
+                        <h4 id="sync-status-title" class="text-xs font-bold text-amber-900 uppercase tracking-wide">Aggiornamento in corso</h4>
+                        <p id="sync-progress-text" class="text-xs text-slate-700">Contatto dei server iCal in corso...</p>
+                    </div>
+                </div>
+
+                <div class="space-y-3">
+                    <h4 class="font-editorial font-bold text-xs text-slate-500 uppercase tracking-wide italic">Esito per Poliambulatorio</h4>
+                    <div id="changelog-centers-summary" class="space-y-2"></div>
+                </div>
+
+                <div class="space-y-3">
+                    <h4 class="font-editorial font-bold text-xs text-slate-500 uppercase tracking-wide italic">Variazioni Rilevate (Aggiunti / Modificati / Cancellati)</h4>
+                    <div id="changelog-entries-container" class="space-y-2"></div>
+                </div>
+
+                <div class="pt-2 border-t border-slate-100">
+                    <button type="button" onclick="toggleSyncLogs()" class="flex items-center justify-between w-full text-xs font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 p-3 rounded-xl transition">
+                        <span class="flex items-center gap-2"><i class="fa-solid fa-terminal text-water-700"></i> Registro Log Dettagliati (Diagnostica)</span>
+                        <i id="log-chevron" class="fa-solid fa-chevron-down"></i>
+                    </button>
+                    <div id="sync-logs-container" class="hidden mt-2 p-3 bg-slate-900 text-slate-200 font-mono text-[10px] rounded-xl max-h-40 overflow-y-auto space-y-1"></div>
+                </div>
+            </div>
+
+            <div class="px-5 sm:px-6 py-4 border-t border-slate-100 bg-slate-50 flex justify-end">
+                <button type="button" onclick="closeIcalChangelogModal()" class="px-6 py-2.5 bg-slate-900 hover:bg-slate-800 text-white font-semibold rounded-2xl text-xs transition italic-title">Chiudi</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Trattamenti Admin Modal -->
     <div id="treatments-admin-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-md hidden z-50 flex items-center justify-center p-4">
         <div class="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-2xl overflow-hidden flex flex-col max-h-[90vh]">
             <div class="px-5 sm:px-6 py-4 sm:py-5 border-b border-nature-100 flex items-center justify-between bg-nature-50/50">
@@ -351,48 +401,37 @@
                 </div>
                 <button type="button" onclick="closeTreatmentsAdminModal()" class="text-slate-400 hover:text-slate-600 w-8 h-8 rounded-full flex items-center justify-center hover:bg-slate-200/60 transition"><i class="fa-solid fa-xmark"></i></button>
             </div>
-
             <div class="p-4 sm:p-6 overflow-y-auto space-y-6 flex-1">
                 <form id="treatment-form" class="bg-nature-50/40 p-4 sm:p-5 rounded-3xl border border-nature-100 space-y-3">
                     <input type="hidden" id="treatment-edit-id">
                     <h4 id="treatment-form-title" class="font-editorial font-bold text-xs sm:text-sm text-nature-900 uppercase tracking-wide italic">Aggiungi Nuovo Trattamento</h4>
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <input type="text" id="new-treatment-title" required placeholder="Titolo trattamento *" class="px-4 py-2.5 bg-white border border-slate-200 rounded-2xl text-xs focus:outline-none focus:ring-2 focus:ring-nature-500">
-                        <div>
-                            <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Seleziona Icona</label>
-                            <select id="new-treatment-icon" class="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-2xl text-xs focus:outline-none focus:ring-2 focus:ring-nature-500">
-                                <option value="fa-droplet">💧 Idro / Goccia (Acqua)</option>
-                                <option value="fa-hands-holding-child">🤲 Mani / Osteopatia</option>
-                                <option value="fa-heart-pulse">💓 Cuore / Pulse</option>
-                                <option value="fa-spa">🌿 Natura / Spa</option>
-                                <option value="fa-feather">🪶 Delicatezza / Piuma</option>
-                                <option value="fa-child-reaching">🧘 Postura / Benessere</option>
-                                <option value="fa-brain">🧠 Cranio / Mente</option>
-                                <option value="fa-bone">🦴 Struttura / Ossa</option>
-                            </select>
-                        </div>
+                        <select id="new-treatment-icon" class="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-2xl text-xs focus:outline-none focus:ring-2 focus:ring-nature-500">
+                            <option value="fa-droplet">💧 Idro / Goccia (Acqua)</option>
+                            <option value="fa-hands-holding-child">🤲 Mani / Osteopatia</option>
+                            <option value="fa-heart-pulse">💓 Cuore / Pulse</option>
+                            <option value="fa-spa">🌿 Natura / Spa</option>
+                        </select>
                     </div>
                     <textarea id="new-treatment-desc" required placeholder="Descrizione del trattamento..." class="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-2xl text-xs focus:outline-none focus:ring-2 focus:ring-nature-500 h-24 resize-none"></textarea>
                     <div class="flex justify-end gap-2 pt-1">
                         <button type="button" id="treatment-cancel-edit" onclick="resetTreatmentForm()" class="hidden px-4 py-2.5 bg-slate-200 text-slate-700 font-semibold rounded-2xl text-xs transition">Annulla</button>
-                        <button type="submit" class="px-5 py-2.5 bg-nature-600 hover:bg-nature-700 text-white font-semibold rounded-2xl text-xs transition shadow-md shadow-nature-200 italic-title text-sm">
-                            <i class="fa-solid fa-plus mr-1.5"></i> <span id="treatment-submit-btn-text">Salva Trattamento</span>
-                        </button>
+                        <button type="submit" class="px-5 py-2.5 bg-nature-600 hover:bg-nature-700 text-white font-semibold rounded-2xl text-xs transition shadow-md shadow-nature-200 italic-title text-sm"><span id="treatment-submit-btn-text">Salva Trattamento</span></button>
                     </div>
                 </form>
-
                 <div class="space-y-3">
                     <h4 class="font-editorial font-bold text-xs text-slate-400 uppercase tracking-wide italic">Trattamenti Attivi</h4>
                     <div id="treatments-management-list" class="space-y-3"></div>
                 </div>
             </div>
-
             <div class="px-5 sm:px-6 py-4 border-t border-slate-100 bg-slate-50 flex justify-end">
                 <button type="button" onclick="closeTreatmentsAdminModal()" class="px-6 py-2.5 bg-slate-900 hover:bg-slate-800 text-white font-semibold rounded-2xl text-xs transition italic-title">Chiudi</button>
             </div>
         </div>
     </div>
 
+    <!-- Poliambulatori Admin Modal -->
     <div id="centers-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-md hidden z-50 flex items-center justify-center p-4">
         <div class="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-2xl overflow-hidden flex flex-col max-h-[90vh]">
             <div class="px-5 sm:px-6 py-4 sm:py-5 border-b border-nature-100 flex items-center justify-between bg-nature-50/50">
@@ -402,7 +441,6 @@
                 </div>
                 <button type="button" onclick="closeCentersModal()" class="text-slate-400 hover:text-slate-600 w-8 h-8 rounded-full flex items-center justify-center hover:bg-slate-200/60 transition"><i class="fa-solid fa-xmark"></i></button>
             </div>
-
             <div class="p-4 sm:p-6 overflow-y-auto space-y-6 flex-1">
                 <form id="center-form" class="bg-nature-50/40 p-4 sm:p-5 rounded-3xl border border-nature-100 space-y-3">
                     <input type="hidden" id="center-edit-id">
@@ -420,7 +458,7 @@
                         <input type="url" id="new-center-booking" placeholder="Link prenotazione online (opzionale)" class="px-4 py-2.5 bg-white border border-slate-200 rounded-2xl text-xs focus:outline-none focus:ring-2 focus:ring-nature-500">
                     </div>
                     <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 items-center">
-                        <input type="url" id="new-center-ical" placeholder="Link iCal (.ics) Google Calendar (opzionale)" class="sm:col-span-2 px-4 py-2.5 bg-white border border-slate-200 rounded-2xl text-xs focus:outline-none focus:ring-2 focus:ring-nature-500">
+                        <input type="url" id="new-center-ical" placeholder="Link iCal (.ics) Google Calendar" class="sm:col-span-2 px-4 py-2.5 bg-white border border-slate-200 rounded-2xl text-xs focus:outline-none focus:ring-2 focus:ring-nature-500">
                         <div class="flex items-center gap-2.5 px-2">
                             <input type="checkbox" id="new-center-public" checked class="w-4 h-4 text-nature-600 rounded focus:ring-nature-500">
                             <label for="new-center-public" class="text-xs font-semibold text-slate-700">Visibile clienti</label>
@@ -428,370 +466,120 @@
                     </div>
                     <div class="flex justify-end gap-2 pt-1">
                         <button type="button" id="center-cancel-edit" onclick="resetCenterForm()" class="hidden px-4 py-2.5 bg-slate-200 text-slate-700 font-semibold rounded-2xl text-xs transition">Annulla</button>
-                        <button type="submit" class="px-5 py-2.5 bg-nature-600 hover:bg-nature-700 text-white font-semibold rounded-2xl text-xs transition shadow-md shadow-nature-200 italic-title text-sm">
-                            <i class="fa-solid fa-plus mr-1.5"></i> <span id="center-submit-btn-text">Salva Poliambulatorio</span>
-                        </button>
+                        <button type="submit" class="px-5 py-2.5 bg-nature-600 hover:bg-nature-700 text-white font-semibold rounded-2xl text-xs transition shadow-md shadow-nature-200 italic-title text-sm"><span id="center-submit-btn-text">Salva Poliambulatorio</span></button>
                     </div>
                 </form>
-
                 <div class="space-y-3">
                     <h4 class="font-editorial font-bold text-xs text-slate-400 uppercase tracking-wide italic">Poliambulatori Registrati</h4>
                     <div id="centers-management-list" class="space-y-3"></div>
                 </div>
             </div>
-
             <div class="px-5 sm:px-6 py-4 border-t border-slate-100 bg-slate-50 flex justify-end">
                 <button type="button" onclick="closeCentersModal()" class="px-6 py-2.5 bg-slate-900 hover:bg-slate-800 text-white font-semibold rounded-2xl text-xs transition italic-title">Salva e Chiudi</button>
             </div>
         </div>
     </div>
 
+    <!-- News Admin Modal -->
     <div id="news-admin-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-md hidden z-50 flex items-center justify-center p-4">
         <div class="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-2xl overflow-hidden flex flex-col max-h-[90vh]">
             <div class="px-5 sm:px-6 py-4 sm:py-5 border-b border-nature-100 flex items-center justify-between bg-water-50/50">
-                <div class="flex items-center gap-3">
-                    <div class="w-9 h-9 rounded-2xl bg-water-100 text-water-700 flex items-center justify-center"><i class="fa-solid fa-bullhorn text-sm"></i></div>
-                    <h3 class="font-editorial text-base sm:text-lg font-bold text-slate-900 italic">Gestione News & Offerte</h3>
-                </div>
+                <h3 class="font-editorial text-base sm:text-lg font-bold text-slate-900 italic">Gestione News & Offerte</h3>
                 <button type="button" onclick="closeNewsAdminModal()" class="text-slate-400 hover:text-slate-600 w-8 h-8 rounded-full flex items-center justify-center hover:bg-slate-200/60 transition"><i class="fa-solid fa-xmark"></i></button>
             </div>
-
             <div class="p-4 sm:p-6 overflow-y-auto space-y-6 flex-1">
                 <form id="news-form" class="bg-water-50/40 p-4 sm:p-5 rounded-3xl border border-water-100 space-y-3">
                     <input type="hidden" id="news-edit-id">
-                    <h4 id="news-form-title" class="font-editorial font-bold text-xs sm:text-sm text-water-900 uppercase tracking-wide italic">Crea Nuova News / Comunicazione</h4>
                     <input type="text" id="new-news-title" required placeholder="Titolo della news *" class="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-2xl text-xs focus:outline-none focus:ring-2 focus:ring-water-500">
                     <textarea id="new-news-content" required placeholder="Contenuto completo..." class="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-2xl text-xs focus:outline-none focus:ring-2 focus:ring-water-500 h-24 resize-none"></textarea>
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        <input type="url" id="new-news-link" placeholder="Link di approfondimento" class="px-4 py-2.5 bg-white border border-slate-200 rounded-2xl text-xs focus:outline-none focus:ring-2 focus:ring-water-500">
-                        <input type="text" id="new-news-linktext" placeholder="Testo del link (es. Scopri di più)" class="px-4 py-2.5 bg-white border border-slate-200 rounded-2xl text-xs focus:outline-none focus:ring-2 focus:ring-water-500">
-                    </div>
-                    <div class="flex justify-end gap-2 pt-1">
-                        <button type="button" id="news-cancel-edit" onclick="resetNewsForm()" class="hidden px-4 py-2.5 bg-slate-200 text-slate-700 font-semibold rounded-2xl text-xs transition">Annulla</button>
-                        <button type="submit" class="px-5 py-2.5 bg-water-600 hover:bg-water-700 text-white font-semibold rounded-2xl text-xs transition shadow-md shadow-water-200 italic-title text-sm">
-                            <i class="fa-solid fa-plus mr-1.5"></i> <span id="news-submit-btn-text">Pubblica News</span>
-                        </button>
+                    <div class="flex justify-end gap-2">
+                        <button type="button" id="news-cancel-edit" onclick="resetNewsForm()" class="hidden px-4 py-2.5 bg-slate-200 text-slate-700 font-semibold rounded-2xl text-xs">Annulla</button>
+                        <button type="submit" class="px-5 py-2.5 bg-water-600 text-white font-semibold rounded-2xl text-xs"><span id="news-submit-btn-text">Pubblica News</span></button>
                     </div>
                 </form>
-
-                <div class="space-y-3">
-                    <h4 class="font-editorial font-bold text-xs text-slate-400 uppercase tracking-wide italic">News Pubblicate</h4>
-                    <div id="news-management-list" class="space-y-3"></div>
-                </div>
+                <div id="news-management-list" class="space-y-3"></div>
             </div>
-
             <div class="px-5 sm:px-6 py-4 border-t border-slate-100 bg-slate-50 flex justify-end">
-                <button type="button" onclick="closeNewsAdminModal()" class="px-6 py-2.5 bg-slate-900 hover:bg-slate-800 text-white font-semibold rounded-2xl text-xs transition italic-title">Chiudi</button>
+                <button type="button" onclick="closeNewsAdminModal()" class="px-6 py-2.5 bg-slate-900 text-white font-semibold rounded-2xl text-xs">Chiudi</button>
             </div>
         </div>
     </div>
 
+    <!-- Preparazione Admin Modal -->
     <div id="prep-admin-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-md hidden z-50 flex items-center justify-center p-4">
         <div class="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-2xl overflow-hidden flex flex-col max-h-[90vh]">
-            <div class="px-5 sm:px-6 py-4 sm:py-5 border-b border-nature-100 flex items-center justify-between bg-nature-50/50">
-                <div class="flex items-center gap-3">
-                    <div class="w-9 h-9 rounded-2xl bg-nature-100 text-nature-700 flex items-center justify-center"><i class="fa-solid fa-book-medical text-sm"></i></div>
-                    <h3 class="font-editorial text-base sm:text-lg font-bold text-slate-900 italic">Gestione Preparazione ai Trattamenti</h3>
-                </div>
+            <div class="px-5 sm:px-6 py-4 border-b border-nature-100 flex items-center justify-between bg-nature-50/50">
+                <h3 class="font-editorial text-base sm:text-lg font-bold text-slate-900 italic">Gestione Preparazione ai Trattamenti</h3>
                 <button type="button" onclick="closePrepAdminModal()" class="text-slate-400 hover:text-slate-600 w-8 h-8 rounded-full flex items-center justify-center hover:bg-slate-200/60 transition"><i class="fa-solid fa-xmark"></i></button>
             </div>
-
             <div class="p-4 sm:p-6 overflow-y-auto space-y-6 flex-1">
                 <form id="prep-form" class="bg-nature-50/40 p-4 sm:p-5 rounded-3xl border border-nature-100 space-y-3">
                     <input type="hidden" id="prep-edit-id">
-                    <h4 id="prep-form-title" class="font-editorial font-bold text-xs sm:text-sm text-nature-900 uppercase tracking-wide italic">Aggiungi Nuova Guida di Preparazione</h4>
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        <input type="text" id="prep-title" required placeholder="Titolo *" class="px-4 py-2.5 bg-white border border-slate-200 rounded-2xl text-xs focus:outline-none focus:ring-2 focus:ring-nature-500">
-                        <input type="text" id="prep-tag" required placeholder="Tag Trattamento (es. Idrocolonterapia) *" class="px-4 py-2.5 bg-white border border-slate-200 rounded-2xl text-xs focus:outline-none focus:ring-2 focus:ring-nature-500">
+                        <input type="text" id="prep-title" required placeholder="Titolo *" class="px-4 py-2.5 bg-white border border-slate-200 rounded-2xl text-xs">
+                        <input type="text" id="prep-tag" required placeholder="Tag Trattamento *" class="px-4 py-2.5 bg-white border border-slate-200 rounded-2xl text-xs">
                     </div>
-                    <textarea id="prep-content" required placeholder="Contenuto della guida..." class="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-2xl text-xs focus:outline-none focus:ring-2 focus:ring-nature-500 h-24 resize-none"></textarea>
-                    <div class="flex justify-end gap-2 pt-1">
-                        <button type="button" id="prep-cancel-edit" onclick="resetPrepForm()" class="hidden px-4 py-2.5 bg-slate-200 text-slate-700 font-semibold rounded-2xl text-xs transition">Annulla</button>
-                        <button type="submit" class="px-5 py-2.5 bg-nature-600 hover:bg-nature-700 text-white font-semibold rounded-2xl text-xs transition shadow-md shadow-nature-200 italic-title text-sm">
-                            <i class="fa-solid fa-plus mr-1.5"></i> <span id="prep-submit-btn-text">Salva Guida</span>
-                        </button>
+                    <textarea id="prep-content" required placeholder="Contenuto della guida..." class="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-2xl text-xs h-24 resize-none"></textarea>
+                    <div class="flex justify-end gap-2">
+                        <button type="button" id="prep-cancel-edit" onclick="resetPrepForm()" class="hidden px-4 py-2.5 bg-slate-200 text-slate-700 font-semibold rounded-2xl text-xs">Annulla</button>
+                        <button type="submit" class="px-5 py-2.5 bg-nature-600 text-white font-semibold rounded-2xl text-xs"><span id="prep-submit-btn-text">Salva Guida</span></button>
                     </div>
                 </form>
-
-                <div class="space-y-3">
-                    <h4 class="font-editorial font-bold text-xs text-slate-400 uppercase tracking-wide italic">Guide Pubblicate</h4>
-                    <div id="prep-management-list" class="space-y-3"></div>
-                </div>
+                <div id="prep-management-list" class="space-y-3"></div>
             </div>
-
             <div class="px-5 sm:px-6 py-4 border-t border-slate-100 bg-slate-50 flex justify-end">
-                <button type="button" onclick="closePrepAdminModal()" class="px-6 py-2.5 bg-slate-900 hover:bg-slate-800 text-white font-semibold rounded-2xl text-xs transition italic-title">Chiudi</button>
+                <button type="button" onclick="closePrepAdminModal()" class="px-6 py-2.5 bg-slate-900 text-white font-semibold rounded-2xl text-xs">Chiudi</button>
             </div>
         </div>
     </div>
 
+    <!-- Patients Modal -->
     <div id="patients-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-md hidden z-50 flex items-center justify-center p-4">
         <div class="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-4xl overflow-hidden flex flex-col max-h-[90vh]">
-            <div class="px-5 sm:px-6 py-4 sm:py-5 border-b border-amber-100 flex items-center justify-between bg-amber-50/50">
-                <div class="flex items-center gap-3">
-                    <div class="w-9 h-9 rounded-2xl bg-amber-100 text-amber-700 flex items-center justify-center"><i class="fa-solid fa-user-group text-sm"></i></div>
-                    <h3 class="font-editorial text-base sm:text-lg font-bold text-slate-900 italic">Anagrafe & Anamnesi Pazienti</h3>
-                </div>
+            <div class="px-5 sm:px-6 py-4 border-b border-amber-100 flex items-center justify-between bg-amber-50/50">
+                <h3 class="font-editorial text-base sm:text-lg font-bold text-slate-900 italic">Anagrafe & Anamnesi Pazienti</h3>
                 <div class="flex items-center gap-2">
-                    <button onclick="openPatientEditModal()" class="px-3 py-2 bg-amber-600 hover:bg-amber-700 text-white font-semibold rounded-xl text-xs transition shadow-sm italic-title flex items-center gap-1">
-                        <i class="fa-solid fa-user-plus text-xs"></i> Nuovo Paziente
-                    </button>
-                    <button type="button" onclick="closePatientsModal()" class="text-slate-400 hover:text-slate-600 w-8 h-8 rounded-full flex items-center justify-center hover:bg-slate-200/60 transition"><i class="fa-solid fa-xmark"></i></button>
+                    <button onclick="openPatientEditModal()" class="px-3 py-2 bg-amber-600 text-white font-semibold rounded-xl text-xs">Nuovo Paziente</button>
+                    <button type="button" onclick="closePatientsModal()" class="text-slate-400 hover:text-slate-600 w-8 h-8 rounded-full flex items-center justify-center"><i class="fa-solid fa-xmark"></i></button>
                 </div>
             </div>
-
             <div class="p-4 sm:p-6 overflow-y-auto space-y-4 flex-1">
-                <div class="flex flex-col sm:flex-row items-center justify-between gap-3 bg-amber-50/30 p-3 rounded-2xl border border-amber-100">
-                    <div class="relative w-full sm:w-72">
-                        <i class="fa-solid fa-search absolute left-3.5 top-3 text-slate-400 text-xs"></i>
-                        <input type="text" id="patient-search-input" placeholder="Cerca paziente per nome..." oninput="filterPatientsList(this.value)" class="w-full pl-9 pr-4 py-2 bg-white border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-amber-500 font-medium">
-                    </div>
-                    <div class="flex items-center gap-2">
-                        <button onclick="openMergePatientsModal()" class="px-3 py-2 bg-slate-800 hover:bg-slate-900 text-white font-semibold rounded-xl text-xs transition shadow-sm italic-title flex items-center gap-1">
-                            <i class="fa-solid fa-code-merge text-xs"></i> Unisci (Merge)
-                        </button>
-                        <span class="text-[11px] text-slate-500 italic">Ordine alfabetico</span>
-                    </div>
-                </div>
-
                 <div id="patients-alphabetical-list" class="space-y-2.5"></div>
             </div>
-
             <div class="px-5 sm:px-6 py-4 border-t border-slate-100 bg-slate-50 flex justify-end">
-                <button type="button" onclick="closePatientsModal()" class="px-6 py-2.5 bg-slate-900 hover:bg-slate-800 text-white font-semibold rounded-2xl text-xs transition italic-title">Chiudi</button>
+                <button type="button" onclick="closePatientsModal()" class="px-6 py-2.5 bg-slate-900 text-white font-semibold rounded-2xl text-xs">Chiudi</button>
             </div>
         </div>
     </div>
 
-    <div id="patient-edit-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-md hidden z-[60] flex items-center justify-center p-4">
-        <div class="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-lg overflow-hidden flex flex-col border border-nature-100">
-            <div class="px-5 sm:px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-amber-50/50">
-                <h3 id="patient-edit-title" class="font-editorial text-base sm:text-lg font-bold text-slate-900 italic">Modifica Scheda Paziente</h3>
-                <button type="button" onclick="closePatientEditModal()" class="text-slate-400 hover:text-slate-600 w-8 h-8 rounded-full flex items-center justify-center hover:bg-slate-200/60 transition"><i class="fa-solid fa-xmark"></i></button>
-            </div>
-            
-            <form id="patient-single-form" class="p-5 sm:p-6 space-y-4">
-                <input type="hidden" id="patient-edit-id">
-                <div>
-                    <label class="block text-[11px] font-bold text-slate-500 uppercase mb-1">Nome e Cognome *</label>
-                    <input type="text" id="patient-edit-name" required class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-xs sm:text-sm font-medium focus:outline-none focus:ring-2 focus:ring-amber-500">
-                </div>
-                <div>
-                    <label class="block text-[11px] font-bold text-slate-500 uppercase mb-1">Telefono / Contatto</label>
-                    <input type="text" id="patient-edit-contacts" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-xs sm:text-sm font-medium focus:outline-none focus:ring-2 focus:ring-amber-500">
-                </div>
-                <div>
-                    <label class="block text-[11px] font-bold text-slate-500 uppercase mb-1">Anamnesi & Note Cliniche</label>
-                    <textarea id="patient-edit-anamnesis" placeholder="Storico trattamenti..." class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-xs sm:text-sm font-medium focus:outline-none focus:ring-2 focus:ring-amber-500 h-28 resize-none"></textarea>
-                </div>
-
-                <div class="flex items-center gap-3 pt-2">
-                    <button type="button" onclick="closePatientEditModal()" class="flex-1 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-2xl transition text-xs italic-title">Annulla</button>
-                    <button type="submit" class="flex-1 py-3 bg-amber-600 hover:bg-amber-700 text-white font-semibold rounded-2xl shadow-lg shadow-amber-200 transition text-xs italic-title flex items-center justify-center gap-2">
-                        <i class="fa-solid fa-floppy-disk"></i> Salva
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <div id="merge-patients-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-md hidden z-[60] flex items-center justify-center p-4">
-        <div class="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-md overflow-hidden flex flex-col border border-slate-100">
-            <div class="px-5 sm:px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50">
-                <h3 class="font-editorial text-base sm:text-lg font-bold text-slate-900 italic">Unione Schede Pazienti (Merge)</h3>
-                <button type="button" onclick="closeMergePatientsModal()" class="text-slate-400 hover:text-slate-600 w-8 h-8 rounded-full flex items-center justify-center hover:bg-slate-200/60 transition"><i class="fa-solid fa-xmark"></i></button>
-            </div>
-            
-            <div class="p-5 sm:p-6 space-y-4">
-                <p class="text-xs text-slate-600 font-light">Seleziona il paziente <strong class="text-slate-800">principale</strong> (che rimarrà) e il paziente <strong class="text-slate-800">duplicato</strong> (che verrà unito e rimosso, trasferendo note e appuntamenti).</p>
-                <div>
-                    <label class="block text-[11px] font-bold text-slate-500 uppercase mb-1">Paziente Principale (Destinazione)</label>
-                    <select id="merge-target-id" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium focus:outline-none focus:ring-2 focus:ring-slate-500"></select>
-                </div>
-                <div>
-                    <label class="block text-[11px] font-bold text-slate-500 uppercase mb-1">Paziente Duplicato (Da Eliminare/Unire)</label>
-                    <select id="merge-source-id" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium focus:outline-none focus:ring-2 focus:ring-slate-500"></select>
-                </div>
-                <div class="flex items-center gap-3 pt-2">
-                    <button type="button" onclick="closeMergePatientsModal()" class="flex-1 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-2xl transition text-xs italic-title">Annulla</button>
-                    <button type="button" onclick="executePatientsMerge()" class="flex-1 py-3 bg-slate-900 hover:bg-slate-800 text-white font-semibold rounded-2xl shadow-lg transition text-xs italic-title flex items-center justify-center gap-2">
-                        <i class="fa-solid fa-code-merge"></i> Esegui Merge
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Modale Avanzato Sincronizzazione iCal con Progresso, Esito per Poliambulatorio e Log -->
-    <div id="ical-changelog-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-md hidden z-[60] flex items-center justify-center p-4">
-        <div class="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-2xl overflow-hidden flex flex-col max-h-[90vh]">
-            <div class="px-5 sm:px-6 py-4 sm:py-5 border-b border-water-100 flex items-center justify-between bg-water-50/50">
-                <div class="flex items-center gap-3">
-                    <div class="w-9 h-9 rounded-2xl bg-water-100 text-water-700 flex items-center justify-center"><i class="fa-solid fa-rotate text-sm"></i></div>
-                    <h3 class="font-editorial text-base sm:text-lg font-bold text-slate-900 italic">Sincronizzazione Calendari Poliambulatori</h3>
-                </div>
-                <button type="button" onclick="closeIcalChangelogModal()" class="text-slate-400 hover:text-slate-600 w-8 h-8 rounded-full flex items-center justify-center hover:bg-slate-200/60 transition"><i class="fa-solid fa-xmark"></i></button>
-            </div>
-
-            <div class="p-4 sm:p-6 overflow-y-auto space-y-5 flex-1">
-                <!-- Barra di Progresso Dinamica -->
-                <div id="sync-progress-banner" class="p-4 bg-amber-50 border border-amber-200 rounded-2xl flex items-center gap-3 shadow-xs">
-                    <div id="sync-spinner" class="w-6 h-6 rounded-full bg-amber-500 animate-ping flex-shrink-0"></div>
-                    <div class="flex-1">
-                        <h4 id="sync-status-title" class="text-xs font-bold text-amber-900 uppercase tracking-wide">Aggiornamento in corso</h4>
-                        <p id="sync-progress-text" class="text-xs text-slate-700">Contatto dei server iCal in corso...</p>
-                    </div>
-                </div>
-
-                <!-- Esito per Poliambulatorio con Pallino Verde/Rosso -->
-                <div class="space-y-3">
-                    <h4 class="font-editorial font-bold text-xs text-slate-500 uppercase tracking-wide italic">Esito per Poliambulatorio</h4>
-                    <div id="changelog-centers-summary" class="space-y-2"></div>
-                </div>
-
-                <!-- Variazioni Rilevate -->
-                <div class="space-y-3">
-                    <h4 class="font-editorial font-bold text-xs text-slate-500 uppercase tracking-wide italic">Variazioni Rilevate (Aggiunti / Modificati / Cancellati)</h4>
-                    <div id="changelog-entries-container" class="space-y-2"></div>
-                </div>
-
-                <!-- Sezione Log Dettagliati Espandibile -->
-                <div class="pt-2 border-t border-slate-100">
-                    <button type="button" onclick="toggleSyncLogs()" class="flex items-center justify-between w-full text-xs font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 p-3 rounded-xl transition">
-                        <span class="flex items-center gap-2"><i class="fa-solid fa-terminal text-water-700"></i> Registro Log Dettagliati (Diagnostica)</span>
-                        <i id="log-chevron" class="fa-solid fa-chevron-down"></i>
-                    </button>
-                    <div id="sync-logs-container" class="hidden mt-2 p-3 bg-slate-900 text-slate-200 font-mono text-[10px] rounded-xl max-h-40 overflow-y-auto space-y-1"></div>
-                </div>
-            </div>
-
-            <div class="px-5 sm:px-6 py-4 border-t border-slate-100 bg-slate-50 flex justify-end">
-                <button type="button" onclick="closeIcalChangelogModal()" class="px-6 py-2.5 bg-slate-900 hover:bg-slate-800 text-white font-semibold rounded-2xl text-xs transition italic-title">Chiudi</button>
-            </div>
-        </div>
-    </div>
-
+    <!-- Studio Modal -->
     <div id="studio-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-md hidden z-50 flex items-center justify-center p-4">
         <div class="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-md overflow-hidden flex flex-col border border-nature-100">
-            <div class="px-5 sm:px-6 py-4 sm:py-5 border-b border-slate-100 flex items-center justify-between bg-nature-50/50">
-                <div class="flex items-center gap-3">
-                    <div class="w-9 h-9 rounded-2xl bg-nature-100 text-nature-700 flex items-center justify-center"><i class="fa-solid fa-house-chimney-medical text-sm"></i></div>
-                    <h3 id="studio-modal-title" class="font-editorial text-base sm:text-lg font-bold text-slate-900 italic">Studio Privato</h3>
-                </div>
-                <button type="button" onclick="closeStudioModal()" class="text-slate-400 hover:text-slate-600 w-8 h-8 rounded-full flex items-center justify-center hover:bg-slate-200/60 transition"><i class="fa-solid fa-xmark"></i></button>
+            <div class="px-5 sm:px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-nature-50/50">
+                <h3 class="font-editorial text-base sm:text-lg font-bold text-slate-900 italic">Studio Privato</h3>
+                <button type="button" onclick="closeStudioModal()" class="text-slate-400 hover:text-slate-600 w-8 h-8 rounded-full flex items-center justify-center"><i class="fa-solid fa-xmark"></i></button>
             </div>
-            
             <form id="studio-event-form" class="p-5 sm:p-6 space-y-4">
                 <input type="hidden" id="studio-edit-event-id">
-                <div class="relative">
-                    <label class="block text-[11px] font-bold text-slate-500 uppercase mb-1">Nome Paziente / Trattamento</label>
-                    <input type="text" id="studio-title" required autocomplete="off" placeholder="Es. Mario Rossi - Idrocolonterapia" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-xs sm:text-sm font-medium focus:outline-none focus:ring-2 focus:ring-nature-500" oninput="handlePatientAutocomplete(this.value)">
-                    <div id="patient-suggestions" class="absolute left-0 right-0 top-full mt-1 bg-white border border-slate-200 rounded-2xl shadow-xl hidden z-20 max-h-40 overflow-y-auto"></div>
-                </div>
-                <div>
-                    <label class="block text-[11px] font-bold text-slate-500 uppercase mb-1">Data</label>
-                    <input type="date" id="studio-date" required class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-xs sm:text-sm font-medium focus:outline-none focus:ring-2 focus:ring-nature-500">
-                </div>
-                
+                <input type="text" id="studio-title" required placeholder="Nome Paziente / Trattamento" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-xs">
+                <input type="date" id="studio-date" required class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-xs">
                 <div class="grid grid-cols-2 gap-3">
-                    <div>
-                        <label class="block text-[11px] font-bold text-slate-500 uppercase mb-1">Ora Inizio</label>
-                        <select id="studio-time-start" required onchange="handleStudioStartTimeChange(this.value)" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-xs sm:text-sm font-medium focus:outline-none focus:ring-2 focus:ring-nature-500">
-                            <option value="">Seleziona...</option>
-                            <option value="08:00">08:00</option><option value="08:30">08:30</option>
-                            <option value="09:00">09:00</option><option value="09:30">09:30</option>
-                            <option value="10:00">10:00</option><option value="10:30">10:30</option>
-                            <option value="11:00">11:00</option><option value="11:30">11:30</option>
-                            <option value="12:00">12:00</option><option value="12:30">12:30</option>
-                            <option value="13:00">13:00</option><option value="13:30">13:30</option>
-                            <option value="14:00">14:00</option><option value="14:30">14:30</option>
-                            <option value="15:00">15:00</option><option value="15:30">15:30</option>
-                            <option value="16:00">16:00</option><option value="16:30">16:30</option>
-                            <option value="17:00">17:00</option><option value="17:30">17:30</option>
-                            <option value="18:00">18:00</option><option value="18:30">18:30</option>
-                            <option value="19:00">19:00</option><option value="19:30">19:30</option>
-                            <option value="20:00">20:00</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-[11px] font-bold text-slate-500 uppercase mb-1">Ora Fine (+1h auto)</label>
-                        <select id="studio-time-end" required class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-xs sm:text-sm font-medium focus:outline-none focus:ring-2 focus:ring-nature-500">
-                            <option value="">Fine...</option>
-                            <option value="09:00">09:00</option><option value="09:30">09:30</option>
-                            <option value="10:00">10:00</option><option value="10:30">10:30</option>
-                            <option value="11:00">11:00</option><option value="11:30">11:30</option>
-                            <option value="12:00">12:00</option><option value="12:30">12:30</option>
-                            <option value="13:00">13:00</option><option value="13:30">13:30</option>
-                            <option value="14:00">14:00</option><option value="14:30">14:30</option>
-                            <option value="15:00">15:00</option><option value="15:30">15:30</option>
-                            <option value="16:00">16:00</option><option value="16:30">16:30</option>
-                            <option value="17:00">17:00</option><option value="17:30">17:30</option>
-                            <option value="18:00">18:00</option><option value="18:30">18:30</option>
-                            <option value="19:00">19:00</option><option value="19:30">19:30</option>
-                            <option value="20:00">20:00</option><option value="20:30">20:30</option>
-                            <option value="21:00">21:00</option>
-                        </select>
-                    </div>
+                    <select id="studio-time-start" required class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-xs">
+                        <option value="">Ora Inizio...</option>
+                        <option value="08:00">08:00</option><option value="09:00">09:00</option><option value="10:00">10:00</option><option value="11:00">11:00</option><option value="12:00">12:00</option><option value="14:00">14:00</option><option value="15:00">15:00</option><option value="16:00">16:00</option><option value="17:00">17:00</option><option value="18:00">18:00</option><option value="19:00">19:00</option>
+                    </select>
+                    <select id="studio-time-end" required class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-xs">
+                        <option value="">Ora Fine...</option>
+                        <option value="09:00">09:00</option><option value="10:00">10:00</option><option value="11:00">11:00</option><option value="12:00">12:00</option><option value="13:00">13:00</option><option value="15:00">15:00</option><option value="16:00">16:00</option><option value="17:00">17:00</option><option value="18:00">18:00</option><option value="19:00">19:00</option><option value="20:00">20:00</option>
+                    </select>
                 </div>
-
-                <div>
-                    <label class="block text-[11px] font-bold text-slate-500 uppercase mb-1">Note (Opzionale)</label>
-                    <textarea id="studio-notes" placeholder="Note cliniche..." class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-xs sm:text-sm font-medium focus:outline-none focus:ring-2 focus:ring-nature-500 h-20 resize-none"></textarea>
-                </div>
-
-                <div class="flex items-center gap-3 pt-2">
-                    <button type="button" onclick="closeStudioModal()" class="flex-1 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-2xl transition text-xs italic-title">Annulla</button>
-                    <button type="submit" class="flex-1 py-3 bg-gradient-to-r from-nature-600 to-nature-800 hover:from-nature-700 hover:to-nature-900 text-white font-semibold rounded-2xl shadow-lg shadow-nature-200 transition text-xs italic-title flex items-center justify-center gap-2">
-                        <i class="fa-solid fa-check"></i> <span id="studio-submit-btn-text">Salva</span>
-                    </button>
-                </div>
+                <textarea id="studio-notes" placeholder="Note cliniche..." class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-xs h-20 resize-none"></textarea>
+                <button type="submit" class="w-full py-3 bg-nature-700 text-white font-semibold rounded-2xl text-xs">Salva Appuntamento</button>
             </form>
         </div>
     </div>
 
-    <div id="event-details-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-md hidden z-50 flex items-center justify-center p-4">
-        <div class="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-lg overflow-hidden flex flex-col border border-nature-100">
-            <div class="px-5 sm:px-6 py-4 sm:py-5 border-b border-slate-100 flex items-center justify-between bg-water-50/50">
-                <div class="flex items-center gap-3">
-                    <div class="w-9 h-9 rounded-2xl bg-water-100 text-water-700 flex items-center justify-center"><i class="fa-solid fa-calendar-day text-sm"></i></div>
-                    <h3 class="font-editorial text-base sm:text-lg font-bold text-slate-900 italic">Dettagli Appuntamento</h3>
-                </div>
-                <button type="button" onclick="closeEventDetailsModal()" class="text-slate-400 hover:text-slate-600 w-8 h-8 rounded-full flex items-center justify-center hover:bg-slate-200/60 transition"><i class="fa-solid fa-xmark"></i></button>
-            </div>
-            
-            <div class="p-5 sm:p-6 space-y-4">
-                <div>
-                    <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Titolo Originale / Evento</span>
-                    <h4 id="details-title" class="font-editorial text-base sm:text-lg font-bold text-slate-900 mt-0.5 italic"></h4>
-                </div>
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Struttura / Sede</span>
-                        <p id="details-center" class="text-xs sm:text-sm font-semibold text-slate-700 mt-0.5"></p>
-                    </div>
-                    <div>
-                        <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Orario</span>
-                        <p id="details-time" class="text-xs sm:text-sm font-semibold text-slate-700 mt-0.5"></p>
-                    </div>
-                </div>
-
-                <div id="patient-status-box" class="p-4 rounded-2xl border transition-all"></div>
-
-                <div>
-                    <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Note</span>
-                    <p id="details-notes" class="text-xs sm:text-sm text-slate-600 bg-slate-50 p-3.5 rounded-2xl border border-slate-100 mt-0.5 whitespace-pre-line font-light"></p>
-                </div>
-            </div>
-
-            <div class="px-5 sm:px-6 py-4 border-t border-slate-100 bg-slate-50/50 flex items-center justify-between gap-2 flex-wrap">
-                <div id="details-edit-action" class="flex-shrink-0"></div>
-                <div id="details-actions" class="flex items-center gap-2"></div>
-                <button type="button" onclick="closeEventDetailsModal()" class="px-5 py-2.5 bg-slate-200 hover:bg-slate-300 text-slate-700 font-semibold rounded-xl text-xs transition italic-title">Chiudi</button>
-            </div>
-        </div>
-    </div>
-
-    <div id="toast" class="fixed bottom-6 right-6 z-50 bg-slate-900 text-white px-5 py-3 rounded-2xl shadow-2xl text-xs font-bold flex items-center gap-3 transition-all duration-300 transform translate-y-20 opacity-0 pointer-events-none border border-slate-700">
+    <div id="toast" class="fixed bottom-6 right-6 z-50 bg-slate-900 text-white px-5 py-3 rounded-2xl shadow-2xl text-xs font-bold flex items-center gap-3 transition-all duration-300 transform translate-y-20 opacity-0 pointer-events-none">
         <i class="fa-solid fa-circle-check text-nature-400 text-sm"></i>
         <span id="toast-message">Operazione completata</span>
     </div>
@@ -799,10 +587,9 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, setDoc, updateDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, setDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         const AUTHORIZED_EMAILS = ['silviachine@gmail.com', 'aldo.colciago@gmail.com'];
-
         const firebaseConfig = {
             apiKey: "AIzaSyBzrgpVFTVcdhGKawwjFPvxlkTs2iD6Xe8",
             authDomain: "silvia-chinellato-hub.firebaseapp.com",
@@ -815,7 +602,10 @@
         let appState = {
             isLoggedIn: false,
             currentUserEmail: null,
-            centers: [],
+            centers: [
+                { id: '1', name: 'Centro Polisaluite', service: 'Osteopatia & Visite', color: '#3f5e4e', icalUrl: '', showPublic: true, address: 'Via Roma 10, Milano', phone: '02 1234567', siteUrl: 'https://example.com', bookingUrl: 'https://example.com/booking' },
+                { id: '2', name: 'Poliambulatorio San Benedetto', service: 'Idrocolonterapia', color: '#4a8fa8', icalUrl: '', showPublic: true, address: 'Corso Italia 45, Monza', phone: '039 7654321', siteUrl: 'https://example.com', bookingUrl: '' }
+            ],
             treatments: [
                 { id: 't1', title: 'Idrocolonterapia', icon: 'fa-droplet', desc: 'Depurazione profonda e delicata del colon, utile per eliminare tossine, ridurre l\'infiammazione e ripristinare la vitalità dell\'organismo.' },
                 { id: 't2', title: 'Osteopatia', icon: 'fa-hands-holding-child', desc: 'Trattamenti manipolativi mirati a risolvere dolori muscoloscheletrici, cervicalgie, lombalgie e disturbi posturali con tecniche dolci.' },
@@ -824,15 +614,13 @@
             news: [],
             preparations: [],
             patients: [],
-            events: [],
-            patientAliases: {}
+            events: []
         };
 
         let db = null;
         let auth = null;
         let userId = null;
         let calendarInstance = null;
-        let currentSelectedEvent = null;
         let appId = typeof __app_id !== 'undefined' ? __app_id : 'silvia-chinellato-app';
 
         try {
@@ -842,62 +630,26 @@
                 auth = getAuth(app);
                 
                 signInAnonymously(auth).then(async () => {
-                    updateFirebaseStatus('connecting', 'Connessione stabilita...');
                     await loadPublicDataFromFirestore();
-                }).catch(err => {
-                    console.warn("Anonymous auth warning:", err);
-                    updateFirebaseStatus('error', 'Errore connessione');
-                });
+                }).catch(err => console.warn("Auth warning:", err));
 
                 onAuthStateChanged(auth, async (user) => {
                     if (user && user.email && AUTHORIZED_EMAILS.includes(user.email.toLowerCase())) {
                         appState.isLoggedIn = true;
                         appState.currentUserEmail = user.email.toLowerCase();
                         userId = user.uid;
-                        updateFirebaseStatus('connected', 'Firebase Connesso & Sincronizzato');
                         showPrivateView();
                         await loadAllDataFromFirestore();
                     } else if (user && user.email) {
                         await signOut(auth);
                         appState.isLoggedIn = false;
-                        updateFirebaseStatus('error', 'Email non autorizzata');
                         showPublicView();
-                        showToast("Indirizzo email non autorizzato all'accesso amministrativo.");
-                    } else {
-                        if (!appState.isLoggedIn) {
-                            updateFirebaseStatus('connected', 'Database Online (Pubblico)');
-                        }
+                        showToast("Indirizzo email non autorizzato.");
                     }
                 });
             }
         } catch (e) {
-            console.error("Firebase init error:", e);
             userId = 'offline-user';
-            updateFirebaseStatus('error', 'Errore Firebase');
-        }
-
-        function updateFirebaseStatus(status, text) {
-            const pubDot = document.getElementById('public-firebase-dot');
-            const pubTxt = document.getElementById('public-firebase-text');
-            if (pubDot && pubTxt) {
-                pubTxt.textContent = text;
-                pubDot.className = 'w-2 h-2 rounded-full inline-block flex-shrink-0 ';
-                if (status === 'connected') pubDot.classList.add('bg-nature-500', 'animate-pulse');
-                else if (status === 'connecting') pubDot.classList.add('bg-amber-500', 'animate-ping');
-                else if (status === 'error') pubDot.classList.add('bg-rose-500');
-                else pubDot.classList.add('bg-slate-400');
-            }
-
-            const dot = document.getElementById('firebase-dot');
-            const txt = document.getElementById('firebase-text');
-            if (dot && txt) {
-                txt.textContent = text;
-                dot.className = 'w-2 h-2 rounded-full inline-block flex-shrink-0 ';
-                if (status === 'connected') dot.classList.add('bg-nature-500', 'animate-pulse');
-                else if (status === 'connecting') dot.classList.add('bg-amber-500', 'animate-ping');
-                else if (status === 'error') dot.classList.add('bg-rose-500');
-                else dot.classList.add('bg-slate-400');
-            }
         }
 
         async function loadPublicDataFromFirestore() {
@@ -908,97 +660,35 @@
                     appState.centers = [];
                     pubCentersSnap.forEach(d => appState.centers.push(d.data()));
                 }
-
-                const pubTreatmentsSnap = await getDocs(collection(db, 'artifacts', appId, 'public', 'data', 'treatments_list'));
-                if (!pubTreatmentsSnap.empty) {
-                    appState.treatments = [];
-                    pubTreatmentsSnap.forEach(d => appState.treatments.push(d.data()));
-                }
-
-                const pubNewsSnap = await getDocs(collection(db, 'artifacts', appId, 'public', 'data', 'news_list'));
-                if (!pubNewsSnap.empty) {
-                    appState.news = [];
-                    pubNewsSnap.forEach(d => appState.news.push(d.data()));
-                }
-
-                const pubPrepsSnap = await getDocs(collection(db, 'artifacts', appId, 'public', 'data', 'preparations_list'));
-                if (!pubPrepsSnap.empty) {
-                    appState.preparations = [];
-                    pubPrepsSnap.forEach(d => appState.preparations.push(d.data()));
-                }
-
                 renderPublicCenters();
                 renderPublicTreatments();
                 renderPublicNews();
                 renderPublicPreparations();
-                updateFirebaseStatus('connected', 'Database Online');
-            } catch(e) {
-                console.warn("Public data load warning:", e);
-                updateFirebaseStatus('error', 'Offline');
-            }
+            } catch(e) {}
         }
 
         async function loadAllDataFromFirestore() {
             if (!db || !userId) return;
             try {
                 await loadPublicDataFromFirestore();
-
                 const centersSnap = await getDocs(collection(db, 'artifacts', appId, 'users', userId, 'centers_list'));
                 if (!centersSnap.empty) {
                     appState.centers = [];
-                    centersSnap.forEach(docSnap => appState.centers.push(docSnap.data()));
+                    centersSnap.forEach(d => appState.centers.push(d.data()));
                 }
-
-                const treatmentsSnap = await getDocs(collection(db, 'artifacts', appId, 'users', userId, 'treatments_list'));
-                if (!treatmentsSnap.empty) {
-                    appState.treatments = [];
-                    treatmentsSnap.forEach(docSnap => appState.treatments.push(docSnap.data()));
-                }
-
                 const eventsSnap = await getDocs(collection(db, 'artifacts', appId, 'users', userId, 'studio_events'));
                 appState.events = [];
-                eventsSnap.forEach(docSnap => {
-                    const data = docSnap.data();
-                    const centerExists = data.extendedProps?.centerId === '3' || appState.centers.some(c => c.id === data.extendedProps?.centerId);
-                    if (centerExists) {
-                        appState.events.push(data);
-                    } else {
-                        deleteDoc(doc(db, 'artifacts', appId, 'users', userId, 'studio_events', data.id)).catch(()=>{});
-                    }
-                });
-                
-                const patientsSnap = await getDocs(collection(db, 'artifacts', appId, 'users', userId, 'patients_anamnesis'));
-                appState.patients = [];
-                patientsSnap.forEach(docSnap => appState.patients.push(docSnap.data()));
-
-                const newsSnap = await getDocs(collection(db, 'artifacts', appId, 'users', userId, 'news_list'));
-                if (!newsSnap.empty) {
-                    appState.news = [];
-                    newsSnap.forEach(docSnap => appState.news.push(docSnap.data()));
-                }
-
-                const prepsSnap = await getDocs(collection(db, 'artifacts', appId, 'users', userId, 'preparations_list'));
-                if (!prepsSnap.empty) {
-                    appState.preparations = [];
-                    prepsSnap.forEach(docSnap => appState.preparations.push(docSnap.data()));
-                }
+                eventsSnap.forEach(d => appState.events.push(d.data()));
 
                 renderPublicCenters();
-                renderPublicTreatments();
-                renderPublicNews();
-                renderPublicPreparations();
                 renderHeaderLegend();
                 if (calendarInstance) calendarInstance.refetchEvents();
-                updateFirebaseStatus('connected', 'Firebase Connesso & Sincronizzato');
-            } catch (err) { console.error("Load error:", err); }
+            } catch (err) {}
         }
 
         document.addEventListener('DOMContentLoaded', () => {
             loadPublicDataFromFirestore();
-            if (!appState.isLoggedIn) {
-                showPublicView();
-            }
-            setupEventListeners();
+            if (!appState.isLoggedIn) showPublicView();
         });
 
         function showPublicView() {
@@ -1024,7 +714,7 @@
                 return;
             }
             grid.innerHTML = visibleCenters.map(center => `
-                <div class="bg-white/90 backdrop-blur-md p-6 sm:p-8 rounded-[2.5rem] border border-white/80 shadow-lg flex flex-col justify-between space-y-6 hover:shadow-xl transition duration-300">
+                <div class="bg-white/90 backdrop-blur-md p-6 sm:p-8 rounded-[2.5rem] border border-white/80 shadow-lg flex flex-col justify-between space-y-6">
                     <div class="space-y-3">
                         <div class="flex items-center justify-between">
                             <span class="px-4 py-1.5 rounded-full text-xs font-bold bg-nature-50 text-nature-800 italic-title">${center.service}</span>
@@ -1032,13 +722,11 @@
                         </div>
                         <h4 class="font-editorial text-xl sm:text-2xl font-bold text-slate-900 italic">${center.name}</h4>
                         ${center.address ? `<p class="text-xs sm:text-sm text-slate-500 font-light flex items-center gap-2"><i class="fa-solid fa-location-dot text-nature-600"></i> ${center.address}</p>` : ''}
+                        ${center.phone ? `<p class="text-xs sm:text-sm text-slate-500 font-light flex items-center gap-2"><i class="fa-solid fa-phone text-nature-600"></i> ${center.phone}</p>` : ''}
                     </div>
-                    <div class="pt-4 border-t border-slate-100 flex items-center justify-between text-xs flex-wrap gap-2">
-                        ${center.phone ? `<span class="font-bold text-slate-700"><i class="fa-solid fa-phone text-nature-600 mr-1.5"></i> ${center.phone}</span>` : '<span></span>'}
-                        <div class="flex items-center gap-2">
-                            ${center.siteUrl ? `<a href="${center.siteUrl}" target="_blank" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-xl transition italic-title text-xs"><i class="fa-solid fa-globe mr-1"></i> Sito</a>` : ''}
-                            ${center.bookingUrl ? `<a href="${center.bookingUrl}" target="_blank" class="px-4 py-2 bg-nature-600 hover:bg-nature-700 text-white font-semibold rounded-xl shadow transition italic-title text-xs"><i class="fa-solid fa-calendar-check mr-1"></i> Prenota</a>` : ''}
-                        </div>
+                    <div class="flex flex-wrap items-center gap-3 pt-2">
+                        ${center.siteUrl ? `<a href="${center.siteUrl}" target="_blank" class="px-4 py-2 bg-water-50 hover:bg-water-100 text-water-800 font-semibold rounded-xl text-xs transition flex items-center gap-1.5"><i class="fa-solid fa-globe"></i> <span>Sito Web</span></a>` : ''}
+                        ${center.bookingUrl ? `<a href="${center.bookingUrl}" target="_blank" class="px-4 py-2 bg-nature-600 hover:bg-nature-700 text-white font-semibold rounded-xl text-xs transition flex items-center gap-1.5"><i class="fa-solid fa-calendar-check"></i> <span>Prenota Online</span></a>` : ''}
                     </div>
                 </div>
             `).join('');
@@ -1047,17 +735,11 @@
         function renderPublicTreatments() {
             const grid = document.getElementById('public-treatments-grid');
             if (!grid) return;
-            if (appState.treatments.length === 0) {
-                grid.innerHTML = `<p class="text-xs text-slate-400 italic col-span-3 text-center py-6">Nessun trattamento registrato.</p>`;
-                return;
-            }
             grid.innerHTML = appState.treatments.map(t => `
-                <div class="bg-white/90 backdrop-blur-md p-6 sm:p-8 rounded-[2.5rem] border border-white/80 shadow-lg hover:shadow-xl transition duration-300 space-y-4 flex flex-col items-center text-center justify-center">
-                    <div class="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-nature-50 text-nature-600 flex items-center justify-center font-bold text-2xl sm:text-3xl shadow-inner mx-auto flex-shrink-0">
-                        <i class="fa-solid ${t.icon || 'fa-spa'}"></i>
-                    </div>
-                    <h4 class="font-editorial text-xl sm:text-2xl font-bold text-slate-900 italic">${t.title}</h4>
-                    <p class="text-xs sm:text-sm text-slate-500 leading-relaxed font-light">${t.desc}</p>
+                <div class="bg-white/90 backdrop-blur-md p-6 sm:p-8 rounded-[2.5rem] border border-white/80 shadow-lg space-y-4 flex flex-col items-center text-center">
+                    <div class="w-16 h-16 rounded-2xl bg-nature-50 text-nature-600 flex items-center justify-center font-bold text-2xl shadow-inner"><i class="fa-solid ${t.icon || 'fa-spa'}"></i></div>
+                    <h4 class="font-editorial text-xl font-bold text-slate-900 italic">${t.title}</h4>
+                    <p class="text-xs sm:text-sm text-slate-500 font-light">${t.desc}</p>
                 </div>
             `).join('');
         }
@@ -1065,80 +747,22 @@
         function renderPublicNews() {
             const grid = document.getElementById('public-news-grid');
             if (!grid) return;
-            if (appState.news.length === 0) {
-                grid.innerHTML = `<p class="text-xs text-slate-400 italic col-span-2 text-center py-6">Nessuna news pubblicata al momento.</p>`;
-                return;
-            }
-            grid.innerHTML = appState.news.map((item, index) => {
-                const words = item.content.split(' ');
-                const isLong = words.length > 25;
-                const shortText = isLong ? words.slice(0, 25).join(' ') + '...' : item.content;
-                return `
-                    <div class="bg-white/90 backdrop-blur-md p-6 sm:p-8 rounded-[2.5rem] border border-white/80 shadow-lg flex flex-col justify-between space-y-4 hover:shadow-xl transition duration-300">
-                        <div class="space-y-2">
-                            <div class="flex items-center justify-between">
-                                <span class="text-[11px] font-bold text-water-700 bg-water-50 px-3 py-1 rounded-full italic-title">${item.date}</span>
-                                <i class="fa-solid fa-bullhorn text-water-500"></i>
-                            </div>
-                            <h4 class="font-editorial text-xl sm:text-2xl font-bold text-slate-900 italic">${item.title}</h4>
-                            <div class="text-xs sm:text-sm text-slate-600 font-light leading-relaxed">
-                                <span id="news-text-${index}" class="news-preview">${shortText}</span>
-                                <span id="news-full-${index}" class="hidden">${item.content}</span>
-                            </div>
-                        </div>
-                        <div class="pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
-                            ${isLong ? `<button onclick="toggleNews(${index})" id="news-btn-${index}" class="font-bold text-water-700 hover:text-water-900 transition italic-title text-sm"><i class="fa-solid fa-chevron-down mr-1"></i> Espandi</button>` : '<span></span>'}
-                            ${item.linkUrl ? `<a href="${item.linkUrl}" target="_blank" class="px-4 py-2 bg-water-600 hover:bg-water-700 text-white font-semibold rounded-xl shadow transition italic-title text-sm">${item.linkText || 'Approfondisci'}</a>` : ''}
-                        </div>
-                    </div>
-                `;
-            }).join('');
-        }
-
-        window.toggleNews = function(index) {
-            const previewEl = document.getElementById(`news-text-${index}`);
-            const fullEl = document.getElementById(`news-full-${index}`);
-            const btnEl = document.getElementById(`news-btn-${index}`);
-            if (fullEl.classList.contains('hidden')) {
-                previewEl.textContent = fullEl.textContent;
-                fullEl.classList.remove('hidden');
-                btnEl.innerHTML = '<i class="fa-solid fa-chevron-up mr-1"></i> Riduci';
-            } else {
-                const words = fullEl.textContent.split(' ');
-                previewEl.textContent = words.slice(0, 25).join(' ') + '...';
-                fullEl.classList.add('hidden');
-                btnEl.innerHTML = '<i class="fa-solid fa-chevron-down mr-1"></i> Espandi';
-            }
+            grid.innerHTML = `<p class="text-xs text-slate-400 italic col-span-2 text-center py-6">Nessuna news pubblicata al momento.</p>`;
         }
 
         function renderPublicPreparations() {
             const grid = document.getElementById('public-preparations-grid');
             if (!grid) return;
-            if (appState.preparations.length === 0) {
-                grid.innerHTML = `<p class="text-xs text-slate-400 italic col-span-2 text-center py-6">Nessuna guida di preparazione disponibile al momento.</p>`;
-                return;
-            }
-            grid.innerHTML = appState.preparations.map(prep => `
-                <div class="bg-white/90 backdrop-blur-md p-6 sm:p-8 rounded-[2.5rem] border border-white/80 shadow-lg flex flex-col justify-between space-y-4 hover:shadow-xl transition duration-300">
-                    <div class="space-y-3">
-                        <div class="flex items-center justify-between">
-                            <span class="text-[11px] font-bold text-nature-700 bg-nature-50 px-3 py-1 rounded-full italic-title"><i class="fa-solid fa-tag mr-1 text-nature-500"></i> ${prep.tag}</span>
-                            <i class="fa-solid fa-book-medical text-nature-500"></i>
-                        </div>
-                        <h4 class="font-editorial text-xl sm:text-2xl font-bold text-slate-900 italic">${prep.title}</h4>
-                        <p class="text-xs sm:text-sm text-slate-600 font-light leading-relaxed">${prep.content}</p>
-                    </div>
-                </div>
-            `).join('');
+            grid.innerHTML = `<p class="text-xs text-slate-400 italic col-span-2 text-center py-6">Nessuna guida di preparazione disponibile al momento.</p>`;
         }
 
         function renderHeaderLegend() {
             const legend = document.getElementById('header-centers-legend');
             if (!legend) return;
             legend.innerHTML = appState.centers.map(center => `
-                <div class="inline-flex items-center gap-1.5 px-3 py-1 bg-white/90 rounded-full border border-nature-200 shadow-2xs flex-shrink-0">
-                    <span class="w-2.5 h-2.5 rounded-full flex-shrink-0" style="background-color: ${center.color};"></span>
-                    <span class="font-bold text-slate-700 text-[11px] truncate max-w-[120px] italic-title">${center.name}</span>
+                <div class="inline-flex items-center gap-1.5 px-2.5 py-0.5 bg-white/90 rounded-full border border-nature-200 shadow-2xs flex-shrink-0">
+                    <span class="w-2 h-2 rounded-full flex-shrink-0" style="background-color: ${center.color};"></span>
+                    <span class="font-bold text-slate-700 text-[10px] truncate max-w-[110px] italic-title">${center.name}</span>
                 </div>
             `).join('');
         }
@@ -1147,423 +771,49 @@
         window.closeLoginModal = function() { document.getElementById('login-modal').classList.add('hidden'); }
 
         window.handleGoogleLogin = async function() {
-            if (!auth) {
-                showToast('Errore inizializzazione autenticazione Google.');
-                return;
-            }
-
+            if (!auth) return;
             try {
                 const provider = new GoogleAuthProvider();
                 const result = await signInWithPopup(auth, provider);
-                const user = result.user;
-                const email = user.email ? user.email.toLowerCase() : '';
-
+                const email = result.user.email ? result.user.email.toLowerCase() : '';
                 if (AUTHORIZED_EMAILS.includes(email)) {
                     appState.isLoggedIn = true;
                     appState.currentUserEmail = email;
-                    userId = user.uid;
-                    updateFirebaseStatus('connected', 'Firebase Connesso & Sincronizzato');
+                    userId = result.user.uid;
                     closeLoginModal();
                     showPrivateView();
                     await loadAllDataFromFirestore();
-                    showToast('Autenticazione Google riuscita!');
+                    showToast('Accesso effettuato con successo!');
                 } else {
                     await signOut(auth);
-                    showToast(`L'indirizzo ${email} non è autorizzato.`);
+                    showToast(`Email ${email} non autorizzata.`);
                 }
             } catch (err) {
-                console.error("Google login error:", err);
-                showToast("Errore durante l'accesso con Google.");
+                showToast("Errore durante l'accesso Google.");
             }
         }
 
         window.handleLogout = async function() {
-            if (auth) {
-                try { await signOut(auth); } catch (e) {}
-            }
+            if (auth) { try { await signOut(auth); } catch (e) {} }
             appState.isLoggedIn = false;
-            appState.currentUserEmail = null;
-            updateFirebaseStatus('connected', 'Database Online (Pubblico)');
             showPublicView();
-            showToast('Sessione terminata', 'info');
+            showToast('Disconnesso', 'info');
         }
 
-        // Treatments Admin
-        window.openTreatmentsAdminModal = function() { renderTreatmentsManagementList(); document.getElementById('treatments-admin-modal').classList.remove('hidden'); }
-        window.closeTreatmentsAdminModal = function() { resetTreatmentForm(); document.getElementById('treatments-admin-modal').classList.add('hidden'); }
-
-        function renderTreatmentsManagementList() {
-            const list = document.getElementById('treatments-management-list');
-            if (!list) return;
-            list.innerHTML = appState.treatments.map(t => `
-                <div class="p-3.5 bg-white border border-slate-200 rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-sm">
-                    <div class="space-y-1 flex-1">
-                        <div class="flex items-center gap-2">
-                            <div class="w-7 h-7 rounded-xl bg-nature-50 text-nature-700 flex items-center justify-center text-xs"><i class="fa-solid ${t.icon || 'fa-spa'}"></i></div>
-                            <h5 class="font-editorial font-bold text-sm text-slate-900 italic">${t.title}</h5>
-                        </div>
-                        <p class="text-[11px] text-slate-500 font-light truncate max-w-sm">${t.desc}</p>
-                    </div>
-                    <div class="flex items-center gap-2">
-                        <button type="button" onclick="editTreatment('${t.id}')" class="px-3 py-1.5 bg-nature-50 hover:bg-nature-100 text-nature-800 font-semibold rounded-xl text-xs transition"><i class="fa-solid fa-pen"></i></button>
-                        <button type="button" onclick="deleteTreatment('${t.id}')" class="px-3 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 font-semibold rounded-xl text-xs transition"><i class="fa-solid fa-trash-can"></i></button>
-                    </div>
-                </div>
-            `).join('');
-        }
-
-        window.editTreatment = function(id) {
-            const t = appState.treatments.find(item => item.id === id);
-            if (!t) return;
-            document.getElementById('treatment-edit-id').value = t.id;
-            document.getElementById('new-treatment-title').value = t.title;
-            document.getElementById('new-treatment-icon').value = t.icon || 'fa-spa';
-            document.getElementById('new-treatment-desc').value = t.desc;
-            document.getElementById('treatment-form-title').textContent = 'Modifica Trattamento';
-            document.getElementById('treatment-submit-btn-text').textContent = 'Aggiorna Trattamento';
-            document.getElementById('treatment-cancel-edit').classList.remove('hidden');
-        }
-
-        window.resetTreatmentForm = function() {
-            document.getElementById('treatment-form').reset();
-            document.getElementById('treatment-edit-id').value = '';
-            document.getElementById('treatment-form-title').textContent = 'Aggiungi Nuovo Trattamento';
-            document.getElementById('treatment-submit-btn-text').textContent = 'Salva Trattamento';
-            document.getElementById('treatment-cancel-edit').classList.add('hidden');
-        }
-
-        window.deleteTreatment = async function(id) {
-            appState.treatments = appState.treatments.filter(t => t.id !== id);
-            if (db && userId) {
-                try { 
-                    await deleteDoc(doc(db, 'artifacts', appId, 'users', userId, 'treatments_list', id)); 
-                    await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'treatments_list', id)); 
-                } catch(e){}
-            }
-            renderTreatmentsManagementList();
-            renderPublicTreatments();
-            showToast('Trattamento eliminato', 'info');
-        }
-
-        // Centers Admin
-        window.openCentersModal = function() { renderCentersManagementList(); document.getElementById('centers-modal').classList.remove('hidden'); }
-        window.closeCentersModal = function() { resetCenterForm(); document.getElementById('centers-modal').classList.add('hidden'); }
-
-        function renderCentersManagementList() {
-            const list = document.getElementById('centers-management-list');
-            if (!list) return;
-            list.innerHTML = appState.centers.map(center => `
-                <div class="p-3.5 bg-white border border-slate-200 rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-sm">
-                    <div class="space-y-1">
-                        <div class="flex items-center gap-2">
-                            <span class="w-3 h-3 rounded-full flex-shrink-0 shadow-sm" style="background-color: ${center.color};"></span>
-                            <h5 class="font-editorial font-bold text-sm text-slate-900 italic">${center.name}</h5>
-                            <span class="px-2 py-0.5 text-[9px] font-bold rounded-full ${center.showPublic !== false ? 'bg-nature-50 text-nature-800' : 'bg-slate-100 text-slate-500'}">${center.showPublic !== false ? 'Pubblico' : 'Nascosto'}</span>
-                        </div>
-                        <p class="text-[11px] text-slate-500 font-light">${center.service} ${center.icalUrl ? '• <span class="text-water-600 font-medium">iCal attivo</span>' : ''}</p>
-                    </div>
-                    <div class="flex items-center gap-2">
-                        <button type="button" onclick="editCenter('${center.id}')" class="px-3 py-1.5 bg-nature-50 hover:bg-nature-100 text-nature-800 font-semibold rounded-xl text-xs transition"><i class="fa-solid fa-pen"></i></button>
-                        <button type="button" onclick="deleteCenter('${center.id}')" class="px-3 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 font-semibold rounded-xl text-xs transition"><i class="fa-solid fa-trash-can"></i></button>
-                    </div>
-                </div>
-            `).join('');
-        }
-
-        window.editCenter = function(id) {
-            const center = appState.centers.find(c => c.id === id);
-            if (!center) return;
-            document.getElementById('center-edit-id').value = center.id;
-            document.getElementById('new-center-name').value = center.name;
-            document.getElementById('new-center-service').value = center.service;
-            document.getElementById('new-center-address').value = center.address || '';
-            document.getElementById('new-center-phone').value = center.phone || '';
-            document.getElementById('new-center-site').value = center.siteUrl || '';
-            document.getElementById('new-center-booking').value = center.bookingUrl || '';
-            document.getElementById('new-center-ical').value = center.icalUrl || '';
-            document.getElementById('new-center-public').checked = center.showPublic !== false;
-            document.getElementById('center-form-title').textContent = 'Modifica Poliambulatorio';
-            document.getElementById('center-submit-btn-text').textContent = 'Aggiorna Poliambulatorio';
-            document.getElementById('center-cancel-edit').classList.remove('hidden');
-        }
-
-        window.resetCenterForm = function() {
-            document.getElementById('center-form').reset();
-            document.getElementById('center-edit-id').value = '';
-            document.getElementById('center-form-title').textContent = 'Aggiungi Nuovo Poliambulatorio';
-            document.getElementById('center-submit-btn-text').textContent = 'Salva Poliambulatorio';
-            document.getElementById('center-cancel-edit').classList.add('hidden');
-        }
-
-        window.deleteCenter = async function(id) {
-            appState.centers = appState.centers.filter(c => c.id !== id);
-            appState.events = appState.events.filter(ev => ev.extendedProps?.centerId !== id);
-            if (db && userId) {
-                try { 
-                    await deleteDoc(doc(db, 'artifacts', appId, 'users', userId, 'centers_list', id)); 
-                    await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'centers_list', id)); 
-                } catch(e){}
-            }
-            renderCentersManagementList();
-            renderHeaderLegend();
-            renderPublicCenters();
-            if (calendarInstance) calendarInstance.refetchEvents();
-            showToast('Poliambulatorio eliminato', 'info');
-        }
-
-        // News Admin
-        window.openNewsAdminModal = function() { renderNewsManagementList(); document.getElementById('news-admin-modal').classList.remove('hidden'); }
-        window.closeNewsAdminModal = function() { resetNewsForm(); document.getElementById('news-admin-modal').classList.add('hidden'); }
-
-        function renderNewsManagementList() {
-            const list = document.getElementById('news-management-list');
-            if (!list) return;
-            if (appState.news.length === 0) {
-                list.innerHTML = `<p class="text-xs text-slate-400 text-center py-4 italic">Nessuna news registrata.</p>`;
-                return;
-            }
-            list.innerHTML = appState.news.map(item => `
-                <div class="p-3.5 bg-white border border-slate-200 rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-sm">
-                    <div class="space-y-1 flex-1">
-                        <div class="flex items-center gap-2">
-                            <h5 class="font-editorial font-bold text-sm text-slate-900 italic">${item.title}</h5>
-                            <span class="text-[9px] text-water-600 bg-water-50 px-2 py-0.5 rounded-full">${item.date}</span>
-                        </div>
-                        <p class="text-[11px] text-slate-500 font-light truncate max-w-sm">${item.content}</p>
-                    </div>
-                    <div class="flex items-center gap-2">
-                        <button type="button" onclick="editNews('${item.id}')" class="px-3 py-1.5 bg-water-50 hover:bg-water-100 text-water-800 font-semibold rounded-xl text-xs transition"><i class="fa-solid fa-pen"></i></button>
-                        <button type="button" onclick="deleteNews('${item.id}')" class="px-3 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 font-semibold rounded-xl text-xs transition"><i class="fa-solid fa-trash-can"></i></button>
-                    </div>
-                </div>
-            `).join('');
-        }
-
-        window.editNews = function(id) {
-            const item = appState.news.find(n => n.id === id);
-            if (!item) return;
-            document.getElementById('news-edit-id').value = item.id;
-            document.getElementById('new-news-title').value = item.title;
-            document.getElementById('new-news-content').value = item.content;
-            document.getElementById('new-news-link').value = item.linkUrl || '';
-            document.getElementById('new-news-linktext').value = item.linkText || '';
-            document.getElementById('news-form-title').textContent = 'Modifica News';
-            document.getElementById('news-submit-btn-text').textContent = 'Aggiorna News';
-            document.getElementById('news-cancel-edit').classList.remove('hidden');
-        }
-
-        window.resetNewsForm = function() {
-            document.getElementById('news-form').reset();
-            document.getElementById('news-edit-id').value = '';
-            document.getElementById('news-form-title').textContent = 'Crea Nuova News / Comunicazione';
-            document.getElementById('news-submit-btn-text').textContent = 'Pubblica News';
-            document.getElementById('news-cancel-edit').classList.add('hidden');
-        }
-
-        window.deleteNews = async function(id) {
-            appState.news = appState.news.filter(n => n.id !== id);
-            if (db && userId) {
-                try { 
-                    await deleteDoc(doc(db, 'artifacts', appId, 'users', userId, 'news_list', id)); 
-                    await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'news_list', id)); 
-                } catch(e){}
-            }
-            renderNewsManagementList();
-            renderPublicNews();
-            showToast('News eliminata', 'info');
-        }
-
-        // Preparation Admin
-        window.openPrepAdminModal = function() { renderPrepManagementList(); document.getElementById('prep-admin-modal').classList.remove('hidden'); }
-        window.closePrepAdminModal = function() { resetPrepForm(); document.getElementById('prep-admin-modal').classList.add('hidden'); }
-
-        function renderPrepManagementList() {
-            const list = document.getElementById('prep-management-list');
-            if (!list) return;
-            if (appState.preparations.length === 0) {
-                list.innerHTML = `<p class="text-xs text-slate-400 text-center py-4 italic">Nessuna guida registrata.</p>`;
-                return;
-            }
-            list.innerHTML = appState.preparations.map(prep => `
-                <div class="p-3.5 bg-white border border-slate-200 rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-sm">
-                    <div class="space-y-1 flex-1">
-                        <div class="flex items-center gap-2">
-                            <h5 class="font-editorial font-bold text-sm text-slate-900 italic">${prep.title}</h5>
-                            <span class="text-[9px] text-nature-700 bg-nature-50 px-2 py-0.5 rounded-full font-semibold">${prep.tag}</span>
-                        </div>
-                        <p class="text-[11px] text-slate-500 font-light truncate max-w-sm">${prep.content}</p>
-                    </div>
-                    <div class="flex items-center gap-2">
-                        <button type="button" onclick="editPrep('${prep.id}')" class="px-3 py-1.5 bg-nature-50 hover:bg-nature-100 text-nature-800 font-semibold rounded-xl text-xs transition"><i class="fa-solid fa-pen"></i></button>
-                        <button type="button" onclick="deletePrep('${prep.id}')" class="px-3 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 font-semibold rounded-xl text-xs transition"><i class="fa-solid fa-trash-can"></i></button>
-                    </div>
-                </div>
-            `).join('');
-        }
-
-        window.editPrep = function(id) {
-            const prep = appState.preparations.find(p => p.id === id);
-            if (!prep) return;
-            document.getElementById('prep-edit-id').value = prep.id;
-            document.getElementById('prep-title').value = prep.title;
-            document.getElementById('prep-tag').value = prep.tag;
-            document.getElementById('prep-content').value = prep.content;
-            document.getElementById('prep-form-title').textContent = 'Modifica Guida di Preparazione';
-            document.getElementById('prep-submit-btn-text').textContent = 'Aggiorna Guida';
-            document.getElementById('prep-cancel-edit').classList.remove('hidden');
-        }
-
-        window.resetPrepForm = function() {
-            document.getElementById('prep-form').reset();
-            document.getElementById('prep-edit-id').value = '';
-            document.getElementById('prep-form-title').textContent = 'Aggiungi Nuova Guida di Preparazione';
-            document.getElementById('prep-submit-btn-text').textContent = 'Salva Guida';
-            document.getElementById('prep-cancel-edit').classList.add('hidden');
-        }
-
-        window.deletePrep = async function(id) {
-            appState.preparations = appState.preparations.filter(p => p.id !== id);
-            if (db && userId) {
-                try { 
-                    await deleteDoc(doc(db, 'artifacts', appId, 'users', userId, 'preparations_list', id)); 
-                    await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'preparations_list', id)); 
-                } catch(e){}
-            }
-            renderPrepManagementList();
-            renderPublicPreparations();
-            showToast('Guida eliminata', 'info');
-        }
-
-        // Patients Management & Merge
-        window.openPatientsModal = function() { renderPatientsAlphabeticalList(); document.getElementById('patients-modal').classList.remove('hidden'); }
+        window.openStudioModal = function() { document.getElementById('studio-modal').classList.remove('hidden'); }
+        window.closeStudioModal = function() { document.getElementById('studio-modal').classList.add('hidden'); }
+        window.openCentersModal = function() { document.getElementById('centers-modal').classList.remove('hidden'); }
+        window.closeCentersModal = function() { document.getElementById('centers-modal').classList.add('hidden'); }
+        window.openTreatmentsAdminModal = function() { document.getElementById('treatments-admin-modal').classList.remove('hidden'); }
+        window.closeTreatmentsAdminModal = function() { document.getElementById('treatments-admin-modal').classList.add('hidden'); }
+        window.openNewsAdminModal = function() { document.getElementById('news-admin-modal').classList.remove('hidden'); }
+        window.closeNewsAdminModal = function() { document.getElementById('news-admin-modal').classList.add('hidden'); }
+        window.openPrepAdminModal = function() { document.getElementById('prep-admin-modal').classList.remove('hidden'); }
+        window.closePrepAdminModal = function() { document.getElementById('prep-admin-modal').classList.add('hidden'); }
+        window.openPatientsModal = function() { document.getElementById('patients-modal').classList.remove('hidden'); }
         window.closePatientsModal = function() { document.getElementById('patients-modal').classList.add('hidden'); }
 
-        function renderPatientsAlphabeticalList(filterQuery = '') {
-            const container = document.getElementById('patients-alphabetical-list');
-            if (!container) return;
-
-            const sortedPatients = [...appState.patients].sort((a, b) => a.name.localeCompare(b.name));
-            const filtered = sortedPatients.filter(p => p.name.toLowerCase().includes(filterQuery.toLowerCase()));
-
-            if (filtered.length === 0) {
-                container.innerHTML = `<p class="text-xs text-slate-400 text-center py-6 italic">Nessun paziente trovato.</p>`;
-                return;
-            }
-
-            container.innerHTML = `
-                <div class="flex justify-between items-center mb-2 px-1">
-                    <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Totale Pazienti: ${sortedPatients.length}</span>
-                </div>
-            ` + filtered.map(p => `
-                <div class="p-4 bg-white border border-slate-200 rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-sm hover:border-amber-300 transition">
-                    <div class="space-y-1 flex-1">
-                        <div class="flex items-center gap-2">
-                            <h5 class="font-editorial font-bold text-base text-slate-900 italic">${p.name}</h5>
-                            <span class="text-[10px] text-amber-800 bg-amber-50 px-2.5 py-0.5 rounded-full font-semibold"><i class="fa-solid fa-phone mr-1"></i> ${p.contacts || 'Senza telefono'}</span>
-                        </div>
-                        <p class="text-xs text-slate-600 font-light line-clamp-2">${p.anamnesis || 'Nessuna nota.'}</p>
-                    </div>
-                    <div class="flex items-center gap-2 self-end sm:self-center">
-                        <button onclick="openPatientEditModal('${p.id}')" class="px-3.5 py-2 bg-amber-50 hover:bg-amber-100 text-amber-800 font-semibold rounded-xl text-xs transition italic-title flex items-center gap-1">
-                            <i class="fa-solid fa-pen text-[10px]"></i> Modifica
-                        </button>
-                        <button onclick="deletePatientRecord('${p.id}')" class="px-3 py-2 bg-rose-50 hover:bg-rose-100 text-rose-600 font-semibold rounded-xl text-xs transition" title="Elimina">
-                            <i class="fa-solid fa-trash-can"></i>
-                        </button>
-                    </div>
-                </div>
-            `).join('');
-        }
-
-        window.filterPatientsList = function(query) { renderPatientsAlphabeticalList(query); }
-
-        window.openPatientEditModal = function(patientId = null) {
-            const form = document.getElementById('patient-single-form');
-            form.reset();
-            document.getElementById('patient-edit-id').value = '';
-            
-            if (patientId) {
-                const patient = appState.patients.find(p => p.id === patientId);
-                if (patient) {
-                    document.getElementById('patient-edit-title').textContent = 'Modifica Scheda Paziente';
-                    document.getElementById('patient-edit-id').value = patient.id;
-                    document.getElementById('patient-edit-name').value = patient.name;
-                    document.getElementById('patient-edit-contacts').value = patient.contacts || '';
-                    document.getElementById('patient-edit-anamnesis').value = patient.anamnesis || '';
-                }
-            } else {
-                document.getElementById('patient-edit-title').textContent = 'Nuovo Paziente';
-            }
-            document.getElementById('patient-edit-modal').classList.remove('hidden');
-        }
-
-        window.closePatientEditModal = function() { document.getElementById('patient-edit-modal').classList.add('hidden'); }
-
-        window.deletePatientRecord = async function(id) {
-            appState.patients = appState.patients.filter(p => p.id !== id);
-            if (db && userId) {
-                try { await deleteDoc(doc(db, 'artifacts', appId, 'users', userId, 'patients_anamnesis', id)); } catch(e){}
-            }
-            renderPatientsAlphabeticalList();
-            showToast('Paziente eliminato', 'info');
-        }
-
-        window.openMergePatientsModal = function() {
-            if (appState.patients.length < 2) {
-                showToast('Servono almeno 2 pazienti per effettuare il merge.', 'info');
-                return;
-            }
-            const targetSelect = document.getElementById('merge-target-id');
-            const sourceSelect = document.getElementById('merge-source-id');
-            const sorted = [...appState.patients].sort((a, b) => a.name.localeCompare(b.name));
-            
-            targetSelect.innerHTML = sorted.map(p => `<option value="${p.id}">${p.name}</option>`).join('');
-            sourceSelect.innerHTML = sorted.map(p => `<option value="${p.id}">${p.name}</option>`).join('');
-            if (sorted.length > 1) sourceSelect.selectedIndex = 1;
-
-            document.getElementById('merge-patients-modal').classList.remove('hidden');
-        }
-
-        window.closeMergePatientsModal = function() { document.getElementById('merge-patients-modal').classList.add('hidden'); }
-
-        window.executePatientsMerge = async function() {
-            const targetId = document.getElementById('merge-target-id').value;
-            const sourceId = document.getElementById('merge-source-id').value;
-
-            if (targetId === sourceId) {
-                showToast('Seleziona due pazienti differenti.');
-                return;
-            }
-
-            const targetPatient = appState.patients.find(p => p.id === targetId);
-            const sourcePatient = appState.patients.find(p => p.id === sourceId);
-
-            if (!targetPatient || !sourcePatient) return;
-
-            targetPatient.anamnesis = (targetPatient.anamnesis || '') + `\n[Unito da ${sourcePatient.name}]: ` + (sourcePatient.anamnesis || '');
-            if (!targetPatient.contacts && sourcePatient.contacts) targetPatient.contacts = sourcePatient.contacts;
-
-            appState.events.forEach(ev => {
-                if (ev.title.includes(sourcePatient.name)) {
-                    ev.title = ev.title.replace(sourcePatient.name, targetPatient.name);
-                }
-            });
-
-            appState.patients = appState.patients.filter(p => p.id !== sourceId);
-            if (db && userId) {
-                try {
-                    await setDoc(doc(db, 'artifacts', appId, 'users', userId, 'patients_anamnesis', targetPatient.id), targetPatient);
-                    await deleteDoc(doc(db, 'artifacts', appId, 'users', userId, 'patients_anamnesis', sourceId));
-                } catch(e){}
-            }
-
-            closeMergePatientsModal();
-            renderPatientsAlphabeticalList();
-            if (calendarInstance) calendarInstance.refetchEvents();
-            showToast(`Merge completato con successo in "${targetPatient.name}"!`);
-        }
-
-        // iCal Advanced Sync with Realtime Progress, Center Badges and Logs
+        // Sincronizzazione iCal avanzata con Vercel Proxy e log dettagliati
         window.triggerIcalSync = async function() {
             openIcalChangelogModal({ status: 'loading', centersReport: [], added: [], modified: [], deleted: [], logs: [] });
             
@@ -1575,9 +825,9 @@
             let activeIcalEventIds = new Set();
             let oldEventsMap = new Map(appState.events.map(ev => [ev.id, ev]));
 
-            logs.push(`[${new Date().toLocaleTimeString()}] === INIZIO SINCRONIZZAZIONE CALENDARI (VERCEL/CORS PROXY) ===`);
+            logs.push(`[${new Date().toLocaleTimeString()}] === INIZIO SINCRONIZZAZIONE ICAL (VERCEL API) ===`);
 
-            const icalCenters = appState.centers.filter(c => c.icalUrl && c.id !== '3');
+            const icalCenters = appState.centers.filter(c => c.icalUrl && c.icalUrl.trim() !== '');
             if (icalCenters.length === 0) {
                 logs.push(`[${new Date().toLocaleTimeString()}] Nessun poliambulatorio con link iCal configurato.`);
                 updateIcalChangelogModal({ status: 'completed', centersReport: [], added: [], modified: [], deleted: [], logs });
@@ -1587,50 +837,31 @@
 
             for (let center of icalCenters) {
                 let rawUrl = center.icalUrl.trim();
-                logs.push(`[${new Date().toLocaleTimeString()}] Tentativo fetch iCal per struttura: "${center.name}" URL: ${rawUrl}`);
+                logs.push(`[${new Date().toLocaleTimeString()}] Sincronizzazione struttura: "${center.name}"...`);
                 
                 let text = null;
-                const proxyList = [
-                    `/api/ical?url=${encodeURIComponent(rawUrl)}`,
-                    `https://api.allorigins.win/raw?url=${encodeURIComponent(rawUrl)}`,
-                    `https://corsproxy.io/?${encodeURIComponent(rawUrl)}`,
-                    rawUrl
-                ];
-
-                let successFetch = false;
-                for (let proxyUrl of proxyList) {
-                    try {
-                        logs.push(`[${new Date().toLocaleTimeString()}] Richiesta via: ${proxyUrl.substring(0, 60)}...`);
-                        let response = await fetch(proxyUrl);
-                        if (response.ok) {
-                            const contentType = response.headers.get("content-type");
-                            if (contentType && contentType.includes("application/json")) {
-                                const jsonData = await response.json();
-                                text = jsonData.icsContent || jsonData.contents;
-                            } else {
-                                text = await response.text();
-                            }
-
-                            if (text && (text.includes('BEGIN:VCALENDAR') || text.includes('BEGIN:VEVENT'))) {
-                                successFetch = true;
-                                logs.push(`[${new Date().toLocaleTimeString()}] Successo fetch per "${center.name}" (${text.length} caratteri).`);
-                                break;
-                            } else {
-                                logs.push(`[${new Date().toLocaleTimeString()}] Risposta ricevuta ma formato iCal non valido o vuoto.`);
-                            }
-                        } else {
-                            logs.push(`[${new Date().toLocaleTimeString()}] Errore HTTP: ${response.status}`);
-                        }
-                    } catch(err) {
-                        logs.push(`[${new Date().toLocaleTimeString()}] Eccezione rete: ${err.message}`);
+                try {
+                    const proxyUrl = `/api/ical?url=${encodeURIComponent(rawUrl)}`;
+                    logs.push(`[${new Date().toLocaleTimeString()}] Chiamata proxy: ${proxyUrl}`);
+                    let response = await fetch(proxyUrl);
+                    if (response.ok) {
+                        const jsonData = await response.json();
+                        text = jsonData.icsContent;
+                    } else {
+                        const errData = await response.json().catch(() => ({}));
+                        logs.push(`[${new Date().toLocaleTimeString()}] Errore HTTP ${response.status}: ${errData.error || response.statusText}`);
                     }
+                } catch(err) {
+                    logs.push(`[${new Date().toLocaleTimeString()}] Eccezione rete: ${err.message}`);
                 }
 
-                if (successFetch && text) {
+                if (text && (text.includes('BEGIN:VCALENDAR') || text.includes('BEGIN:VEVENT'))) {
                     centersReport.push({ name: center.name, success: true, message: 'Aggiornato con successo' });
+                    logs.push(`[${new Date().toLocaleTimeString()}] iCal scaricato correttamente per "${center.name}". Parsing in corso...`);
+                    
                     const lines = text.split(/\r\n|\n|\r/);
                     let currentEvent = null;
-                    let countAddedCenter = 0;
+                    let countAdded = 0;
 
                     for (let line of lines) {
                         if (line.startsWith('BEGIN:VEVENT')) {
@@ -1672,7 +903,7 @@
                                 if (db && userId) {
                                     await setDoc(doc(db, 'artifacts', appId, 'users', userId, 'studio_events', eventId), parsedEvent).catch(()=>{});
                                 }
-                                countAddedCenter++;
+                                countAdded++;
                             }
                             currentEvent = null;
                         } else if (currentEvent) {
@@ -1683,10 +914,10 @@
                             else if (line.startsWith('DESCRIPTION:')) currentEvent.description = line.substring(12).trim();
                         }
                     }
-                    logs.push(`[${new Date().toLocaleTimeString()}] Parsati ${countAddedCenter} eventi per ${center.name}.`);
+                    logs.push(`[${new Date().toLocaleTimeString()}] Aggiunti/Aggiornati ${countAdded} eventi da "${center.name}".`);
                 } else {
-                    centersReport.push({ name: center.name, success: false, message: 'Impossibile scaricare il calendario (CORS o URL non valido)' });
-                    logs.push(`[${new Date().toLocaleTimeString()}] ERRORE CRITICO: Fallito download iCal per ${center.name}.`);
+                    centersReport.push({ name: center.name, success: false, message: 'Link iCal non valido o errore serverless' });
+                    logs.push(`[${new Date().toLocaleTimeString()}] ERRORE: Fallito download o parsing per "${center.name}".`);
                 }
             }
 
@@ -1704,10 +935,9 @@
             }
 
             logs.push(`[${new Date().toLocaleTimeString()}] === FINE SINCRONIZZAZIONE ICAL ===`);
-
             if (calendarInstance) calendarInstance.refetchEvents();
             updateIcalChangelogModal({ status: 'completed', centersReport, added: addedEvents, modified: modifiedEvents, deleted: deletedEvents, logs });
-            showToast('Sincronizzazione calendari completata!');
+            showToast('Sincronizzazione completata!');
         }
 
         function parseIcalDate(str) {
@@ -1732,9 +962,7 @@
             try {
                 const d = new Date(isoStr);
                 return d.toLocaleDateString('it-IT', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' });
-            } catch(e) {
-                return isoStr;
-            }
+            } catch(e) { return isoStr; }
         }
 
         function openIcalChangelogModal(data) {
@@ -1786,27 +1014,9 @@
                 if (data.added?.length > 0) {
                     htmlVar += `<div class="text-[11px] font-bold text-nature-700 uppercase mb-1">Aggiunti (${data.added.length})</div>`;
                     htmlVar += data.added.map(item => `
-                        <div class="p-2.5 bg-nature-50 border border-nature-200 rounded-xl flex items-center justify-between text-xs mb-1.5">
+                        <div class="p-2.5 bg-nature-50 border border-nature-200 rounded-2xl flex items-center justify-between text-xs mb-1.5">
                             <div><strong class="text-slate-900">${item.title}</strong> <span class="text-nature-800 font-semibold bg-white px-2 py-0.5 rounded-md border border-nature-100 ml-1">${item.centerName}</span></div>
                             <span class="text-[10px] text-nature-700 font-medium">${item.date}</span>
-                        </div>
-                    `).join('');
-                }
-                if (data.modified?.length > 0) {
-                    htmlVar += `<div class="text-[11px] font-bold text-amber-700 uppercase mb-1 mt-2">Modificati (${data.modified.length})</div>`;
-                    htmlVar += data.modified.map(item => `
-                        <div class="p-2.5 bg-amber-50 border border-amber-200 rounded-xl flex items-center justify-between text-xs mb-1.5">
-                            <div><strong class="text-slate-900">${item.title}</strong> <span class="text-amber-800 font-semibold bg-white px-2 py-0.5 rounded-md border border-amber-100 ml-1">${item.centerName}</span></div>
-                            <span class="text-[10px] text-amber-700 font-medium">${item.date}</span>
-                        </div>
-                    `).join('');
-                }
-                if (data.deleted?.length > 0) {
-                    htmlVar += `<div class="text-[11px] font-bold text-rose-700 uppercase mb-1 mt-2">Cancellati (${data.deleted.length})</div>`;
-                    htmlVar += data.deleted.map(item => `
-                        <div class="p-2.5 bg-rose-50 border border-rose-200 rounded-xl flex items-center justify-between text-xs mb-1.5">
-                            <div><strong class="text-slate-900">${item.title}</strong> <span class="text-rose-800 font-semibold bg-white px-2 py-0.5 rounded-md border border-rose-100 ml-1">${item.centerName}</span></div>
-                            <span class="text-[10px] text-rose-700 font-medium">${item.date}</span>
                         </div>
                     `).join('');
                 }
@@ -1837,16 +1047,10 @@
         function initCalendar() {
             const calendarEl = document.getElementById('calendar');
             if (!calendarEl) return;
-
             calendarInstance = new FullCalendar.Calendar(calendarEl, {
                 initialView: 'dayGridMonth',
-                headerToolbar: {
-                    left: 'prev,next today',
-                    center: 'title',
-                    right: 'dayGridMonth,timeGridWeek,timeGridDay'
-                },
+                headerToolbar: { left: 'prev,next today', center: 'title', right: 'dayGridMonth,timeGridWeek,timeGridDay' },
                 locale: 'it',
-                buttonText: { today: 'Oggi', month: 'Mese', week: 'Settimana', day: 'Giorno' },
                 events: function(fetchInfo, successCallback) {
                     const mappedEvents = appState.events.map(ev => {
                         const center = appState.centers.find(c => c.id === ev.extendedProps?.centerId);
@@ -1856,354 +1060,9 @@
                     successCallback(mappedEvents);
                 },
                 editable: false,
-                height: '100%',
-                eventClick: function(info) { openEventDetailsModal(info.event); }
+                height: '100%'
             });
             calendarInstance.render();
-        }
-
-        function openEventDetailsModal(event) {
-            currentSelectedEvent = event;
-            const modal = document.getElementById('event-details-modal');
-            document.getElementById('details-title').textContent = event.title;
-            document.getElementById('details-center').textContent = event.extendedProps?.centerName || 'Struttura';
-
-            const startStr = event.start ? event.start.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' }) : '';
-            const endStr = event.end ? event.end.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' }) : '';
-            const dateStr = event.start ? event.start.toLocaleDateString('it-IT', { dateStyle: 'medium' }) : '';
-            document.getElementById('details-time').textContent = `${dateStr}, ${startStr} - ${endStr}`;
-            document.getElementById('details-notes').textContent = event.extendedProps?.notes || 'Nessuna nota.';
-
-            renderPatientStatusBox(event.title);
-
-            const editActionEl = document.getElementById('details-edit-action');
-            editActionEl.innerHTML = '';
-            const isStudioEvent = event.id.startsWith('studio_') || event.extendedProps?.centerId === '3';
-            if (isStudioEvent) {
-                const editBtn = document.createElement('button');
-                editBtn.className = 'px-3 py-2 bg-nature-50 hover:bg-nature-100 text-nature-800 font-semibold rounded-xl text-xs transition flex items-center gap-1.5 italic-title';
-                editBtn.innerHTML = '<i class="fa-solid fa-pen"></i> Modifica';
-                editBtn.onclick = () => {
-                    closeEventDetailsModal();
-                    openStudioModal(event);
-                };
-                editActionEl.appendChild(editBtn);
-            }
-
-            const actionsEl = document.getElementById('details-actions');
-            actionsEl.innerHTML = '';
-            
-            const deleteBtn = document.createElement('button');
-            deleteBtn.className = 'px-3 py-2 bg-rose-50 hover:bg-rose-100 text-rose-700 font-semibold rounded-xl text-xs transition flex items-center gap-1.5 italic-title';
-            deleteBtn.innerHTML = '<i class="fa-solid fa-trash-can"></i> Cancella';
-            deleteBtn.onclick = async () => {
-                const eventId = event.id;
-                appState.events = appState.events.filter(ev => ev.id !== eventId);
-                if (db && userId && eventId) {
-                    try { await deleteDoc(doc(db, 'artifacts', appId, 'users', userId, 'studio_events', eventId)); } catch(e){}
-                }
-                if (calendarInstance) calendarInstance.refetchEvents();
-                closeEventDetailsModal();
-                showToast('Appuntamento eliminato', 'info');
-            };
-            actionsEl.appendChild(deleteBtn);
-
-            modal.classList.remove('hidden');
-        }
-
-        function renderPatientStatusBox(eventTitle) {
-            const box = document.getElementById('patient-status-box');
-            let matchedPatient = appState.patients.find(p => eventTitle.toLowerCase().includes(p.name.toLowerCase()));
-
-            if (matchedPatient) {
-                box.className = 'p-4 rounded-2xl border bg-nature-50/95 border-nature-200 space-y-1.5 shadow-xs';
-                box.innerHTML = `
-                    <div class="flex items-center justify-between">
-                        <div class="flex items-center gap-2">
-                            <span class="w-5 h-5 rounded-full bg-nature-600 flex items-center justify-center text-white text-xs shadow-xs"><i class="fa-solid fa-check"></i></span>
-                            <span class="text-xs font-bold text-nature-900 uppercase tracking-wide">Paziente Collegato</span>
-                        </div>
-                        <span class="px-3 py-1 bg-nature-600 text-white font-bold text-xs rounded-full shadow-2xs">${matchedPatient.name}</span>
-                    </div>
-                    <p class="text-[11px] text-slate-600 font-medium">Collegato alla scheda di <strong>${matchedPatient.name}</strong> (${matchedPatient.contacts || 'Senza tel'}).</p>
-                `;
-            } else {
-                box.className = 'p-4 rounded-2xl border bg-amber-50/95 border-amber-200 space-y-3 shadow-xs';
-                box.innerHTML = `
-                    <div class="flex items-center justify-between">
-                        <div class="flex items-center gap-2">
-                            <span class="w-4 h-4 rounded-full bg-amber-600 animate-pulse"></span>
-                            <span class="text-xs font-bold text-amber-900 uppercase tracking-wide">Paziente non collegato</span>
-                        </div>
-                        <span class="px-2.5 py-0.5 bg-amber-100 text-amber-800 font-bold text-[10px] rounded-full">Da associare</span>
-                    </div>
-                    <p class="text-[11px] text-slate-600 font-light">Il titolo dell'evento ("${eventTitle}") non è associato ad alcun paziente:</p>
-                    <div class="flex gap-2">
-                        <select id="link-existing-patient" class="flex-1 px-3 py-2 bg-white border border-amber-200 rounded-xl text-xs font-medium focus:outline-none focus:ring-2 focus:ring-amber-500">
-                            <option value="">-- Seleziona paziente esistente --</option>
-                            ${appState.patients.map(p => `<option value="${p.name}">${p.name}</option>`).join('')}
-                        </select>
-                        <button type="button" onclick="linkEventToSelectedPatient()" class="px-3.5 py-2 bg-amber-700 hover:bg-amber-800 text-white font-semibold rounded-xl text-xs transition shadow-sm whitespace-nowrap">Collega</button>
-                    </div>
-                    <div class="pt-1.5 border-t border-amber-200/60 flex items-center justify-between">
-                        <span class="text-[10px] text-slate-500 italic">Oppure crea nuova scheda</span>
-                        <button type="button" onclick="createNewPatientFromEvent('${eventTitle}')" class="px-3.5 py-1.5 bg-nature-700 hover:bg-nature-800 text-white font-bold rounded-xl text-[10px] transition shadow-xs">Crea Scheda Paziente</button>
-                    </div>
-                `;
-            }
-        }
-
-        window.linkEventToSelectedPatient = function() {
-            const select = document.getElementById('link-existing-patient');
-            const patientName = select.value;
-            if (!patientName || !currentSelectedEvent) { showToast('Seleziona un paziente', 'info'); return; }
-            const rawTitle = currentSelectedEvent.title;
-            appState.patientAliases[rawTitle] = patientName;
-            currentSelectedEvent.title = patientName;
-            if (calendarInstance) calendarInstance.refetchEvents();
-            renderPatientStatusBox(patientName);
-            showToast(`Collegato a ${patientName}!`);
-        }
-
-        window.createNewPatientFromEvent = async function(eventTitle) {
-            let cleanName = eventTitle.replace(/^(idrocolonterapia|osteopatia|visita|assistenza|studio privato)\s*[-:]?\s*/i, '').trim();
-            if (!cleanName) cleanName = eventTitle;
-
-            const newPatient = { id: 'pat_' + Date.now(), name: cleanName, contacts: '', anamnesis: 'Creato da evento: ' + eventTitle };
-            appState.patients.push(newPatient);
-            if (db && userId) {
-                try { await setDoc(doc(db, 'artifacts', appId, 'users', userId, 'patients_anamnesis', newPatient.id), newPatient); } catch(e){}
-            }
-
-            if (currentSelectedEvent) {
-                appState.patientAliases[currentSelectedEvent.title] = cleanName;
-                currentSelectedEvent.title = cleanName;
-            }
-
-            if (calendarInstance) calendarInstance.refetchEvents();
-            renderPatientStatusBox(cleanName);
-            showToast(`Scheda creata per "${cleanName}"!`);
-        }
-
-        window.closeEventDetailsModal = function() {
-            currentSelectedEvent = null;
-            document.getElementById('event-details-modal').classList.add('hidden');
-        }
-
-        function setupEventListeners() {
-            document.getElementById('treatment-form').addEventListener('submit', async (e) => {
-                e.preventDefault();
-                const id = document.getElementById('treatment-edit-id').value;
-                const title = document.getElementById('new-treatment-title').value.trim();
-                const icon = document.getElementById('new-treatment-icon').value;
-                const desc = document.getElementById('new-treatment-desc').value.trim();
-
-                let targetT;
-                if (id) {
-                    targetT = appState.treatments.find(item => item.id === id);
-                    if (targetT) { targetT.title = title; targetT.icon = icon; targetT.desc = desc; }
-                    showToast('Trattamento aggiornato!');
-                } else {
-                    targetT = { id: 't_' + Date.now(), title, icon, desc };
-                    appState.treatments.push(targetT);
-                    showToast('Trattamento aggiunto!');
-                }
-
-                if (db && userId && targetT) {
-                    try { 
-                        await setDoc(doc(db, 'artifacts', appId, 'users', userId, 'treatments_list', targetT.id), targetT);
-                        await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'treatments_list', targetT.id), targetT);
-                    } catch(e){}
-                }
-
-                resetTreatmentForm();
-                renderTreatmentsManagementList();
-                renderPublicTreatments();
-            });
-
-            document.getElementById('center-form').addEventListener('submit', async (e) => {
-                e.preventDefault();
-                const id = document.getElementById('center-edit-id').value;
-                const name = document.getElementById('new-center-name').value;
-                const service = document.getElementById('new-center-service').value;
-                const address = document.getElementById('new-center-address').value;
-                const phone = document.getElementById('new-center-phone').value;
-                const siteUrl = document.getElementById('new-center-site').value;
-                const bookingUrl = document.getElementById('new-center-booking').value;
-                const icalUrl = document.getElementById('new-center-ical').value;
-                const showPublic = document.getElementById('new-center-public').checked;
-
-                const colors = ['#4a8fa8', '#c29b93', '#527965', '#b88a82', '#3f5e4e', '#387085'];
-                const color = colors[appState.centers.length % colors.length];
-
-                let targetCenter;
-                if (id) {
-                    targetCenter = appState.centers.find(item => item.id === id);
-                    if (targetCenter) {
-                        targetCenter.name = name; targetCenter.service = service; targetCenter.address = address; targetCenter.phone = phone;
-                        targetCenter.siteUrl = siteUrl; targetCenter.bookingUrl = bookingUrl; targetCenter.icalUrl = icalUrl; targetCenter.showPublic = showPublic;
-                    }
-                    showToast('Poliambulatorio aggiornato!');
-                } else {
-                    targetCenter = { id: 'center_' + Date.now(), name, service, address, phone, siteUrl, bookingUrl, icalUrl, color, showPublic };
-                    appState.centers.push(targetCenter);
-                    showToast('Poliambulatorio aggiunto!');
-                }
-
-                if (db && userId && targetCenter) {
-                    try { 
-                        await setDoc(doc(db, 'artifacts', appId, 'users', userId, 'centers_list', targetCenter.id), targetCenter);
-                        await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'centers_list', targetCenter.id), targetCenter);
-                    } catch(e){}
-                }
-
-                resetCenterForm();
-                renderCentersManagementList();
-                renderHeaderLegend();
-                renderPublicCenters();
-                if (calendarInstance) calendarInstance.refetchEvents();
-            });
-
-            document.getElementById('news-form').addEventListener('submit', async (e) => {
-                e.preventDefault();
-                const id = document.getElementById('news-edit-id').value;
-                const title = document.getElementById('new-news-title').value;
-                const content = document.getElementById('new-news-content').value;
-                const linkUrl = document.getElementById('new-news-link').value;
-                const linkText = document.getElementById('new-news-linktext').value;
-                const date = new Date().toLocaleDateString('it-IT', { day: 'numeric', month: 'long', year: 'numeric' });
-
-                let targetNews;
-                if (id) {
-                    targetNews = appState.news.find(n => n.id === id);
-                    if (targetNews) { targetNews.title = title; targetNews.content = content; targetNews.linkUrl = linkUrl; targetNews.linkText = linkText; }
-                    showToast('News aggiornata!');
-                } else {
-                    targetNews = { id: 'news_' + Date.now(), title, content, linkUrl, linkText, date };
-                    appState.news.unshift(targetNews);
-                    showToast('News pubblicata!');
-                }
-
-                if (db && userId && targetNews) {
-                    try { 
-                        await setDoc(doc(db, 'artifacts', appId, 'users', userId, 'news_list', targetNews.id), targetNews);
-                        await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'news_list', targetNews.id), targetNews);
-                    } catch(e){}
-                }
-
-                resetNewsForm();
-                renderNewsManagementList();
-                renderPublicNews();
-            });
-
-            document.getElementById('prep-form').addEventListener('submit', async (e) => {
-                e.preventDefault();
-                const id = document.getElementById('prep-edit-id').value;
-                const title = document.getElementById('prep-title').value.trim();
-                const tag = document.getElementById('prep-tag').value.trim();
-                const content = document.getElementById('prep-content').value.trim();
-
-                let targetPrep;
-                if (id) {
-                    targetPrep = appState.preparations.find(item => item.id === id);
-                    if (targetPrep) { targetPrep.title = title; targetPrep.tag = tag; targetPrep.content = content; }
-                    showToast('Guida aggiornata!');
-                } else {
-                    targetPrep = { id: 'prep_' + Date.now(), title, tag, content };
-                    appState.preparations.push(targetPrep);
-                    showToast('Nuova guida pubblicata!');
-                }
-
-                if (db && userId && targetPrep) {
-                    try { 
-                        await setDoc(doc(db, 'artifacts', appId, 'users', userId, 'preparations_list', targetPrep.id), targetPrep);
-                        await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'preparations_list', targetPrep.id), targetPrep);
-                    } catch(e){}
-                }
-
-                resetPrepForm();
-                renderPrepManagementList();
-                renderPublicPreparations();
-            });
-
-            document.getElementById('patient-single-form').addEventListener('submit', async (e) => {
-                e.preventDefault();
-                const id = document.getElementById('patient-edit-id').value;
-                const name = document.getElementById('patient-edit-name').value.trim();
-                const contacts = document.getElementById('patient-edit-contacts').value.trim();
-                const anamnesis = document.getElementById('patient-edit-anamnesis').value.trim();
-
-                let targetPatient;
-                if (id) {
-                    targetPatient = appState.patients.find(item => item.id === id);
-                    if (targetPatient) { targetPatient.name = name; targetPatient.contacts = contacts; targetPatient.anamnesis = anamnesis; }
-                    showToast('Scheda paziente aggiornata!');
-                } else {
-                    targetPatient = { id: 'pat_' + Date.now(), name, contacts, anamnesis };
-                    appState.patients.push(targetPatient);
-                    showToast('Nuovo paziente aggiunto!');
-                }
-
-                if (db && userId && targetPatient) {
-                    try { await setDoc(doc(db, 'artifacts', appId, 'users', userId, 'patients_anamnesis', targetPatient.id), targetPatient); } catch(e){}
-                }
-
-                closePatientEditModal();
-                renderPatientsAlphabeticalList();
-            });
-
-            document.getElementById('studio-event-form').addEventListener('submit', async (e) => {
-                e.preventDefault();
-                const editEventId = document.getElementById('studio-edit-event-id').value;
-                const title = document.getElementById('studio-title').value.trim();
-                const date = document.getElementById('studio-date').value;
-                const timeStart = document.getElementById('studio-time-start').value;
-                const timeEnd = document.getElementById('studio-time-end').value;
-                const notes = document.getElementById('studio-notes').value;
-
-                if (!timeStart || !timeEnd) { showToast('Seleziona ora inizio e fine', 'info'); return; }
-
-                const patientExists = appState.patients.some(p => p.name.toLowerCase() === title.toLowerCase());
-                if (!patientExists && title.length > 0) {
-                    const newPatient = { id: 'pat_' + Date.now(), name: title, contacts: '', anamnesis: notes || 'Inserito da Studio Privato.' };
-                    appState.patients.push(newPatient);
-                    if (db && userId) {
-                        try { await setDoc(doc(db, 'artifacts', appId, 'users', userId, 'patients_anamnesis', newPatient.id), newPatient); } catch(e){}
-                    }
-                }
-
-                const startIso = `${date}T${timeStart}:00`;
-                const endIso = `${date}T${timeEnd}:00`;
-
-                let targetEvent;
-                if (editEventId) {
-                    targetEvent = appState.events.find(ev => ev.id === editEventId);
-                    if (targetEvent) {
-                        targetEvent.title = `Studio Privato: ${title}`;
-                        targetEvent.start = new Date(startIso).toISOString();
-                        targetEvent.end = new Date(new Date(endIso).getTime() > new Date(startIso).getTime() ? endIso : new Date(new Date(startIso).getTime() + 3600000)).toISOString();
-                        targetEvent.extendedProps = { centerId: '3', centerName: 'Studio Privato (Silvia Chinellato)', notes };
-                    }
-                    showToast('Appuntamento aggiornato!');
-                } else {
-                    targetEvent = {
-                        id: 'studio_' + Date.now(),
-                        title: `Studio Privato: ${title}`,
-                        start: new Date(startIso).toISOString(),
-                        end: new Date(new Date(endIso).getTime() > new Date(startIso).getTime() ? endIso : new Date(new Date(startIso).getTime() + 3600000)).toISOString(),
-                        extendedProps: { centerId: '3', centerName: 'Studio Privato (Silvia Chinellato)', notes }
-                    };
-                    appState.events.push(targetEvent);
-                    showToast('Appuntamento salvato!');
-                }
-
-                if (db && userId && targetEvent) {
-                    try { await setDoc(doc(db, 'artifacts', appId, 'users', userId, 'studio_events', targetEvent.id), targetEvent); } catch(e){}
-                }
-
-                closeStudioModal();
-                if (calendarInstance) calendarInstance.refetchEvents();
-            });
         }
 
         window.showToast = function(message) {
