@@ -337,17 +337,12 @@
                 <div class="w-16 h-16 rounded-full bg-nature-100 text-nature-700 flex items-center justify-center mx-auto text-2xl shadow-inner">
                     <i class="fa-solid fa-shield-halved"></i>
                 </div>
-                <p class="text-xs text-slate-600 leading-relaxed font-light">Accesso protetto riservato alle amministratrici autorizzate (<strong class="text-slate-800">silviachine@gmail.com</strong> e <strong class="text-slate-800">aldo.colciago@gmail.com</strong>).</p>
+                <p class="text-xs text-slate-600 leading-relaxed font-light">Accesso protetto riservato ad amministratori autorizzati tramite Google Workspace.</p>
                 
                 <button onclick="handleGoogleLogin()" class="w-full py-3.5 bg-white border border-slate-200 hover:bg-nature-50/50 text-slate-700 font-semibold rounded-2xl shadow-md transition flex items-center justify-center gap-3 text-xs italic-title text-sm">
                     <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" class="w-5 h-5" alt="Google">
                     <span>Accedi con Google</span>
                 </button>
-
-                <button onclick="simulateAdminLogin()" class="w-full py-3 bg-amber-100 hover:bg-amber-200 text-amber-900 font-semibold rounded-2xl shadow-xs transition flex items-center justify-center gap-2 text-xs">
-                    <i class="fa-solid fa-user-shield"></i> <span>Simula Accesso Admin (aldo.colciago@gmail.com)</span>
-                </button>
-
                 <div id="login-error-msg" class="text-xs text-rose-600 font-medium hidden"></div>
             </div>
         </div>
@@ -548,16 +543,7 @@
                     <h3 id="sync-modal-title" class="font-editorial text-base font-bold text-slate-900 italic">Sincronizzazione Calendari in corso...</h3>
                 </div>
             </div>
-            <div class="p-6 space-y-4 overflow-y-auto max-h-[55vh]" id="sync-report-content"></div>
-            
-            <div class="px-6 py-3 bg-slate-50 border-t border-slate-100 flex flex-col">
-                <button type="button" onclick="toggleSyncLogs()" class="text-xs font-bold text-slate-600 hover:text-slate-900 flex items-center justify-between py-1">
-                    <span><i class="fa-solid fa-terminal mr-1.5 text-nature-600"></i> Visualizza Log Dettagliati</span>
-                    <i class="fa-solid fa-chevron-down text-[10px]" id="sync-logs-icon"></i>
-                </button>
-                <div id="sync-logs-container" class="hidden mt-2 p-3 bg-slate-900 text-emerald-400 font-mono text-[10px] rounded-xl max-h-36 overflow-y-auto space-y-1"></div>
-            </div>
-
+            <div class="p-6 space-y-4 overflow-y-auto max-h-[60vh]" id="sync-report-content"></div>
             <div id="sync-modal-footer" class="px-6 py-4 border-t border-slate-100 bg-white flex justify-end hidden">
                 <button type="button" onclick="closeSyncReportModal()" class="px-6 py-2.5 bg-water-700 hover:bg-water-800 text-white font-semibold rounded-2xl text-xs transition">Ho capito</button>
             </div>
@@ -805,7 +791,6 @@
         let auth = null;
         let userId = null;
         let calendarInstance = null;
-        let syncLogsBuffer = [];
 
         try {
             const app = initializeApp(firebaseConfig);
@@ -836,27 +821,14 @@
                     userId = user.uid;
                     showPrivateView();
                     await loadAllDataFromFirestore();
-                } else if (user && user.email && user.email.toLowerCase() === 'aldo.colciago@gmail.com') {
-                    appState.isLoggedIn = true;
-                    appState.currentUserEmail = user.email.toLowerCase();
-                    userId = user.uid;
-                    showPrivateView();
-                    await loadAllDataFromFirestore();
+                    // Auto sync on login
+                    await executeIcalSync(true);
                 }
             });
         } catch (e) {
             userId = 'offline-user';
             updateFirebaseStatus(false, 'Non disponibile');
             renderAllPublicUI();
-        }
-
-        window.simulateAdminLogin = function() {
-            appState.isLoggedIn = true;
-            appState.currentUserEmail = 'aldo.colciago@gmail.com';
-            closeLoginModal();
-            showPrivateView();
-            loadAllDataFromFirestore();
-            showToast('Accesso simulato come admin (aldo.colciago@gmail.com)');
         }
 
         function updateFirebaseStatus(isOnline, text) {
@@ -1113,6 +1085,7 @@
                     closeLoginModal();
                     showPrivateView();
                     await loadAllDataFromFirestore();
+                    await executeIcalSync(true);
                     showToast('Accesso effettuato con successo!');
                 } else {
                     await signOut(auth);
@@ -1888,59 +1861,32 @@
             });
         }
 
-        window.toggleSyncLogs = function() {
-            const container = document.getElementById('sync-logs-container');
-            const icon = document.getElementById('sync-logs-icon');
-            if (container.classList.contains('hidden')) {
-                container.classList.remove('hidden');
-                icon.classList.remove('fa-chevron-down');
-                icon.classList.add('fa-chevron-up');
-            } else {
-                container.classList.add('hidden');
-                icon.classList.remove('fa-chevron-up');
-                icon.classList.add('fa-chevron-down');
-            }
+        window.triggerIcalSync = async function() {
+            await executeIcalSync(false);
         }
 
-        window.triggerIcalSync = async function() {
+        async function executeIcalSync(isAutoLogin = false) {
             const modal = document.getElementById('sync-report-modal');
             const titleEl = document.getElementById('sync-modal-title');
             const contentEl = document.getElementById('sync-report-content');
-            const logsEl = document.getElementById('sync-logs-container');
             const spinner = document.getElementById('sync-spinner');
             const footer = document.getElementById('sync-modal-footer');
 
             if (modal) modal.classList.remove('hidden');
-            if (titleEl) titleEl.textContent = 'Sincronizzazione Calendari in corso...';
+            if (titleEl) titleEl.textContent = isAutoLogin ? 'Sincronizzazione automatica all’accesso...' : 'Sincronizzazione Calendari in corso...';
             if (spinner) spinner.classList.add('animate-spin');
             if (footer) footer.classList.add('hidden');
 
-            syncLogsBuffer = [];
-            const logMsg = (msg) => {
-                let timestamp = new Date().toLocaleTimeString('it-IT');
-                syncLogsBuffer.push(`[${timestamp}] ${msg}`);
-                if (logsEl) {
-                    logsEl.innerHTML = syncLogsBuffer.join('<br>');
-                    logsEl.scrollTop = logsEl.scrollHeight;
-                }
-            };
-
-            logMsg("Avvio procedura di sincronizzazione iCal...");
-
-            let progressHtml = `<div class="space-y-3"><p class="font-bold text-slate-800 text-xs">Avanzamento sincronizzazione per poliambulatorio:</p><div id="sync-steps-list" class="space-y-2">`;
-            
             const icalCenters = appState.centers.filter(c => c.icalUrl && c.icalUrl.trim() !== '');
             if (icalCenters.length === 0) {
-                progressHtml += `<div class="p-3 bg-amber-50 text-amber-800 rounded-xl text-xs">Nessun link iCal configurato nei poliambulatori.</div>`;
-                progressHtml += `</div></div>`;
-                if (contentEl) contentEl.innerHTML = progressHtml;
+                if (contentEl) contentEl.innerHTML = `<div class="p-4 bg-amber-50 text-amber-800 rounded-2xl text-xs text-center">Nessun link iCal configurato nei poliambulatori. Configuralo nella gestione centri.</div>`;
                 if (spinner) spinner.classList.remove('animate-spin');
                 if (titleEl) titleEl.textContent = 'Sincronizzazione completata';
                 if (footer) footer.classList.remove('hidden');
-                logMsg("Nessun link iCal trovato nei poliambulatori.");
                 return;
             }
 
+            let progressHtml = `<div class="space-y-3"><p class="font-bold text-slate-800 text-xs">Avanzamento interrogazione calendari:</p><div id="sync-steps-list" class="space-y-2">`;
             for (let center of icalCenters) {
                 progressHtml += `
                     <div id="sync-step-${center.id}" class="p-3 bg-slate-50 border border-slate-200 rounded-2xl flex items-center justify-between text-xs">
@@ -1948,20 +1894,19 @@
                             <i class="fa-solid fa-spinner animate-spin text-water-600" id="sync-icon-${center.id}"></i>
                             <div>
                                 <strong class="text-slate-900 font-editorial italic text-sm">${center.name}</strong>
-                                <p class="text-slate-500 text-[10px]" id="sync-status-${center.id}">Connessione in corso...</p>
+                                <p class="text-slate-500 text-[10px]" id="sync-status-${center.id}">In attesa...</p>
                             </div>
                         </div>
-                        <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800" id="sync-badge-${center.id}">In attesa</span>
+                        <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800" id="sync-badge-${center.id}">In coda</span>
                     </div>
                 `;
             }
             progressHtml += `</div></div>`;
             if (contentEl) contentEl.innerHTML = progressHtml;
 
-            let addedTotal = 0;
-            let modifiedTotal = 0;
-            let deletedTotal = 0;
-            let centerResults = [];
+            let addedEventsDetail = [];
+            let modifiedEventsDetail = [];
+            let deletedEventsDetail = [];
 
             let activeIcalEventIds = new Set();
             let oldEventsMap = new Map(appState.events.filter(e => e.id.startsWith('ical_')).map(ev => [ev.id, ev]));
@@ -1971,8 +1916,7 @@
                 let badgeEl = document.getElementById(`sync-badge-${center.id}`);
                 let iconEl = document.getElementById(`sync-icon-${center.id}`);
 
-                logMsg(`Inizio fetch per "${center.name}" URL: ${center.icalUrl}`);
-                if (statusEl) statusEl.textContent = 'Scaricamento file ICS...';
+                if (statusEl) statusEl.textContent = `Interrogazione in corso per "${center.name}"...`;
 
                 let rawUrl = center.icalUrl.trim();
                 let targetUrl = normalizeGoogleCalendarUrl(rawUrl);
@@ -1997,17 +1941,14 @@
                                 text = await response.text();
                             }
                             if (text && (text.includes('BEGIN:VCALENDAR') || text.includes('BEGIN:VEVENT'))) {
-                                logMsg(`Fetch riuscito per "${center.name}" tramite endpoint: ${endpoint}`);
                                 break;
                             }
                         }
-                    } catch(err) {
-                        logMsg(`Tentativo fallito endpoint ${endpoint}: ${err.message}`);
-                    }
+                    } catch(err) {}
                 }
 
                 if (text && (text.includes('BEGIN:VCALENDAR') || text.includes('BEGIN:VEVENT'))) {
-                    if (statusEl) statusEl.textContent = 'Parsing eventi in corso...';
+                    if (statusEl) statusEl.textContent = 'Analisi eventi...';
                     let centerAdded = 0;
                     let centerModified = 0;
 
@@ -2016,7 +1957,7 @@
 
                     for (let line of lines) {
                         if (line.startsWith('BEGIN:VEVENT')) {
-                            currentEvent = { uid: null, summary: null, start: null, end: null, description: null };
+                            currentEvent = { uid: null, summary: null, start: null, end: null };
                         } else if (line.startsWith('END:VEVENT') && currentEvent) {
                             if (currentEvent.uid || currentEvent.summary || currentEvent.start) {
                                 const eventUid = currentEvent.uid || ('evt_' + Math.random().toString(36).substring(2, 9));
@@ -2043,6 +1984,10 @@
                                     }
                                 }
 
+                                let dStartObj = new Date(parsedStart);
+                                let dateFormatted = dStartObj.toLocaleDateString('it-IT', { day: 'numeric', month: 'short', year: 'numeric' });
+                                let timeFormatted = `${String(dStartObj.getHours()).padStart(2,'0')}:${String(dStartObj.getMinutes()).padStart(2,'0')}`;
+
                                 const centerColor = center.color || '#3f5e4e';
                                 const parsedEvent = {
                                     id: eventId,
@@ -2060,12 +2005,12 @@
                                     let oldEv = appState.events[existingIdx];
                                     if (oldEv.title !== parsedEvent.title || oldEv.start !== parsedEvent.start || oldEv.end !== parsedEvent.end) {
                                         centerModified++;
-                                        modifiedTotal++;
+                                        modifiedEventsDetail.push({ title: eventTitleClean, center: center.name, when: `${dateFormatted} alle ${timeFormatted}` });
                                     }
                                     appState.events[existingIdx] = parsedEvent;
                                 } else {
                                     centerAdded++;
-                                    addedTotal++;
+                                    addedEventsDetail.push({ title: eventTitleClean, center: center.name, when: `${dateFormatted} alle ${timeFormatted}` });
                                     appState.events.push(parsedEvent);
                                 }
 
@@ -2085,34 +2030,32 @@
                                 const parts = line.split(':');
                                 currentEvent.end = parts.slice(1).join(':').trim();
                             }
-                            else if (line.startsWith('DESCRIPTION:')) currentEvent.description = line.substring(12).trim();
                         }
                     }
 
-                    if (statusEl) statusEl.textContent = `Aggiornato (${centerAdded} aggiunti, ${centerModified} mod.)`;
+                    if (statusEl) statusEl.textContent = `Completato (${centerAdded} aggiunti, ${centerModified} mod.)`;
                     if (badgeEl) {
                         badgeEl.className = 'px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800';
-                        badgeEl.innerHTML = '<i class="fa-solid fa-circle text-[6px] mr-1 text-emerald-600"></i> Successo';
+                        badgeEl.innerHTML = '<i class="fa-solid fa-circle text-[6px] mr-1 text-emerald-600"></i> Sincronizzato';
                     }
                     if (iconEl) iconEl.className = 'fa-solid fa-circle-check text-emerald-600';
-                    logMsg(`Poliambulatorio "${center.name}" sincronizzato con successo.`);
-                    centerResults.push({ name: center.name, success: true, added: centerAdded, modified: centerModified });
 
                 } else {
-                    if (statusEl) statusEl.textContent = 'Errore di connessione / CORS';
+                    if (statusEl) statusEl.textContent = 'Errore connessione iCal';
                     if (badgeEl) {
                         badgeEl.className = 'px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-rose-100 text-rose-800';
                         badgeEl.innerHTML = '<i class="fa-solid fa-circle text-[6px] mr-1 text-rose-600"></i> Errore';
                     }
                     if (iconEl) iconEl.className = 'fa-solid fa-triangle-exclamation text-rose-600';
-                    logMsg(`Errore: Impossibile scaricare o parsare il file iCal per "${center.name}".`);
-                    centerResults.push({ name: center.name, success: false, error: 'Impossibile recuperare il calendario' });
                 }
             }
 
             const removedIds = Array.from(oldEventsMap.keys()).filter(id => id.startsWith('ical_') && !activeIcalEventIds.has(id));
             for (let remId of removedIds) {
-                deletedTotal++;
+                let evToRem = oldEventsMap.get(remId);
+                if (evToRem) {
+                    deletedEventsDetail.push({ title: evToRem.title, center: evToRem.extendedProps?.centerName || 'Poliambulatorio' });
+                }
                 appState.events = appState.events.filter(e => e.id !== remId);
                 if (db && userId) {
                     try { await deleteDoc(doc(db, 'artifacts', appId, 'users', userId, 'studio_events', remId)); } catch(e){}
@@ -2124,8 +2067,26 @@
 
             if (spinner) spinner.classList.remove('animate-spin');
             if (titleEl) titleEl.textContent = 'Sincronizzazione completata';
+
+            let reportSummaryHtml = `<div class="space-y-4 pt-2">`;
+            reportSummaryHtml += `<div class="p-3.5 bg-emerald-50 border border-emerald-200 rounded-2xl text-xs text-emerald-900 font-medium">Tutti i calendari dei poliambulatori sono stati interrogati con successo.</div>`;
+
+            if (addedEventsDetail.length > 0) {
+                reportSummaryHtml += `<div class="space-y-1.5"><strong class="text-xs text-slate-800 font-bold">Appuntamenti Aggiunti (${addedEventsDetail.length}):</strong><div class="space-y-1 max-h-32 overflow-y-auto">` + addedEventsDetail.map(ev => `<div class="p-2 bg-slate-50 border border-slate-200 rounded-xl text-xs flex justify-between"><span><strong class="text-nature-800">${ev.title}</strong> (${ev.center})</span> <span class="text-slate-500">${ev.when}</span></div>`).join('') + `</div></div>`;
+            }
+            if (modifiedEventsDetail.length > 0) {
+                reportSummaryHtml += `<div class="space-y-1.5"><strong class="text-xs text-slate-800 font-bold">Appuntamenti Modificati (${modifiedEventsDetail.length}):</strong><div class="space-y-1 max-h-32 overflow-y-auto">` + modifiedEventsDetail.map(ev => `<div class="p-2 bg-slate-50 border border-slate-200 rounded-xl text-xs flex justify-between"><span><strong class="text-water-800">${ev.title}</strong> (${ev.center})</span> <span class="text-slate-500">${ev.when}</span></div>`).join('') + `</div></div>`;
+            }
+            if (deletedEventsDetail.length > 0) {
+                reportSummaryHtml += `<div class="space-y-1.5"><strong class="text-xs text-slate-800 font-bold">Appuntamenti Cancellati (${deletedEventsDetail.length}):</strong><div class="space-y-1 max-h-32 overflow-y-auto">` + deletedEventsDetail.map(ev => `<div class="p-2 bg-slate-50 border border-slate-200 rounded-xl text-xs flex justify-between"><span><strong class="text-rose-800">${ev.title}</strong> (${ev.center})</span></div>`).join('') + `</div></div>`;
+            }
+            if (addedEventsDetail.length === 0 && modifiedEventsDetail.length === 0 && deletedEventsDetail.length === 0) {
+                reportSummaryHtml += `<p class="text-xs text-slate-500 italic text-center py-2">Nessuna variazione rilevata nei calendari esterni.</p>`;
+            }
+            reportSummaryHtml += `</div>`;
+
+            if (contentEl) contentEl.innerHTML += reportSummaryHtml;
             if (footer) footer.classList.remove('hidden');
-            logMsg(`Sincronizzazione completata. Totale aggiunti: ${addedTotal}, modificati: ${modifiedTotal}, eliminati: ${deletedTotal}.`);
         }
 
         window.closeSyncReportModal = function() {
