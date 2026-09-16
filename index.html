@@ -1055,12 +1055,19 @@
         });
 
         function showPublicView() {
+            document.body.classList.remove('mobile-admin-active');
+
+            const mobileMenu = document.getElementById('mobile-admin-more');
+            if (mobileMenu) mobileMenu.classList.remove('open');
+            document.body.style.overflow = '';
+
             document.getElementById('public-view').classList.remove('hidden');
             document.getElementById('private-view').classList.add('hidden');
             loadPublicDataFromFirestore();
         }
 
         function showPrivateView() {
+            document.body.classList.add('mobile-admin-active');
             document.getElementById('public-view').classList.add('hidden');
             document.getElementById('private-view').classList.remove('hidden');
             document.getElementById('logged-user-email-display').innerHTML = `<span class="w-2 h-2 rounded-full bg-nature-500 animate-pulse"></span> ${appState.currentUserEmail || 'Amministratore'}`;
