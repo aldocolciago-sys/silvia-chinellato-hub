@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Silvia Chinellato | Osteopata & Idrocolonterapia</title>
-    <meta name="app-build" content="shared-data-v17-strict-auth-gate">
+    <meta name="app-build" content="shared-data-v18-separate-clinical-archive">
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -991,7 +991,8 @@
                 { id: 'p1', title: 'Preparazione Idrocolonterapia', tag: 'Idrocolonterapia', content: "Nei 2 giorni precedenti il trattamento si consiglia un'alimentazione leggera, ricca di acqua e povera di scorie." }
             ],
             patients: [],
-            events: []
+            events: [],
+            clinicalSessions: []
         };
 
         let db = null;
@@ -1062,6 +1063,11 @@
             }, err => {
                 console.error('Errore sincronizzazione pazienti:', err);
                 showToast('Sincronizzazione pazienti non disponibile: verifica i permessi Firestore.');
+            }));
+            sharedUnsubscribers.push(onSnapshot(sharedCollection('clinical_sessions'), snapshot => {
+                appState.clinicalSessions = snapshot.docs.map(d => ({ id: d.data().id || d.id, ...d.data() }));
+            }, err => {
+                console.error('Errore sincronizzazione archivio clinico:', err);
             }));
         }
 
@@ -1188,7 +1194,9 @@
 
                     const patientsSnap = await getDocs(sharedCollection('patients_list'));
                     appState.patients = patientsSnap.docs.map(d => d.data());
-
+                    const clinicalSnap = await getDocs(sharedCollection('clinical_sessions'));
+                    appState.clinicalSessions = clinicalSnap.docs.map(d => ({ id: d.data().id || d.id, ...d.data() }));
+                    await migrateEventClinicalDataToArchiveOnce();
                     startSharedRealtimeSync();
                 }
                 renderAllPublicUI();
@@ -1670,22 +1678,52 @@
             lines.push('', clinicalSessionEnd(eventData.id, dateText));
             return lines.join('\n');
         }
+        function clinicalArchiveRecord(eventData) {
+            const props = eventData.extendedProps || {};
+            return {
+                id: eventData.id,
+                eventId: eventData.id,
+                patientId: props.patientId || null,
+                title: eventData.title || 'Appuntamento',
+                start: eventData.start || null,
+                end: eventData.end || null,
+                centerId: props.centerId || null,
+                centerName: props.centerName || 'Studio Privato',
+                clinicalNote: props.clinicalNote || '',
+                clinicalOutcome: props.clinicalOutcome || '',
+                fee: Number(props.fee || 0),
+                paymentStatus: props.paymentStatus || 'paid',
+                detachedFromExternal: props.detachedFromExternal === true,
+                updatedAt: new Date().toISOString()
+            };
+        }
         async function synchronizeClinicalSessionWithPatient(eventData, previousPatientId) {
-            const newPatientId = eventData.extendedProps?.patientId || null;
-            if (previousPatientId && String(previousPatientId) !== String(newPatientId || '')) {
-                const previousPatient = appState.patients.find(p => String(p.id) === String(previousPatientId));
-                if (previousPatient) {
-                    previousPatient.notes = removeClinicalSessionBlock(previousPatient.notes, eventData.id);
-                    await setDoc(sharedDocument('patients_list', previousPatient.id), { notes: previousPatient.notes, updatedAt: new Date().toISOString() }, { merge: true });
+            const record = clinicalArchiveRecord(eventData);
+            const hasClinicalContent = Boolean(record.patientId && (record.clinicalNote || record.clinicalOutcome));
+            if (!hasClinicalContent) {
+                try { await deleteDoc(sharedDocument('clinical_sessions', eventData.id)); } catch (err) { console.warn('Nessuna seduta clinica da eliminare:', err); }
+                appState.clinicalSessions = appState.clinicalSessions.filter(item => item.eventId !== eventData.id);
+                return;
+            }
+            await setDoc(sharedDocument('clinical_sessions', eventData.id), record, { merge: true });
+            const idx = appState.clinicalSessions.findIndex(item => item.eventId === eventData.id);
+            if (idx >= 0) appState.clinicalSessions[idx] = record;
+            else appState.clinicalSessions.push(record);
+        }
+        async function migrateEventClinicalDataToArchiveOnce() {
+            const markerRef = sharedDocument('_meta', 'clinical-sessions-migration-v1');
+            const marker = await getDoc(markerRef);
+            if (marker.exists()) return;
+            for (const eventData of appState.events) {
+                const props = eventData.extendedProps || {};
+                if (props.patientId && (props.clinicalNote || props.clinicalOutcome)) {
+                    const record = clinicalArchiveRecord(eventData);
+                    await setDoc(sharedDocument('clinical_sessions', eventData.id), record, { merge: true });
                 }
             }
-            if (!newPatientId) return;
-            const patient = appState.patients.find(p => String(p.id) === String(newPatientId));
-            if (!patient) return;
-            const baseNotes = removeClinicalSessionBlock(patient.notes, eventData.id);
-            const hasClinicalContent = Boolean(eventData.extendedProps?.clinicalNote || eventData.extendedProps?.clinicalOutcome);
-            patient.notes = [baseNotes, hasClinicalContent ? buildClinicalSessionBlock(eventData) : ''].filter(Boolean).join('\n\n');
-            await setDoc(sharedDocument('patients_list', patient.id), { notes: patient.notes, updatedAt: new Date().toISOString() }, { merge: true });
+            await setDoc(markerRef, { completed: true, completedAt: new Date().toISOString() });
+            const snap = await getDocs(sharedCollection('clinical_sessions'));
+            appState.clinicalSessions = snap.docs.map(d => ({ id: d.data().id || d.id, ...d.data() }));
         }
 
         window.handleStudioEventSubmit = async function(e) {
@@ -1764,7 +1802,11 @@
             showConfirmDialog("Elimina Appuntamento", "Sei sicura di voler eliminare questo appuntamento?", async () => {
                 appState.events = appState.events.filter(ev => ev.id !== id);
                 if (db && userId) {
-                    try { await deleteDoc(sharedDocument('studio_events', id)); } catch(e){}
+                    try {
+                        await deleteDoc(sharedDocument('studio_events', id));
+                        await deleteDoc(sharedDocument('clinical_sessions', id));
+                        appState.clinicalSessions = appState.clinicalSessions.filter(item => item.eventId !== id);
+                    } catch(e){}
                 }
                 closeStudioModal();
                 if (calendarInstance) calendarInstance.refetchEvents();
@@ -1877,6 +1919,9 @@
                         ev.extendedProps = { ...(ev.extendedProps || {}), patientId: null };
                         await setDoc(sharedDocument('studio_events', ev.id), ev, { merge: true });
                     }
+                    const patientSessions = appState.clinicalSessions.filter(item => String(item.patientId) === String(id));
+                    for (const session of patientSessions) await deleteDoc(sharedDocument('clinical_sessions', session.eventId || session.id));
+                    appState.clinicalSessions = appState.clinicalSessions.filter(item => String(item.patientId) !== String(id));
                     await deleteDoc(sharedDocument('patients_list', id));
                     if (userId) {
                         try { await deleteDoc(doc(db, 'artifacts', appId, 'users', userId, 'patients_list', id)); } catch (legacyErr) { console.warn('Record legacy non eliminato:', legacyErr); }
@@ -1905,6 +1950,9 @@
             } else {
                 let sortedEvts = [...patientEvents].sort((a,b) => new Date(b.start) - new Date(a.start));
                 listEl.innerHTML = sortedEvts.map(ev => {
+                    const archivedSession = appState.clinicalSessions.find(item => item.eventId === ev.id && String(item.patientId) === String(patientId));
+                    const clinicalNote = archivedSession?.clinicalNote || ev.extendedProps?.clinicalNote || '';
+                    const clinicalOutcome = archivedSession?.clinicalOutcome || ev.extendedProps?.clinicalOutcome || '';
                     let d = new Date(ev.start);
                     let dateStr = d.toLocaleDateString('it-IT', { day: 'numeric', month: 'long', year: 'numeric' });
                     let timeStr = `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
@@ -1917,8 +1965,8 @@
                                     <span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${isPast ? 'bg-slate-200 text-slate-700' : 'bg-emerald-100 text-emerald-800'}">${isPast ? 'Passato' : 'Futuro'}</span>
                                 </div>
                                 <p class="text-slate-500"><i class="fa-regular fa-calendar text-nature-600 mr-1"></i> ${dateStr} alle ${timeStr} • <span class="font-medium text-slate-700">${ev.extendedProps?.centerName || 'Studio Privato'}</span></p>
-                                ${ev.extendedProps?.clinicalNote ? `<p class="mt-2 p-2 bg-water-50 rounded-xl text-slate-700"><strong>Nota seduta:</strong> ${ev.extendedProps.clinicalNote}</p>` : ''}
-                                ${ev.extendedProps?.clinicalOutcome ? `<p class="text-slate-600"><strong>Esito:</strong> ${ev.extendedProps.clinicalOutcome}</p>` : ''}
+                                ${clinicalNote ? `<p class="mt-2 p-2 bg-water-50 rounded-xl text-slate-700"><strong>Nota seduta:</strong> ${escapePatientText(clinicalNote)}</p>` : ''}
+                                ${clinicalOutcome ? `<p class="text-slate-600"><strong>Esito:</strong> ${escapePatientText(clinicalOutcome)}</p>` : ''}
                                 ${Number(ev.extendedProps?.fee || 0) > 0 ? `<p class="text-emerald-700 font-bold">€ ${Number(ev.extendedProps.fee).toFixed(2)} • ${ev.extendedProps?.paymentStatus === 'unpaid' ? 'Da incassare' : 'Pagato'}</p>` : ''}
                             </div>
                         </div>
@@ -2961,6 +3009,12 @@
                     const oldAutomaticTitle=`Visita / Trattamento - ${rem.name}`;
                     if((ev.title||'').trim()===oldAutomaticTitle) ev.title=`Visita / Trattamento - ${keep.name}`;
                     await setDoc(sharedDocument('studio_events',ev.id),ev,{merge:true});
+                }
+                const sessionsToMove = appState.clinicalSessions.filter(item => String(item.patientId) === String(removeId));
+                for (const session of sessionsToMove) {
+                    session.patientId = keepId;
+                    session.updatedAt = new Date().toISOString();
+                    await setDoc(sharedDocument('clinical_sessions', session.eventId || session.id), session, { merge: true });
                 }
                 await setDoc(sharedDocument('patients_list',keepId),keep,{merge:true});
                 await deleteDoc(sharedDocument('patients_list',removeId));
