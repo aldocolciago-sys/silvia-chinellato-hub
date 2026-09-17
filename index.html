@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Silvia Chinellato | Osteopata & Idrocolonterapia</title>
-    <meta name="app-build" content="shared-data-v13-flat-sync-single-login">
+    <meta name="app-build" content="shared-data-v14-recall-filter-contacts">
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -2749,19 +2749,59 @@
         }
         window.openRecallModal = function() { renderRecallList(); document.getElementById('recall-modal').classList.remove('hidden'); }
         window.closeRecallModal = function() { document.getElementById('recall-modal').classList.add('hidden'); }
+        function buildRecallWhatsAppUrl(patient) {
+            const digits = String(patient.phone || '').replace(/\D/g, '');
+            if (!digits) return '';
+            const message = `Ciao ${patient.name || ''}, ti contatto dallo studio per sapere come stai e, se desideri, organizzare il prossimo appuntamento.`;
+            return `https://wa.me/${digits}?text=${encodeURIComponent(message)}`;
+        }
+        function buildRecallEmailUrl(patient) {
+            const email = String(patient.email || '').trim();
+            if (!email) return '';
+            const subject = 'Richiamo per il prossimo appuntamento';
+            const body = `Ciao ${patient.name || ''},\n\nti contatto dallo studio per sapere come stai e, se desideri, organizzare il prossimo appuntamento.\n\nUn caro saluto`;
+            return `mailto:${email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+        }
         window.renderRecallList = function() {
-            const threshold = Number(document.getElementById('recall-threshold').value || 120), now = new Date();
-            const statuses = appState.patients.map(p => ({p,status:getPatientRecallStatus(p)}));
+            const threshold = Number(document.getElementById('recall-threshold')?.value || 120);
+            const now = new Date();
+            const statuses = appState.patients.map(p => ({ p, status: getPatientRecallStatus(p) }));
             const excluded = statuses.filter(x => x.status.nextAppointment).length;
-            const items = statuses.map(({p,status}) => {
+            const items = statuses.map(({ p, status }) => {
                 if (status.nextAppointment) return null;
-                const last=status.lastVisit?.date || null;
-                const days=last ? Math.floor((now-last)/86400000) : Infinity;
-                return {p,last,days,limit:Number(p.recallDays || threshold)};
-            }).filter(x => x && x.days >= x.limit).sort((a,b)=>b.days-a.days);
-            const info=`<div class="p-3 bg-water-50 border border-water-200 rounded-2xl text-xs"><strong>${excluded}</strong> pazienti esclusi perché hanno già un appuntamento futuro associato.</div>`;
-            const rows=items.map(({p,last,days,limit})=>{const phone=(p.phone||'').replace(/[^0-9+]/g,'');const mail=p.email||'';return `<div class="p-4 border rounded-2xl bg-white"><div class="flex flex-col sm:flex-row justify-between gap-3"><div><strong class="font-editorial text-lg italic">${p.name}</strong><div class="grid sm:grid-cols-2 gap-2 mt-2 text-xs"><p class="p-2 bg-slate-50 rounded-xl"><b class="block text-[10px]">ULTIMA VISITA</b>${last?last.toLocaleString('it-IT',{dateStyle:'medium',timeStyle:'short'}):'Nessuna visita passata associata'}</p><p class="p-2 bg-orange-50 rounded-xl"><b class="block text-[10px]">STATO</b>${days===Infinity?'Mai visitato':days+' giorni dall’ultima visita'}</p></div><p class="text-[10px] text-slate-500 mt-2">Nessun appuntamento futuro associato • soglia ${limit} giorni</p></div><div class="flex gap-2">${phone?`<a target="_blank" href="https://wa.me/${phone.replace('+','')}" class="px-3 py-2 bg-emerald-600 text-white rounded-xl text-xs font-bold">WhatsApp</a>`:''}${mail?`<a href="mailto:${mail}" class="px-3 py-2 bg-water-600 text-white rounded-xl text-xs font-bold">Email</a>`:''}</div></div></div>`}).join('');
-            document.getElementById('recall-list').innerHTML=info+(rows||'<p class="text-center text-slate-400 py-10">Nessun paziente da richiamare.</p>');
+                const last = status.lastVisit?.date || null;
+                const days = last ? Math.max(0, Math.floor((now - last) / 86400000)) : Infinity;
+                const recallDays = Number(p.recallDays || 120);
+                return { p, last, days, recallDays };
+            }).filter(item => item && item.days >= threshold)
+              .sort((a, b) => b.days - a.days);
+            const info = `<div class="p-3 bg-water-50 border border-water-200 rounded-2xl text-xs space-y-1"><p><strong>${items.length}</strong> pazienti mostrati con almeno <strong>${threshold} giorni</strong> di inattività.</p><p><strong>${excluded}</strong> pazienti esclusi perché hanno già un appuntamento futuro associato.</p></div>`;
+            const rows = items.map(({ p, last, days, recallDays }) => {
+                const whatsappUrl = buildRecallWhatsAppUrl(p);
+                const emailUrl = buildRecallEmailUrl(p);
+                const daysLabel = days === Infinity ? 'Mai visitato' : `${days} giorni`;
+                const overdue = days === Infinity || days >= recallDays;
+                return `<div class="p-4 border border-slate-200 rounded-2xl bg-white shadow-2xs">
+                    <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+                        <div class="min-w-0 flex-1">
+                            <div class="flex items-center gap-2 flex-wrap">
+                                <strong class="font-editorial text-lg italic text-slate-900">${escapePatientText(p.name)}</strong>
+                                <span class="px-2.5 py-1 rounded-full text-[10px] font-bold ${overdue ? 'bg-orange-100 text-orange-800' : 'bg-slate-100 text-slate-700'}">${overdue ? 'Richiamo previsto raggiunto' : 'Sotto il richiamo previsto'}</span>
+                            </div>
+                            <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 mt-3 text-xs">
+                                <div class="p-3 bg-slate-50 rounded-xl border border-slate-100"><b class="block text-[10px] text-slate-500 mb-1">ULTIMA VISITA</b>${last ? last.toLocaleString('it-IT',{dateStyle:'medium',timeStyle:'short'}) : 'Nessuna visita passata associata'}</div>
+                                <div class="p-3 bg-orange-50 rounded-xl border border-orange-100"><b class="block text-[10px] text-orange-700 mb-1">GIORNI TRASCORSI</b>${daysLabel}</div>
+                                <div class="p-3 bg-water-50 rounded-xl border border-water-100"><b class="block text-[10px] text-water-700 mb-1">RICHIAMO PREVISTO</b>${recallDays} giorni</div>
+                            </div>
+                        </div>
+                        <div class="flex flex-wrap gap-2 lg:justify-end">
+                            ${whatsappUrl ? `<a target="_blank" rel="noopener noreferrer" href="${whatsappUrl}" class="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold"><i class="fa-brands fa-whatsapp"></i>WhatsApp</a>` : '<span class="px-3 py-2 bg-slate-100 text-slate-400 rounded-xl text-xs">WhatsApp non disponibile</span>'}
+                            ${emailUrl ? `<a href="${emailUrl}" class="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-water-600 hover:bg-water-700 text-white rounded-xl text-xs font-bold"><i class="fa-solid fa-envelope"></i>Email</a>` : '<span class="px-3 py-2 bg-slate-100 text-slate-400 rounded-xl text-xs">Email non disponibile</span>'}
+                        </div>
+                    </div>
+                </div>`;
+            }).join('');
+            document.getElementById('recall-list').innerHTML = info + (rows || '<p class="text-center text-slate-400 py-10">Nessun paziente corrisponde al filtro selezionato.</p>');
         }
         function normalizePersonName(value) {
             return (value || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9 ]/g,' ').replace(/\s+/g,' ').trim();
