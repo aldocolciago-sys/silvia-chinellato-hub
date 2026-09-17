@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Silvia Chinellato | Osteopata & Idrocolonterapia</title>
-    <meta name="app-build" content="shared-data-v25-non-clinical-calendar">
+    <meta name="app-build" content="shared-data-v25-stable-non-clinical-calendar">
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -524,11 +524,11 @@
             <form id="studio-event-form" class="p-5 sm:p-6 space-y-4 overflow-y-auto" onsubmit="handleStudioEventSubmit(event)">
                 <input type="hidden" id="studio-edit-event-id">
                 <input type="hidden" id="studio-event-is-external" value="false">
-                <div id="non-clinical-event-banner" class="hidden p-3.5 bg-sky-50 border border-sky-300 rounded-2xl text-sky-950"><div class="flex items-start gap-2.5"><i class="fa-solid fa-house mt-0.5 text-sky-700"></i><div><p class="text-xs font-bold">Evento da Calendario non Clinico</p><p class="text-[10px] mt-1">L’evento occupa l’agenda e partecipa al controllo sovrapposizioni, ma non entra nella gestione pazienti o nelle statistiche professionali.</p></div></div></div>
+                <div id="non-clinical-event-banner" class="hidden p-3.5 bg-sky-50 border border-sky-300 rounded-2xl text-sky-950"><div class="flex items-start gap-2.5"><i class="fa-solid fa-house mt-0.5 text-sky-700"></i><div><p class="text-xs font-bold">Evento da Calendario non Clinico</p><p class="text-[10px] mt-1">Occupa l’agenda e segnala sovrapposizioni, ma è escluso dalla gestione professionale.</p></div></div></div>
                 <div id="external-detached-banner" class="hidden p-3.5 bg-amber-50 border border-amber-300 rounded-2xl text-amber-950"><div class="flex items-start gap-2.5"><i class="fa-solid fa-thumbtack mt-0.5 text-amber-700"></i><div class="space-y-1"><p class="text-xs font-bold">Appuntamento mantenuto manualmente</p><p class="text-[11px] leading-relaxed">Questo appuntamento è stato cancellato dal calendario originale del poliambulatorio, ma è stato mantenuto nella tua agenda personale.</p><p id="external-detached-date" class="text-[10px] font-semibold text-amber-800"></p></div></div></div>
                 <div class="space-y-1">
                     <label class="text-[11px] font-bold text-slate-600">Sede / Poliambulatorio</label>
-                    <select id="studio-center-select" onchange="applyStudioClinicalMode(isNonClinicalCenter(this.value))" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-2xl text-xs">
+                    <select id="studio-center-select" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-2xl text-xs">
                         <option value="">Studio Privato (Default)</option>
                     </select>
                 </div>
@@ -831,7 +831,7 @@
                         </div>
                         <div class="sm:col-span-3 p-3 bg-sky-50 border border-sky-200 rounded-2xl flex items-start gap-3">
                             <input type="checkbox" id="new-center-non-clinical" class="w-4 h-4 mt-0.5 text-sky-600 rounded focus:ring-sky-500">
-                            <label for="new-center-non-clinical" class="text-xs text-sky-950"><strong class="block">Calendario non Clinico</strong><span class="text-[10px] text-sky-800">Gli eventi restano visibili in agenda e generano conflitti, ma vengono esclusi da pazienti, richiami, storico, archivio clinico, compensi e appuntamenti senza paziente.</span></label>
+                            <label for="new-center-non-clinical" class="text-xs text-sky-950"><strong class="block">Calendario non Clinico</strong><span class="text-[10px] text-sky-800">Gli eventi restano in agenda e generano conflitti, ma non entrano in pazienti, storico, richiami, archivio clinico, compensi o appuntamenti senza paziente.</span></label>
                         </div>
                     </div>
                     <div class="flex justify-end gap-2 pt-1">
@@ -1537,23 +1537,24 @@
             }
         }
 
-        function isNonClinicalCenter(centerId) {
-            const center = appState.centers.find(c => String(c.id) === String(centerId || ''));
-            return center?.isNonClinicalCalendar === true;
+        function getEventCenter(eventData) {
+            return appState.centers.find(center => String(center.id) === String(eventData?.extendedProps?.centerId || '')) || null;
+        }
+        function isNonClinicalCenterId(centerId) {
+            return appState.centers.some(center => String(center.id) === String(centerId || '') && center.isNonClinicalCalendar === true);
         }
         function isNonClinicalEvent(eventData) {
-            return eventData?.extendedProps?.isNonClinical === true || isNonClinicalCenter(eventData?.extendedProps?.centerId);
+            return eventData?.extendedProps?.isNonClinical === true || getEventCenter(eventData)?.isNonClinicalCalendar === true;
         }
-        function applyStudioClinicalMode(nonClinical) {
-            document.getElementById('non-clinical-event-banner').classList.toggle('hidden', !nonClinical);
-            for (const id of ['studio-patient-section','patient-contact-info-container','live-patient-notes-container','studio-finance-section','studio-clinical-section']) {
-                const el=document.getElementById(id); if(el) el.classList.toggle('hidden', nonClinical || (id.includes('patient-contact') || id.includes('live-patient')));
-            }
+        function setAppointmentClinicalSectionsVisibility(nonClinical) {
+            document.getElementById('non-clinical-event-banner')?.classList.toggle('hidden', !nonClinical);
+            document.getElementById('studio-patient-section')?.classList.toggle('hidden', nonClinical);
+            document.getElementById('studio-finance-section')?.classList.toggle('hidden', nonClinical);
+            document.getElementById('studio-clinical-section')?.classList.toggle('hidden', nonClinical);
             if (nonClinical) {
-                document.getElementById('studio-patient-select').value='';
-                document.getElementById('studio-fee').value='';
-                document.getElementById('studio-clinical-note').value='';
-                document.getElementById('studio-clinical-outcome').value='';
+                document.getElementById('studio-patient-select').value = '';
+                document.getElementById('patient-contact-info-container').classList.add('hidden');
+                document.getElementById('live-patient-notes-container').classList.add('hidden');
                 document.getElementById('patient-match-suggestions').classList.add('hidden');
                 document.getElementById('create-patient-from-event-btn').classList.add('hidden');
             }
@@ -1565,7 +1566,7 @@
             populateCenterDropdown();
             const form = document.getElementById('studio-event-form');
             form.reset();
-            applyStudioClinicalMode(false);
+            setAppointmentClinicalSectionsVisibility(false);
             document.getElementById('studio-edit-event-id').value = '';
             document.getElementById('studio-event-is-external').value = 'false';
             document.getElementById('external-detached-banner').classList.add('hidden');
@@ -1643,7 +1644,7 @@
 
                 document.getElementById('studio-delete-btn').classList.remove('hidden');
                 const nonClinical = isNonClinicalEvent(editEv);
-                applyStudioClinicalMode(nonClinical);
+                setAppointmentClinicalSectionsVisibility(nonClinical);
                 if (!nonClinical && editEv.id && editEv.id.startsWith('ical_') && !editEv.extendedProps?.patientId) showPatientMatchSuggestions(editEv);
             }
 
@@ -1930,7 +1931,7 @@
 
             const selectedCenter = appState.centers.find(c => c.id === centerId);
             const nonClinical = selectedCenter?.isNonClinicalCalendar === true;
-            if (nonClinical) { patientId = ''; }
+            if (nonClinical) patientId = '';
             const centerName = selectedCenter ? selectedCenter.name : 'Studio Privato';
             const centerColor = selectedCenter ? (selectedCenter.color || '#3f5e4e') : '#3f5e4e';
 
@@ -2136,7 +2137,7 @@
             document.getElementById('patient-history-title').textContent = `Storico: ${pat.name}`;
             
             const listEl = document.getElementById('patient-history-list');
-            const patientEvents = appState.events.filter(ev => String(ev.extendedProps?.patientId || '') === String(patientId));
+            const patientEvents = appState.events.filter(ev => !isNonClinicalEvent(ev) && String(ev.extendedProps?.patientId || '') === String(patientId));
 
             if (patientEvents.length === 0) {
                 listEl.innerHTML = `<p class="text-xs text-slate-400 italic text-center py-6">Nessun appuntamento passato o futuro registrato per questo paziente.</p>`;
@@ -2814,7 +2815,7 @@
                                     backgroundColor: centerColor,
                                     borderColor: centerColor,
                                     textColor: '#ffffff',
-                                    extendedProps: { centerId: center.id, centerName: center.name, patientId: nonClinical ? null : matchedPatientId, isNonClinical: nonClinical, fee: nonClinical ? 0 : (existingEv?.extendedProps?.fee || 0), paymentStatus: nonClinical ? 'cancelled' : (existingEv?.extendedProps?.paymentStatus || 'paid') }
+                                    extendedProps: { centerId: center.id, centerName: center.name, patientId: center.isNonClinicalCalendar === true ? null : matchedPatientId, isNonClinical: center.isNonClinicalCalendar === true }
                                 };
 
                                 const existingIdx = appState.events.findIndex(e => e.id === eventId);
@@ -3100,7 +3101,7 @@
         function getPatientRecallStatus(patient) {
             const now = new Date();
             const assigned = (appState.events || [])
-                .filter(ev => String(ev.extendedProps?.patientId || '') === String(patient.id))
+                .filter(ev => !isNonClinicalEvent(ev) && String(ev.extendedProps?.patientId || '') === String(patient.id))
                 .filter(ev => ev.extendedProps?.paymentStatus !== 'cancelled')
                 .map(ev => ({ event: ev, date: new Date(ev.start) }))
                 .filter(item => !Number.isNaN(item.date.getTime()));
@@ -3336,7 +3337,7 @@
                 treatments: structuredClone(appState.treatments || []), news: structuredClone(appState.news || []),
                 preparations: structuredClone(appState.preparations || [])
             };
-            return { schema: BACKUP_SCHEMA, schemaVersion: BACKUP_SCHEMA_VERSION, appBuild: 'v25', createdAt, exportedBy: appState.currentUserEmail || null, counts: backupCounts(data), data };
+            return { schema: BACKUP_SCHEMA, schemaVersion: BACKUP_SCHEMA_VERSION, appBuild: 'v25-stable', createdAt, exportedBy: appState.currentUserEmail || null, counts: backupCounts(data), data };
         }
         function renderBackupDashboard() {
             const counts = backupCounts(appState);
@@ -3390,7 +3391,7 @@
             for(const center of appState.centers){
                 let changed=false;
                 if(typeof center.isNonClinicalCalendar==='undefined'){center.isNonClinicalCalendar=false;changed=true;}
-                if(typeof center.includeInFinance==='undefined'){center.includeInFinance=!center.isNonClinicalCalendar;changed=true;}
+                if(typeof center.includeInFinance==='undefined'){center.includeInFinance=true;changed=true;}
                 if(center.isNonClinicalCalendar && center.includeInFinance!==false){center.includeInFinance=false;changed=true;}
                 if(changed){await setDoc(sharedDocument('centers_list',center.id),center,{merge:true});await setDoc(doc(db,'artifacts',appId,'public','data','centers_list',center.id),center,{merge:true});}
             }
