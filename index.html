@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Silvia Chinellato | Osteopata & Idrocolonterapia</title>
-    <meta name="app-build" content="shared-data-v4.3-patient-flow-notes-fixed">
+    <meta name="app-build" content="shared-data-v4.4-history-merge-clinical-sync">
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -573,12 +573,9 @@
                 </div>
 
                 <div id="live-patient-notes-container" class="space-y-2 hidden bg-amber-50/60 p-3.5 rounded-2xl border border-amber-200">
-                    <div class="flex items-center justify-between gap-2">
-                        <span class="text-[11px] font-bold text-amber-900"><i class="fa-solid fa-notes-medical mr-1"></i> Sintesi scheda paziente</span>
-                        <button type="button" onclick="editSelectedPatientFromAppointment()" class="px-2.5 py-1.5 bg-white border border-amber-200 rounded-xl text-[10px] font-bold text-amber-900">Apri scheda completa</button>
-                    </div>
+                    <div class="flex items-center justify-between gap-2"><span class="text-[11px] font-bold text-amber-900"><i class="fa-solid fa-notes-medical mr-1"></i>Sintesi scheda paziente</span><button type="button" onclick="editSelectedPatientFromAppointment()" class="px-2.5 py-1.5 bg-white border border-amber-200 rounded-xl text-[10px] font-bold text-amber-900">Apri scheda completa</button></div>
                     <div id="live-patient-summary" class="bg-white border border-amber-200 rounded-xl p-3 text-xs text-slate-700 space-y-1"></div>
-                    <p class="text-[10px] text-slate-500">Le informazioni anamnestiche si modificano dalla scheda paziente. La nota clinica della singola seduta resta nel campo dedicato qui sotto.</p>
+                    <p class="text-[10px] text-slate-500">La cartella generale si modifica dalla scheda paziente. Questa seduta viene archiviata automaticamente al salvataggio dell’appuntamento.</p>
                 </div>
 
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 bg-emerald-50/60 p-3.5 rounded-2xl border border-emerald-200">
@@ -1429,7 +1426,6 @@
         }
 
         window.openStudioModal = function(editEv = null) {
-            pendingAppointmentPatientId = null;
             populateTimeSelects();
             populateCenterDropdown();
             const form = document.getElementById('studio-event-form');
@@ -1517,24 +1513,17 @@
 
         let patientCreationContext = 'registry';
         let pendingAppointmentPatientId = null;
-        let returnToAppointmentAfterPatient = false;
-
         window.openNewPatientFromAppointment = function(prefillName = '') {
-            patientCreationContext = 'appointment';
-            pendingAppointmentPatientId = null;
-            returnToAppointmentAfterPatient = true;
+            patientCreationContext = 'appointment'; pendingAppointmentPatientId = null;
             window.openPatientEditModal();
             document.getElementById('patient-edit-modal-title').textContent = 'Nuovo Paziente';
             if (prefillName) document.getElementById('patient-name').value = prefillName;
         }
         window.editSelectedPatientFromAppointment = function() {
-            const id = document.getElementById('studio-patient-select').value;
-            if (!id) return;
-            const patient = appState.patients.find(p => String(p.id) === String(id));
-            if (!patient) { showToast('Paziente non trovato.'); return; }
-            patientCreationContext = 'appointment-edit';
-            returnToAppointmentAfterPatient = true;
-            window.openPatientEditModal(patient);
+            const id=document.getElementById('studio-patient-select').value;
+            const patient=appState.patients.find(p=>String(p.id)===String(id));
+            if(!patient){showToast('Paziente non trovato.');return;}
+            patientCreationContext='appointment-edit'; window.openPatientEditModal(patient);
         }
 
         function populateCenterDropdown() {
@@ -1544,37 +1533,49 @@
         }
 
         window.onPatientSelectChange = function() {
-            const selId = document.getElementById('studio-patient-select').value;
-            const isExternal = document.getElementById('studio-event-is-external').value === 'true';
-            if (!selId) {
-                document.getElementById('live-patient-notes-container').classList.add('hidden');
-                document.getElementById('patient-contact-info-container').classList.add('hidden');
-                document.getElementById('studio-patient-phone').value = '';
-                document.getElementById('studio-patient-email').value = '';
-                return;
+            const id=document.getElementById('studio-patient-select').value;
+            const isExternal=document.getElementById('studio-event-is-external').value==='true';
+            if(!id){document.getElementById('live-patient-notes-container').classList.add('hidden');document.getElementById('patient-contact-info-container').classList.add('hidden');return;}
+            const p=appState.patients.find(x=>String(x.id)===String(id)); if(!p)return;
+            if(!isExternal)document.getElementById('studio-title').value=`Visita / Trattamento - ${p.name}`;
+            showPatientClinicalSummary(id);
+        }
+        function esc(value){return String(value||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;');}
+        function showPatientClinicalSummary(id){
+            const p=appState.patients.find(x=>String(x.id)===String(id)); if(!p)return;
+            document.getElementById('studio-patient-phone').value=p.phone||'Non specificato'; document.getElementById('studio-patient-email').value=p.email||'Non specificata';
+            const rows=[['Problemi attuali',p.currentIssues],['Obiettivi',p.goals],['Allergie',p.allergies],['Farmaci',p.medications],['Note',p.notes],['Tag',Array.isArray(p.tags)?p.tags.join(', '):p.tags]].filter(x=>x[1]);
+            document.getElementById('live-patient-summary').innerHTML=rows.length?rows.map(x=>`<p><strong>${x[0]}:</strong> ${esc(x[1])}</p>`).join(''):'<p class="text-slate-400 italic">Nessuna informazione clinica registrata.</p>';
+            document.getElementById('live-patient-notes-container').classList.remove('hidden'); document.getElementById('patient-contact-info-container').classList.remove('hidden');
+        }
+
+        function clinicalBlockForEvent(ev){
+            const date=new Date(ev.start); const dateText=Number.isNaN(date.getTime())?(ev.start||''):date.toLocaleString('it-IT',{dateStyle:'medium',timeStyle:'short'});
+            const note=ev.extendedProps?.clinicalNote||'', outcome=ev.extendedProps?.clinicalOutcome||'';
+            return `[SEDUTA:${ev.id}]
+${dateText} | ${ev.title||'Appuntamento'}${note?`
+Nota seduta: ${note}`:''}${outcome?`
+Esito: ${outcome}`:''}
+[/SEDUTA:${ev.id}]`;
+        }
+        function removeClinicalBlock(notes,eventId){
+            const safe=String(eventId).replace(/[.*+?^${}()|[\]\]/g,'\$&');
+            return String(notes||'').replace(new RegExp(`\n?\[SEDUTA:${safe}\][\s\S]*?\[\/SEDUTA:${safe}\]\n?`,'g'),'
+').trim();
+        }
+        async function syncEventClinicalDataToPatient(ev,previousPatientId=null){
+            const currentId=ev.extendedProps?.patientId||null;
+            if(previousPatientId && previousPatientId!==currentId){
+                const oldP=appState.patients.find(p=>String(p.id)===String(previousPatientId));
+                if(oldP){oldP.notes=removeClinicalBlock(oldP.notes,ev.id);await setDoc(sharedDocument('patients_list',oldP.id),{notes:oldP.notes,updatedAt:new Date().toISOString()},{merge:true});}
             }
-            const pat = appState.patients.find(p => String(p.id) === String(selId));
-            if (!pat) return;
-            if (!isExternal) document.getElementById('studio-title').value = `Visita / Trattamento - ${pat.name}`;
-            showPatientClinicalSummary(pat.id);
-        }
-        function escapePatientText(value) {
-            return String(value || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;');
-        }
-        function showPatientClinicalSummary(patientId) {
-            const pat = appState.patients.find(p => String(p.id) === String(patientId));
-            const container = document.getElementById('live-patient-notes-container');
-            const summary = document.getElementById('live-patient-summary');
-            const contactContainer = document.getElementById('patient-contact-info-container');
-            if (!pat) { container.classList.add('hidden'); contactContainer.classList.add('hidden'); return; }
-            document.getElementById('studio-patient-phone').value = pat.phone || 'Non specificato';
-            document.getElementById('studio-patient-email').value = pat.email || 'Non specificata';
-            const rows = [
-                ['Problemi attuali', pat.currentIssues], ['Obiettivi', pat.goals], ['Allergie', pat.allergies],
-                ['Farmaci', pat.medications], ['Note anamnestiche', pat.notes], ['Tag', Array.isArray(pat.tags) ? pat.tags.join(', ') : pat.tags]
-            ].filter(([,value]) => value);
-            summary.innerHTML = rows.length ? rows.map(([label,value]) => `<p><strong>${label}:</strong> ${escapePatientText(value)}</p>`).join('') : '<p class="text-slate-400 italic">Nessuna informazione clinica registrata.</p>';
-            container.classList.remove('hidden'); contactContainer.classList.remove('hidden');
+            if(!currentId)return;
+            const p=appState.patients.find(x=>String(x.id)===String(currentId)); if(!p)return;
+            const clean=removeClinicalBlock(p.notes,ev.id); const hasContent=ev.extendedProps?.clinicalNote||ev.extendedProps?.clinicalOutcome;
+            p.notes=[clean,hasContent?clinicalBlockForEvent(ev):''].filter(Boolean).join('
+
+');
+            await setDoc(sharedDocument('patients_list',p.id),{notes:p.notes,updatedAt:new Date().toISOString()},{merge:true});
         }
 
         window.handleStudioEventSubmit = async function(e) {
@@ -1587,7 +1588,7 @@
             const endH = document.getElementById('studio-time-end').value;
             const centerId = document.getElementById('studio-center-select').value;
             let patientId = document.getElementById('studio-patient-select').value;
-            if (!patientId && pendingAppointmentPatientId) patientId = pendingAppointmentPatientId;
+            if(!patientId && pendingAppointmentPatientId)patientId=pendingAppointmentPatientId;
             const fee = Number(document.getElementById('studio-fee').value || 0);
             const paymentStatus = document.getElementById('studio-payment-status').value;
             const paymentMethod = document.getElementById('studio-payment-method').value;
@@ -1602,6 +1603,7 @@
             const centerColor = selectedCenter ? (selectedCenter.color || '#3f5e4e') : '#3f5e4e';
 
             let existingEv = appState.events.find(ev => ev.id === id);
+            const previousPatientId = existingEv?.extendedProps?.patientId || null;
 
             let newEv;
             if (isExternal && existingEv) {
@@ -1632,13 +1634,10 @@
             if (db && userId) {
                 try {
                     await setDoc(sharedDocument('studio_events', id), newEv);
-                } catch(e) {
-                    console.error('Errore salvataggio appuntamento:', e);
-                    showToast('Errore: appuntamento non salvato.');
-                    return;
-                }
+                    await syncEventClinicalDataToPatient(newEv, previousPatientId);
+                } catch(e){console.error('Errore salvataggio appuntamento o storico clinico:',e);showToast('Errore: salvataggio non completato.');return;}
             }
-            pendingAppointmentPatientId = null;
+            pendingAppointmentPatientId=null;
 
             closeStudioModal();
             if (calendarInstance) calendarInstance.refetchEvents();
@@ -1667,11 +1666,7 @@
         }
         window.closePatientsModal = function() { document.getElementById('patients-modal').classList.add('hidden'); }
 
-        window.openNewPatientFromRegistry = function() {
-            patientCreationContext = 'registry';
-            returnToAppointmentAfterPatient = false;
-            window.openPatientEditModal();
-        }
+        window.openNewPatientFromRegistry = function(){ patientCreationContext='registry'; window.openPatientEditModal(); }
         window.openPatientEditModal = function(pat = null) {
             const form = document.getElementById('patient-form');
             form.reset();
@@ -1696,12 +1691,11 @@
         }
         window.editPatientById = function(patientId) {
             patientCreationContext = 'registry';
-            returnToAppointmentAfterPatient = false;
             const patient = appState.patients.find(p => String(p.id) === String(patientId));
             if (!patient) { showToast('Paziente non trovato. Aggiorna la pagina e riprova.'); return; }
             window.openPatientEditModal(patient);
         }
-        window.closePatientEditModal = function() { document.getElementById('patient-edit-modal').classList.add('hidden'); if (returnToAppointmentAfterPatient) returnToAppointmentAfterPatient = false; }
+        window.closePatientEditModal = function() { document.getElementById('patient-edit-modal').classList.add('hidden'); }
 
         window.handlePatientSubmit = async function(e) {
             e.preventDefault();
@@ -1726,32 +1720,15 @@
                 await setDoc(sharedDocument('patients_list', id), updatedPatient, { merge: true });
                 const idx = appState.patients.findIndex(p => String(p.id) === String(id));
                 if (idx >= 0) appState.patients[idx] = updatedPatient; else appState.patients.push(updatedPatient);
-                renderPatientsList();
-                populatePatientDropdown();
-                if (patientCreationContext === 'appointment') {
-                    pendingAppointmentPatientId = id;
-                    const patientSelect = document.getElementById('studio-patient-select');
-                    patientSelect.value = id;
-                    if (patientSelect.value !== id) {
-                        const option = new Option(updatedPatient.name, id, true, true);
-                        patientSelect.add(option);
-                    }
-                    patientSelect.value = id;
-                    onPatientSelectChange();
-                    document.getElementById('patient-edit-modal').classList.add('hidden');
-                    returnToAppointmentAfterPatient = false;
-                    showToast('Paziente creato e associato. Ora salva l’appuntamento.');
-                } else if (patientCreationContext === 'appointment-edit') {
-                    document.getElementById('studio-patient-select').value = id;
-                    showPatientClinicalSummary(id);
-                    document.getElementById('patient-edit-modal').classList.add('hidden');
-                    returnToAppointmentAfterPatient = false;
-                    showToast('Scheda paziente aggiornata.');
-                } else {
-                    closePatientEditModal();
-                    showToast('Paziente salvato con successo!');
-                }
-                patientCreationContext = 'registry';
+                renderPatientsList(); populatePatientDropdown();
+                if(patientCreationContext==='appointment'){
+                    pendingAppointmentPatientId=id; const sel=document.getElementById('studio-patient-select'); sel.value=id;
+                    if(sel.value!==id)sel.add(new Option(updatedPatient.name,id,true,true)); sel.value=id; onPatientSelectChange();
+                    document.getElementById('patient-edit-modal').classList.add('hidden'); showToast('Paziente creato e associato. Ora salva l’appuntamento.');
+                } else if(patientCreationContext==='appointment-edit'){
+                    document.getElementById('studio-patient-select').value=id; showPatientClinicalSummary(id); document.getElementById('patient-edit-modal').classList.add('hidden'); showToast('Scheda paziente aggiornata.');
+                } else {closePatientEditModal();showToast('Paziente salvato con successo!');}
+                patientCreationContext='registry';
             } catch (err) {
                 console.error('Errore salvataggio paziente:', err);
                 showToast('Errore: il paziente non è stato salvato. Controlla i permessi Firestore.');
@@ -1786,7 +1763,7 @@
             document.getElementById('patient-history-title').textContent = `Storico: ${pat.name}`;
             
             const listEl = document.getElementById('patient-history-list');
-            const patientEvents = appState.events.filter(ev => ev.extendedProps?.patientId === patientId || (ev.title && ev.title.toLowerCase().includes(pat.name.toLowerCase())));
+            const patientEvents = appState.events.filter(ev => String(ev.extendedProps?.patientId || '') === String(patientId) || (!ev.extendedProps?.patientId && ev.title && ev.title.toLowerCase().includes(pat.name.toLowerCase())));
 
             if (patientEvents.length === 0) {
                 listEl.innerHTML = `<p class="text-xs text-slate-400 italic text-center py-6">Nessun appuntamento passato o futuro registrato per questo paziente.</p>`;
@@ -1801,7 +1778,7 @@
                         <div class="p-3.5 bg-slate-50 border border-slate-200 rounded-2xl flex items-center justify-between text-xs">
                             <div class="space-y-1">
                                 <div class="flex items-center gap-2">
-                                    <strong class="font-editorial text-slate-900 text-sm italic">${ev.title}</strong>
+                                    <strong class="font-editorial text-slate-900 text-sm italic">${ev.title}</strong><span class="text-[10px] text-purple-700 font-bold">Associato a: ${pat.name}</span>
                                     <span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${isPast ? 'bg-slate-200 text-slate-700' : 'bg-emerald-100 text-emerald-800'}">${isPast ? 'Passato' : 'Futuro'}</span>
                                 </div>
                                 <p class="text-slate-500"><i class="fa-regular fa-calendar text-nature-600 mr-1"></i> ${dateStr} alle ${timeStr} • <span class="font-medium text-slate-700">${ev.extendedProps?.centerName || 'Studio Privato'}</span></p>
@@ -2572,9 +2549,8 @@
         }
         window.openMergePatientsModal = function() {
             const options=[...appState.patients].sort((a,b)=>a.name.localeCompare(b.name)).map(p=>`<option value="${p.id}">${p.name}</option>`).join('');
-            document.getElementById('merge-keep-patient').innerHTML=options;
-            document.getElementById('merge-remove-patient').innerHTML=options;
-            if(appState.patients.length>1) document.getElementById('merge-remove-patient').selectedIndex=1;
+            document.getElementById('merge-keep-patient').innerHTML='<option value="">-- scegli la scheda da mantenere --</option>'+options;
+            document.getElementById('merge-remove-patient').innerHTML='<option value="">-- scegli il duplicato da incorporare --</option>'+options;
             const pairs=suggestedDuplicatePairs();
             document.getElementById('merge-suggestions').innerHTML = pairs.length
               ? `<div class="font-bold text-xs text-purple-900">Possibili duplicati trovati</div>${pairs.map(x=>`<button type="button" onclick="selectMergePair('${x.a.id}','${x.b.id}')" class="w-full p-3 border border-purple-200 bg-purple-50 rounded-2xl flex justify-between text-left"><span><strong>${x.a.name}</strong> ↔ <strong>${x.b.name}</strong></span><span class="font-bold">${Math.round(x.score*100)}%</span></button>`).join('')}`
@@ -2599,7 +2575,7 @@
             const keep=appState.patients.find(p=>p.id===document.getElementById('merge-keep-patient').value);
             const rem=appState.patients.find(p=>p.id===document.getElementById('merge-remove-patient').value);
             const box=document.getElementById('merge-comparison'), summary=document.getElementById('merge-summary');
-            if(!keep||!rem||keep.id===rem.id){box.innerHTML='<div class="p-3 bg-rose-50 text-rose-800 rounded-2xl">Seleziona due pazienti diversi.</div>';summary.innerHTML='';return;}
+            if(!keep||!rem||keep.id===rem.id){box.innerHTML='<div class="p-3 bg-rose-50 text-rose-800 rounded-2xl">Clicca prima su una delle possibili corrispondenze oppure seleziona manualmente due schede diverse.</div>';summary.innerHTML='';return;}
             box.innerHTML=[mergeChoiceRow('phone','Telefono',keep,rem),mergeChoiceRow('email','Email',keep,rem),mergeChoiceRow('notes','Note',keep,rem,true),mergeChoiceRow('currentIssues','Problemi attuali',keep,rem,true),mergeChoiceRow('goals','Obiettivi terapeutici',keep,rem,true),mergeChoiceRow('allergies','Allergie',keep,rem,true),mergeChoiceRow('medications','Farmaci',keep,rem,true)].join('');
             const eventCount=appState.events.filter(ev=>ev.extendedProps?.patientId===rem.id).length;
             summary.innerHTML=`<strong>Risultato:</strong> resterà la scheda <strong>${keep.name}</strong>. La scheda <strong>${rem.name}</strong> verrà eliminata. ${eventCount} appuntamenti saranno riassegnati. I tag saranno uniti senza duplicati. Per ogni dato diverso usa le scelte sopra; nulla viene sovrascritto senza una scelta visibile.`;
@@ -2620,7 +2596,7 @@
             keep.updatedAt=new Date().toISOString();
             const affected=appState.events.filter(ev=>ev.extendedProps?.patientId===removeId);
             try {
-                for(const ev of affected){ev.extendedProps={...(ev.extendedProps||{}),patientId:keepId}; await setDoc(sharedDocument('studio_events',ev.id),ev,{merge:true});}
+                for(const ev of affected){ev.extendedProps={...(ev.extendedProps||{}),patientId:keepId}; const autoOld=`Visita / Trattamento - ${rem.name}`; if((ev.title||'').trim()===autoOld)ev.title=`Visita / Trattamento - ${keep.name}`; await setDoc(sharedDocument('studio_events',ev.id),ev,{merge:true});}
                 await setDoc(sharedDocument('patients_list',keepId),keep,{merge:true});
                 await deleteDoc(sharedDocument('patients_list',removeId));
                 appState.patients=appState.patients.filter(p=>p.id!==removeId);
