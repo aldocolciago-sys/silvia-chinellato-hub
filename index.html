@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Silvia Chinellato | Osteopata & Idrocolonterapia</title>
-    <meta name="app-build" content="shared-data-v4.1-patient-crud-migration-fixed">
+    <meta name="app-build" content="shared-data-v4.2-unified-patient-smart-merge">
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -659,7 +659,7 @@
             <div class="px-5 sm:px-6 py-4 border-b border-amber-100 flex items-center justify-between bg-amber-50/50">
                 <h3 class="font-editorial text-base sm:text-lg font-bold text-slate-900 italic">Anagrafe & Anamnesi Pazienti</h3>
                 <div class="flex items-center gap-2">
-                    <button onclick="openPatientEditModal()" class="px-3 py-2 bg-amber-600 hover:bg-amber-700 text-white font-semibold rounded-xl text-xs transition">Nuovo Paziente</button><button onclick="openMergePatientsModal()" class="px-3 py-2 bg-purple-600 hover:bg-purple-700 text-white font-semibold rounded-xl text-xs transition"><i class="fa-solid fa-code-merge mr-1"></i>Unisci duplicati</button>
+                    <button onclick="patientCreationContext='registry'; openPatientEditModal()" class="px-3 py-2 bg-amber-600 hover:bg-amber-700 text-white font-semibold rounded-xl text-xs transition">Nuovo Paziente</button><button onclick="openMergePatientsModal()" class="px-3 py-2 bg-purple-600 hover:bg-purple-700 text-white font-semibold rounded-xl text-xs transition"><i class="fa-solid fa-code-merge mr-1"></i>Unisci duplicati</button>
                     <button type="button" onclick="closePatientsModal()" class="text-slate-400 hover:text-slate-600 w-8 h-8 rounded-full flex items-center justify-center"><i class="fa-solid fa-xmark"></i></button>
                 </div>
             </div>
@@ -930,13 +930,20 @@
 
     <!-- MERGE PATIENTS MODAL -->
     <div id="merge-patients-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-md hidden z-[80] flex items-center justify-center p-4">
-      <div class="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-xl overflow-hidden flex flex-col max-h-[92vh]">
-        <div class="px-5 py-4 border-b border-purple-100 bg-purple-50 flex items-center justify-between"><div><h3 class="font-editorial text-lg font-bold italic">Unisci pazienti duplicati</h3><p class="text-[10px] text-slate-500">Tutti gli appuntamenti saranno assegnati al paziente mantenuto</p></div><button onclick="closeMergePatientsModal()" class="w-10 h-10 rounded-full bg-white"><i class="fa-solid fa-xmark"></i></button></div>
-        <div class="p-5 space-y-4 overflow-y-auto">
-          <div><label class="text-xs font-bold">Paziente da mantenere</label><select id="merge-keep-patient" class="w-full mt-1 px-4 py-3 border rounded-2xl text-sm"></select></div>
-          <div><label class="text-xs font-bold">Duplicato da incorporare</label><select id="merge-remove-patient" class="w-full mt-1 px-4 py-3 border rounded-2xl text-sm"></select></div>
-          <div class="p-3 bg-amber-50 border border-amber-200 rounded-2xl text-xs">I campi vuoti del paziente mantenuto saranno completati con quelli del duplicato. Note, tag e storico saranno preservati.</div>
-          <button onclick="mergeSelectedPatients()" class="w-full py-3 bg-purple-700 text-white font-bold rounded-2xl">Unisci pazienti</button>
+      <div class="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-3xl overflow-hidden flex flex-col max-h-[92vh]">
+        <div class="px-5 py-4 border-b border-purple-100 bg-purple-50 flex items-center justify-between">
+          <div><h3 class="font-editorial text-lg font-bold italic">Unisci pazienti duplicati</h3><p class="text-[10px] text-slate-500">Confronta i dati e scegli esplicitamente cosa conservare</p></div>
+          <button onclick="closeMergePatientsModal()" class="w-10 h-10 rounded-full bg-white"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div class="p-5 space-y-4 overflow-y-auto flex-1">
+          <div id="merge-suggestions" class="space-y-2"></div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div><label class="text-xs font-bold">Scheda principale da mantenere</label><select id="merge-keep-patient" onchange="renderMergeComparison()" class="w-full mt-1 px-4 py-3 border rounded-2xl text-sm"></select></div>
+            <div><label class="text-xs font-bold">Duplicato da incorporare</label><select id="merge-remove-patient" onchange="renderMergeComparison()" class="w-full mt-1 px-4 py-3 border rounded-2xl text-sm"></select></div>
+          </div>
+          <div id="merge-comparison" class="space-y-3"></div>
+          <div id="merge-summary" class="p-4 bg-slate-50 border border-slate-200 rounded-2xl text-xs"></div>
+          <button onclick="mergeSelectedPatients()" class="w-full py-3 bg-purple-700 text-white font-bold rounded-2xl">Conferma unione</button>
         </div>
       </div>
     </div>
@@ -1548,9 +1555,11 @@
 
         window.closeStudioModal = function() { document.getElementById('studio-modal').classList.add('hidden'); }
 
+        let patientCreationContext = 'registry';
         window.openQuickPatientModal = function() {
-            document.getElementById('quick-patient-form').reset();
-            document.getElementById('quick-patient-modal').classList.remove('hidden');
+            patientCreationContext = 'appointment';
+            window.openPatientEditModal();
+            document.getElementById('patient-edit-modal-title').textContent = 'Nuovo Paziente e Associa';
         }
         window.closeQuickPatientModal = function() {
             document.getElementById('quick-patient-modal').classList.add('hidden');
@@ -1747,6 +1756,7 @@
             document.getElementById('patient-edit-modal').classList.remove('hidden');
         }
         window.editPatientById = function(patientId) {
+            patientCreationContext = 'registry';
             const patient = appState.patients.find(p => String(p.id) === String(patientId));
             if (!patient) { showToast('Paziente non trovato. Aggiorna la pagina e riprova.'); return; }
             window.openPatientEditModal(patient);
@@ -1777,7 +1787,14 @@
                 const idx = appState.patients.findIndex(p => String(p.id) === String(id));
                 if (idx >= 0) appState.patients[idx] = updatedPatient; else appState.patients.push(updatedPatient);
                 closePatientEditModal(); renderPatientsList(); populatePatientDropdown();
-                showToast('Paziente salvato con successo!');
+                if (patientCreationContext === 'appointment') {
+                    document.getElementById('studio-patient-select').value = id;
+                    onPatientSelectChange();
+                    showToast('Paziente salvato e associato all’appuntamento!');
+                } else {
+                    showToast('Paziente salvato con successo!');
+                }
+                patientCreationContext = 'registry';
             } catch (err) {
                 console.error('Errore salvataggio paziente:', err);
                 showToast('Errore: il paziente non è stato salvato. Controlla i permessi Firestore.');
@@ -2579,27 +2596,81 @@
         window.selectSuggestedPatient = function(id) { document.getElementById('studio-patient-select').value=id; onPatientSelectChange(); document.getElementById('patient-match-suggestions').classList.add('hidden'); }
         window.createPatientFromImportedEvent = function() {
             const title=document.getElementById('studio-title').value.replace(/^visita\s*\/\s*trattamento\s*-\s*/i,'').trim();
-            openQuickPatientModal(); document.getElementById('quick-patient-name').value=title;
+            openQuickPatientModal(); document.getElementById('patient-name').value=title;
+        }
+        function duplicatePatientScore(a,b) {
+            const nameScore = patientMatchScore(a.name,b.name);
+            const digits = v => (v||'').replace(/\D/g,'');
+            const phoneScore = digits(a.phone) && digits(a.phone) === digits(b.phone) ? 1 : 0;
+            const emailScore = a.email && b.email && a.email.toLowerCase() === b.email.toLowerCase() ? 1 : 0;
+            return Math.max(nameScore, phoneScore, emailScore, nameScore * 0.75 + phoneScore * 0.15 + emailScore * 0.1);
+        }
+        function suggestedDuplicatePairs() {
+            const pairs=[];
+            for(let i=0;i<appState.patients.length;i++) for(let j=i+1;j<appState.patients.length;j++) {
+                const score=duplicatePatientScore(appState.patients[i],appState.patients[j]);
+                if(score>=0.55) pairs.push({a:appState.patients[i],b:appState.patients[j],score});
+            }
+            return pairs.sort((x,y)=>y.score-x.score).slice(0,8);
         }
         window.openMergePatientsModal = function() {
             const options=[...appState.patients].sort((a,b)=>a.name.localeCompare(b.name)).map(p=>`<option value="${p.id}">${p.name}</option>`).join('');
-            document.getElementById('merge-keep-patient').innerHTML=options; document.getElementById('merge-remove-patient').innerHTML=options;
+            document.getElementById('merge-keep-patient').innerHTML=options;
+            document.getElementById('merge-remove-patient').innerHTML=options;
             if(appState.patients.length>1) document.getElementById('merge-remove-patient').selectedIndex=1;
+            const pairs=suggestedDuplicatePairs();
+            document.getElementById('merge-suggestions').innerHTML = pairs.length
+              ? `<div class="font-bold text-xs text-purple-900">Possibili duplicati trovati</div>${pairs.map(x=>`<button type="button" onclick="selectMergePair('${x.a.id}','${x.b.id}')" class="w-full p-3 border border-purple-200 bg-purple-50 rounded-2xl flex justify-between text-left"><span><strong>${x.a.name}</strong> ↔ <strong>${x.b.name}</strong></span><span class="font-bold">${Math.round(x.score*100)}%</span></button>`).join('')}`
+              : '<div class="p-3 bg-slate-50 rounded-2xl text-xs text-slate-500">Nessun duplicato evidente. Puoi comunque scegliere manualmente due schede.</div>';
+            renderMergeComparison();
             document.getElementById('merge-patients-modal').classList.remove('hidden');
         }
         window.closeMergePatientsModal = function(){document.getElementById('merge-patients-modal').classList.add('hidden');}
+        window.selectMergePair = function(a,b) {
+            document.getElementById('merge-keep-patient').value=a;
+            document.getElementById('merge-remove-patient').value=b;
+            renderMergeComparison();
+        }
+        function mergeChoiceRow(field,label,a,b,multiline=false) {
+            const av=a?.[field] || '', bv=b?.[field] || '';
+            if(!av && !bv) return '';
+            if(av===bv) return `<div class="p-3 bg-emerald-50 rounded-2xl"><strong>${label}:</strong> valore identico, verrà mantenuto.</div>`;
+            const esc=v=>String(v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');
+            return `<div class="p-3 border rounded-2xl"><div class="font-bold mb-2">${label}</div><label class="block mb-2"><input type="radio" name="merge-${field}" value="keep" checked> Mantieni: <span class="text-slate-600">${esc(av||'(vuoto)')}</span></label><label class="block mb-2"><input type="radio" name="merge-${field}" value="remove"> Usa duplicato: <span class="text-slate-600">${esc(bv||'(vuoto)')}</span></label>${multiline&&av&&bv?`<label class="block"><input type="radio" name="merge-${field}" value="combine"> Combina entrambi senza perdere contenuto</label>`:''}</div>`;
+        }
+        window.renderMergeComparison = function() {
+            const keep=appState.patients.find(p=>p.id===document.getElementById('merge-keep-patient').value);
+            const rem=appState.patients.find(p=>p.id===document.getElementById('merge-remove-patient').value);
+            const box=document.getElementById('merge-comparison'), summary=document.getElementById('merge-summary');
+            if(!keep||!rem||keep.id===rem.id){box.innerHTML='<div class="p-3 bg-rose-50 text-rose-800 rounded-2xl">Seleziona due pazienti diversi.</div>';summary.innerHTML='';return;}
+            box.innerHTML=[mergeChoiceRow('phone','Telefono',keep,rem),mergeChoiceRow('email','Email',keep,rem),mergeChoiceRow('notes','Note',keep,rem,true),mergeChoiceRow('currentIssues','Problemi attuali',keep,rem,true),mergeChoiceRow('goals','Obiettivi terapeutici',keep,rem,true),mergeChoiceRow('allergies','Allergie',keep,rem,true),mergeChoiceRow('medications','Farmaci',keep,rem,true)].join('');
+            const eventCount=appState.events.filter(ev=>ev.extendedProps?.patientId===rem.id).length;
+            summary.innerHTML=`<strong>Risultato:</strong> resterà la scheda <strong>${keep.name}</strong>. La scheda <strong>${rem.name}</strong> verrà eliminata. ${eventCount} appuntamenti saranno riassegnati. I tag saranno uniti senza duplicati. Per ogni dato diverso usa le scelte sopra; nulla viene sovrascritto senza una scelta visibile.`;
+        }
+        function selectedMergeValue(field,keep,rem) {
+            const choice=document.querySelector(`input[name="merge-${field}"]:checked`)?.value || 'keep';
+            const a=keep[field]||'', b=rem[field]||'';
+            if(choice==='remove') return b;
+            if(choice==='combine') return [a,b].filter(Boolean).filter((v,i,x)=>x.indexOf(v)===i).join('\n\n');
+            return a || b;
+        }
         window.mergeSelectedPatients = async function() {
             const keepId=document.getElementById('merge-keep-patient').value, removeId=document.getElementById('merge-remove-patient').value;
             if(!keepId||!removeId||keepId===removeId){showToast('Seleziona due pazienti diversi.');return;}
             const keep=appState.patients.find(p=>p.id===keepId), rem=appState.patients.find(p=>p.id===removeId); if(!keep||!rem)return;
-            const textFields=['phone','email','currentIssues','goals','allergies','medications']; textFields.forEach(k=>{if(!keep[k]&&rem[k])keep[k]=rem[k];});
-            keep.notes=[keep.notes,rem.notes].filter(Boolean).filter((v,i,a)=>a.indexOf(v)===i).join('\n\n');
+            ['phone','email','notes','currentIssues','goals','allergies','medications'].forEach(field=>keep[field]=selectedMergeValue(field,keep,rem));
             keep.tags=[...new Set([...(Array.isArray(keep.tags)?keep.tags:[]),...(Array.isArray(rem.tags)?rem.tags:[])])];
+            keep.updatedAt=new Date().toISOString();
             const affected=appState.events.filter(ev=>ev.extendedProps?.patientId===removeId);
-            for(const ev of affected){ev.extendedProps={...(ev.extendedProps||{}),patientId:keepId}; await setDoc(sharedDocument('studio_events',ev.id),ev);}
-            await setDoc(sharedDocument('patients_list',keepId),keep); await deleteDoc(sharedDocument('patients_list',removeId));
-            appState.patients=appState.patients.filter(p=>p.id!==removeId); closeMergePatientsModal(); renderPatientsList(); populatePatientDropdown(); if(calendarInstance)calendarInstance.refetchEvents(); showToast('Pazienti uniti con successo.');
+            try {
+                for(const ev of affected){ev.extendedProps={...(ev.extendedProps||{}),patientId:keepId}; await setDoc(sharedDocument('studio_events',ev.id),ev,{merge:true});}
+                await setDoc(sharedDocument('patients_list',keepId),keep,{merge:true});
+                await deleteDoc(sharedDocument('patients_list',removeId));
+                appState.patients=appState.patients.filter(p=>p.id!==removeId);
+                closeMergePatientsModal(); renderPatientsList(); populatePatientDropdown(); if(calendarInstance)calendarInstance.refetchEvents(); showToast('Pazienti uniti con successo.');
+            } catch(err) { console.error('Errore merge pazienti:',err); showToast('Errore durante l’unione: nessuna scheda è stata rimossa localmente.'); }
         }
+
         async function ensureCenterFinanceDefaults() {
             for(const center of appState.centers){if(typeof center.includeInFinance==='undefined'){center.includeInFinance=true; await setDoc(sharedDocument('centers_list',center.id),center,{merge:true}); await setDoc(doc(db,'artifacts',appId,'public','data','centers_list',center.id),center,{merge:true});}}
         }
