@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Silvia Chinellato | Osteopata & Idrocolonterapia</title>
-    <meta name="app-build" content="shared-data-v24-history-modal-stack-fix">
+    <meta name="app-build" content="shared-data-v25-non-clinical-calendar">
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -524,15 +524,16 @@
             <form id="studio-event-form" class="p-5 sm:p-6 space-y-4 overflow-y-auto" onsubmit="handleStudioEventSubmit(event)">
                 <input type="hidden" id="studio-edit-event-id">
                 <input type="hidden" id="studio-event-is-external" value="false">
+                <div id="non-clinical-event-banner" class="hidden p-3.5 bg-sky-50 border border-sky-300 rounded-2xl text-sky-950"><div class="flex items-start gap-2.5"><i class="fa-solid fa-house mt-0.5 text-sky-700"></i><div><p class="text-xs font-bold">Evento da Calendario non Clinico</p><p class="text-[10px] mt-1">L’evento occupa l’agenda e partecipa al controllo sovrapposizioni, ma non entra nella gestione pazienti o nelle statistiche professionali.</p></div></div></div>
                 <div id="external-detached-banner" class="hidden p-3.5 bg-amber-50 border border-amber-300 rounded-2xl text-amber-950"><div class="flex items-start gap-2.5"><i class="fa-solid fa-thumbtack mt-0.5 text-amber-700"></i><div class="space-y-1"><p class="text-xs font-bold">Appuntamento mantenuto manualmente</p><p class="text-[11px] leading-relaxed">Questo appuntamento è stato cancellato dal calendario originale del poliambulatorio, ma è stato mantenuto nella tua agenda personale.</p><p id="external-detached-date" class="text-[10px] font-semibold text-amber-800"></p></div></div></div>
                 <div class="space-y-1">
                     <label class="text-[11px] font-bold text-slate-600">Sede / Poliambulatorio</label>
-                    <select id="studio-center-select" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-2xl text-xs">
+                    <select id="studio-center-select" onchange="applyStudioClinicalMode(isNonClinicalCenter(this.value))" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-2xl text-xs">
                         <option value="">Studio Privato (Default)</option>
                     </select>
                 </div>
 
-                <div class="space-y-1">
+                <div id="studio-patient-section" class="space-y-1">
                     <label class="text-[11px] font-bold text-slate-600 flex items-center justify-between">
                         <span>Associa Paziente in Anagrafica</span>
                         <button type="button" onclick="openNewPatientFromAppointment()" class="text-[10px] text-nature-700 hover:underline font-bold flex items-center gap-1">
@@ -591,7 +592,7 @@
                     <p class="text-[10px] text-slate-500">Le informazioni anamnestiche si modificano dalla scheda paziente. La nota clinica della singola seduta resta nel campo dedicato qui sotto.</p>
                 </div>
 
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 bg-emerald-50/60 p-3.5 rounded-2xl border border-emerald-200">
+                <div id="studio-finance-section" class="grid grid-cols-1 sm:grid-cols-2 gap-3 bg-emerald-50/60 p-3.5 rounded-2xl border border-emerald-200">
                     <div class="space-y-1">
                         <label class="text-[11px] font-bold text-emerald-900">Compenso (€)</label>
                         <input type="number" id="studio-fee" min="0" step="0.01" placeholder="0,00" class="w-full px-4 py-3 bg-white border border-emerald-200 rounded-2xl text-xs">
@@ -609,7 +610,7 @@
                         </select>
                     </div>
                 </div>
-                <div class="space-y-2 bg-water-50/60 p-3.5 rounded-2xl border border-water-200">
+                <div id="studio-clinical-section" class="space-y-2 bg-water-50/60 p-3.5 rounded-2xl border border-water-200">
                     <label class="text-[11px] font-bold text-water-900"><i class="fa-solid fa-notes-medical mr-1"></i>Nota clinica della seduta</label>
                     <textarea id="studio-clinical-note" placeholder="Valutazione, trattamento eseguito, risposta del paziente..." class="w-full px-3 py-2.5 bg-white border border-water-200 rounded-xl text-xs h-24 resize-y"></textarea>
                     <input type="text" id="studio-clinical-outcome" placeholder="Esito / indicazioni successive" class="w-full px-3 py-2.5 bg-white border border-water-200 rounded-xl text-xs">
@@ -827,6 +828,10 @@
                         <div class="flex items-center gap-2.5 px-2">
                             <input type="checkbox" id="new-center-public" checked class="w-4 h-4 text-nature-600 rounded focus:ring-nature-500">
                             <label for="new-center-public" class="text-xs font-semibold text-slate-700">Visibile clienti</label></div><div class="flex items-center gap-2.5 px-2"><input type="checkbox" id="new-center-finance" checked class="w-4 h-4 text-emerald-600 rounded"><label for="new-center-finance" class="text-xs font-semibold text-slate-700">Includi nelle finanze</label>
+                        </div>
+                        <div class="sm:col-span-3 p-3 bg-sky-50 border border-sky-200 rounded-2xl flex items-start gap-3">
+                            <input type="checkbox" id="new-center-non-clinical" class="w-4 h-4 mt-0.5 text-sky-600 rounded focus:ring-sky-500">
+                            <label for="new-center-non-clinical" class="text-xs text-sky-950"><strong class="block">Calendario non Clinico</strong><span class="text-[10px] text-sky-800">Gli eventi restano visibili in agenda e generano conflitti, ma vengono esclusi da pazienti, richiami, storico, archivio clinico, compensi e appuntamenti senza paziente.</span></label>
                         </div>
                     </div>
                     <div class="flex justify-end gap-2 pt-1">
@@ -1532,12 +1537,35 @@
             }
         }
 
+        function isNonClinicalCenter(centerId) {
+            const center = appState.centers.find(c => String(c.id) === String(centerId || ''));
+            return center?.isNonClinicalCalendar === true;
+        }
+        function isNonClinicalEvent(eventData) {
+            return eventData?.extendedProps?.isNonClinical === true || isNonClinicalCenter(eventData?.extendedProps?.centerId);
+        }
+        function applyStudioClinicalMode(nonClinical) {
+            document.getElementById('non-clinical-event-banner').classList.toggle('hidden', !nonClinical);
+            for (const id of ['studio-patient-section','patient-contact-info-container','live-patient-notes-container','studio-finance-section','studio-clinical-section']) {
+                const el=document.getElementById(id); if(el) el.classList.toggle('hidden', nonClinical || (id.includes('patient-contact') || id.includes('live-patient')));
+            }
+            if (nonClinical) {
+                document.getElementById('studio-patient-select').value='';
+                document.getElementById('studio-fee').value='';
+                document.getElementById('studio-clinical-note').value='';
+                document.getElementById('studio-clinical-outcome').value='';
+                document.getElementById('patient-match-suggestions').classList.add('hidden');
+                document.getElementById('create-patient-from-event-btn').classList.add('hidden');
+            }
+        }
+
         window.openStudioModal = function(editEv = null) {
             pendingAppointmentPatientId = null;
             populateTimeSelects();
             populateCenterDropdown();
             const form = document.getElementById('studio-event-form');
             form.reset();
+            applyStudioClinicalMode(false);
             document.getElementById('studio-edit-event-id').value = '';
             document.getElementById('studio-event-is-external').value = 'false';
             document.getElementById('external-detached-banner').classList.add('hidden');
@@ -1614,7 +1642,9 @@
                 }
 
                 document.getElementById('studio-delete-btn').classList.remove('hidden');
-                if (editEv.id && editEv.id.startsWith('ical_') && !editEv.extendedProps?.patientId) showPatientMatchSuggestions(editEv);
+                const nonClinical = isNonClinicalEvent(editEv);
+                applyStudioClinicalMode(nonClinical);
+                if (!nonClinical && editEv.id && editEv.id.startsWith('ical_') && !editEv.extendedProps?.patientId) showPatientMatchSuggestions(editEv);
             }
 
             document.getElementById('studio-modal').classList.remove('hidden');
@@ -1766,7 +1796,7 @@
         }
         async function synchronizeClinicalSessionWithPatient(eventData, previousPatientId) {
             const record = clinicalArchiveRecord(eventData);
-            const hasClinicalContent = Boolean(record.patientId && (record.clinicalNote || record.clinicalOutcome));
+            const hasClinicalContent = Boolean(!isNonClinicalEvent(eventData) && record.patientId && (record.clinicalNote || record.clinicalOutcome));
             if (!hasClinicalContent) {
                 try { await deleteDoc(sharedDocument('clinical_sessions', eventData.id)); } catch (err) { console.warn('Nessuna seduta clinica da eliminare:', err); }
                 appState.clinicalSessions = appState.clinicalSessions.filter(item => item.eventId !== eventData.id);
@@ -1899,6 +1929,8 @@
             const end = `${date}T${endH}:00`;
 
             const selectedCenter = appState.centers.find(c => c.id === centerId);
+            const nonClinical = selectedCenter?.isNonClinicalCalendar === true;
+            if (nonClinical) { patientId = ''; }
             const centerName = selectedCenter ? selectedCenter.name : 'Studio Privato';
             const centerColor = selectedCenter ? (selectedCenter.color || '#3f5e4e') : '#3f5e4e';
 
@@ -1910,7 +1942,7 @@
                     ...existingEv,
                     extendedProps: {
                         ...existingEv.extendedProps,
-                        patientId: patientId || null, fee, paymentStatus, paymentMethod, clinicalNote, clinicalOutcome
+                        patientId: nonClinical ? null : (patientId || null), fee: nonClinical ? 0 : fee, paymentStatus: nonClinical ? 'cancelled' : paymentStatus, paymentMethod: nonClinical ? null : paymentMethod, clinicalNote: nonClinical ? '' : clinicalNote, clinicalOutcome: nonClinical ? '' : clinicalOutcome, isNonClinical: nonClinical
                     }
                 };
             } else {
@@ -1922,7 +1954,7 @@
                     backgroundColor: centerColor,
                     borderColor: centerColor,
                     textColor: '#ffffff',
-                    extendedProps: { centerId: centerId || null, centerName: centerName, patientId: patientId || null, fee, paymentStatus, paymentMethod, clinicalNote, clinicalOutcome } 
+                    extendedProps: { centerId: centerId || null, centerName: centerName, patientId: nonClinical ? null : (patientId || null), fee: nonClinical ? 0 : fee, paymentStatus: nonClinical ? 'cancelled' : paymentStatus, paymentMethod: nonClinical ? null : paymentMethod, clinicalNote: nonClinical ? '' : clinicalNote, clinicalOutcome: nonClinical ? '' : clinicalOutcome, isNonClinical: nonClinical } 
                 };
             }
 
@@ -2401,8 +2433,9 @@
             const bookingUrl = document.getElementById('new-center-booking').value.trim();
             const icalUrl = document.getElementById('new-center-ical').value.trim();
             const showPublic = document.getElementById('new-center-public').checked;
-            const includeInFinance = document.getElementById('new-center-finance').checked;
-            const newC = { id, name, service, icon, color, address, phone, siteUrl, bookingUrl, icalUrl, showPublic, includeInFinance };
+            const isNonClinicalCalendar = document.getElementById('new-center-non-clinical').checked;
+            const includeInFinance = isNonClinicalCalendar ? false : document.getElementById('new-center-finance').checked;
+            const newC = { id, name, service, icon, color, address, phone, siteUrl, bookingUrl, icalUrl, showPublic, includeInFinance, isNonClinicalCalendar };
             const idx = appState.centers.findIndex(c => c.id === id);
             if (idx >= 0) {
                 appState.centers[idx] = newC;
@@ -2436,7 +2469,7 @@
                         </div>
                         <div>
                             <strong class="text-slate-900 font-editorial italic text-sm">${c.name}</strong>
-                            <p class="text-slate-500 text-[11px]">${c.service} ${c.icalUrl ? '• iCal attivo' : ''}</p>
+                            <p class="text-slate-500 text-[11px]">${c.service} ${c.icalUrl ? '• iCal attivo' : ''} ${c.isNonClinicalCalendar ? '• 🏠 Non Clinico' : ''}</p>
                         </div>
                     </div>
                     <div class="flex items-center gap-1.5">
@@ -2475,6 +2508,7 @@
             document.getElementById('new-center-ical').value = c.icalUrl || '';
             document.getElementById('new-center-public').checked = c.showPublic !== false;
             document.getElementById('new-center-finance').checked = c.includeInFinance !== false;
+            document.getElementById('new-center-non-clinical').checked = c.isNonClinicalCalendar === true;
             document.getElementById('center-form-title').textContent = 'Modifica Poliambulatorio';
             document.getElementById('center-submit-btn-text').textContent = 'Aggiorna';
             document.getElementById('center-cancel-edit').classList.remove('hidden');
@@ -2485,6 +2519,7 @@
             document.getElementById('center-edit-id').value = '';
             document.getElementById('new-center-color').value = '#3f5e4e';
             document.getElementById('new-center-finance').checked = true;
+            document.getElementById('new-center-non-clinical').checked = false;
             const colorButtons = document.querySelectorAll('#center-color-preset-container button');
             colorButtons.forEach((b, idx) => {
                 if (idx === 0) {
@@ -2779,7 +2814,7 @@
                                     backgroundColor: centerColor,
                                     borderColor: centerColor,
                                     textColor: '#ffffff',
-                                    extendedProps: { centerId: center.id, centerName: center.name, patientId: matchedPatientId }
+                                    extendedProps: { centerId: center.id, centerName: center.name, patientId: nonClinical ? null : matchedPatientId, isNonClinical: nonClinical, fee: nonClinical ? 0 : (existingEv?.extendedProps?.fee || 0), paymentStatus: nonClinical ? 'cancelled' : (existingEv?.extendedProps?.paymentStatus || 'paid') }
                                 };
 
                                 const existingIdx = appState.events.findIndex(e => e.id === eventId);
@@ -3047,7 +3082,7 @@
                 if ((ev.start || '').slice(0,7) !== month || ev.extendedProps?.paymentStatus === 'cancelled') return false;
                 const centerId = ev.extendedProps?.centerId;
                 const center = centerId ? appState.centers.find(c => c.id === centerId) : null;
-                return !center || center.includeInFinance !== false;
+                return !isNonClinicalEvent(ev) && (!center || center.includeInFinance !== false);
             });
             const total = monthEvents.reduce((sum, ev) => sum + Number(ev.extendedProps?.fee || 0), 0);
             const paid = monthEvents.filter(ev => ev.extendedProps?.paymentStatus !== 'unpaid').reduce((sum, ev) => sum + Number(ev.extendedProps?.fee || 0), 0);
@@ -3146,6 +3181,7 @@
         }
         window.showPatientMatchSuggestions = function(eventData) {
             const box=document.getElementById('patient-match-suggestions'), createBtn=document.getElementById('create-patient-from-event-btn');
+            if (isNonClinicalEvent(eventData)) { box.classList.add('hidden'); createBtn.classList.add('hidden'); return; }
             const candidates=appState.patients.map(p=>({p,score:patientMatchScore(eventData.title,p.name)})).filter(x=>x.score>=0.35).sort((a,b)=>b.score-a.score).slice(0,5);
             box.classList.remove('hidden'); createBtn.classList.remove('hidden');
             box.innerHTML=candidates.length?`<p class="font-bold text-water-900 mb-2">Possibili corrispondenze</p>${candidates.map(x=>`<button type="button" onclick="selectSuggestedPatient('${x.p.id}')" class="w-full flex justify-between p-2 mb-1 bg-white rounded-xl border"><span>${x.p.name}</span><span class="font-bold">${Math.round(x.score*100)}%</span></button>`).join('')}`:'<p>Nessuna corrispondenza affidabile. Puoi creare un nuovo paziente dai dati dell’evento.</p>';
@@ -3239,7 +3275,7 @@
         }
 
         function getUnassignedEvents() {
-            return (appState.events || []).filter(ev => !String(ev.extendedProps?.patientId || '').trim());
+            return (appState.events || []).filter(ev => !isNonClinicalEvent(ev) && !String(ev.extendedProps?.patientId || '').trim());
         }
         function getEventPatientSuggestions(eventData) {
             return appState.patients.map(patient => ({ patient, score: patientMatchScore(eventData.title || '', patient.name || '') }))
@@ -3300,7 +3336,7 @@
                 treatments: structuredClone(appState.treatments || []), news: structuredClone(appState.news || []),
                 preparations: structuredClone(appState.preparations || [])
             };
-            return { schema: BACKUP_SCHEMA, schemaVersion: BACKUP_SCHEMA_VERSION, appBuild: 'v22', createdAt, exportedBy: appState.currentUserEmail || null, counts: backupCounts(data), data };
+            return { schema: BACKUP_SCHEMA, schemaVersion: BACKUP_SCHEMA_VERSION, appBuild: 'v25', createdAt, exportedBy: appState.currentUserEmail || null, counts: backupCounts(data), data };
         }
         function renderBackupDashboard() {
             const counts = backupCounts(appState);
@@ -3351,7 +3387,13 @@
         }
 
         async function ensureCenterFinanceDefaults() {
-            for(const center of appState.centers){if(typeof center.includeInFinance==='undefined'){center.includeInFinance=true; await setDoc(sharedDocument('centers_list',center.id),center,{merge:true}); await setDoc(doc(db,'artifacts',appId,'public','data','centers_list',center.id),center,{merge:true});}}
+            for(const center of appState.centers){
+                let changed=false;
+                if(typeof center.isNonClinicalCalendar==='undefined'){center.isNonClinicalCalendar=false;changed=true;}
+                if(typeof center.includeInFinance==='undefined'){center.includeInFinance=!center.isNonClinicalCalendar;changed=true;}
+                if(center.isNonClinicalCalendar && center.includeInFinance!==false){center.includeInFinance=false;changed=true;}
+                if(changed){await setDoc(sharedDocument('centers_list',center.id),center,{merge:true});await setDoc(doc(db,'artifacts',appId,'public','data','centers_list',center.id),center,{merge:true});}
+            }
         }
 
         function checkCalendarConflicts() {
@@ -3437,8 +3479,9 @@
                         }
 
                         const isDetached=ev.extendedProps?.detachedFromExternal===true;
-                        let titlePrefix=hasConflict?'⚠️ [CONFLITTO] ':(isDetached?'📌 [MANTENUTO] ':'');
-                        let cleanTitle=(ev.title||'').replace('⚠️ [CONFLITTO] ','').replace('📌 [MANTENUTO] ','');
+                        const nonClinical=isNonClinicalEvent(ev);
+                        let titlePrefix=hasConflict?'⚠️ [CONFLITTO] ':(nonClinical?'🏠 [NON CLINICO] ':(isDetached?'📌 [MANTENUTO] ':''));
+                        let cleanTitle=(ev.title||'').replace('⚠️ [CONFLITTO] ','').replace('🏠 [NON CLINICO] ','').replace('📌 [MANTENUTO] ','');
                         return { 
                             ...ev, 
                             title: titlePrefix + cleanTitle,
@@ -3458,7 +3501,7 @@
                     } else {
                         openStudioModal({
                             id: info.event.id,
-                            title: info.event.title.replace('⚠️ [CONFLITTO] ', '').replace('📌 [MANTENUTO] ', ''),
+                            title: info.event.title.replace('⚠️ [CONFLITTO] ', '').replace('📌 [MANTENUTO] ', '').replace('🏠 [NON CLINICO] ', ''),
                             start: info.event.start?.toISOString(),
                             end: info.event.end?.toISOString(),
                             extendedProps: info.event.extendedProps
