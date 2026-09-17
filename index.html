@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Silvia Chinellato | Osteopata & Idrocolonterapia</title>
-    <meta name="app-build" content="shared-data-v15-external-deletion-confirm-fix">
+    <meta name="app-build" content="shared-data-v16-detached-event-visibility">
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -516,7 +516,7 @@
             <form id="studio-event-form" class="p-5 sm:p-6 space-y-4 overflow-y-auto" onsubmit="handleStudioEventSubmit(event)">
                 <input type="hidden" id="studio-edit-event-id">
                 <input type="hidden" id="studio-event-is-external" value="false">
-                
+                <div id="external-detached-banner" class="hidden p-3.5 bg-amber-50 border border-amber-300 rounded-2xl text-amber-950"><div class="flex items-start gap-2.5"><i class="fa-solid fa-thumbtack mt-0.5 text-amber-700"></i><div class="space-y-1"><p class="text-xs font-bold">Appuntamento mantenuto manualmente</p><p class="text-[11px] leading-relaxed">Questo appuntamento è stato cancellato dal calendario originale del poliambulatorio, ma è stato mantenuto nella tua agenda personale.</p><p id="external-detached-date" class="text-[10px] font-semibold text-amber-800"></p></div></div></div>
                 <div class="space-y-1">
                     <label class="text-[11px] font-bold text-slate-600">Sede / Poliambulatorio</label>
                     <select id="studio-center-select" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-2xl text-xs">
@@ -1438,6 +1438,8 @@
             form.reset();
             document.getElementById('studio-edit-event-id').value = '';
             document.getElementById('studio-event-is-external').value = 'false';
+            document.getElementById('external-detached-banner').classList.add('hidden');
+            document.getElementById('external-detached-date').textContent = '';
             document.getElementById('studio-delete-btn').classList.add('hidden');
             document.getElementById('studio-modal-title').textContent = 'Nuovo Appuntamento Studio / Sede';
             
@@ -1468,6 +1470,7 @@
 
             if (editEv) {
                 document.getElementById('studio-modal-title').textContent = 'Modifica / Gestisci Appuntamento';
+                if (editEv.extendedProps?.detachedFromExternal) { const d=editEv.extendedProps?.externalRemovedAt?new Date(editEv.extendedProps.externalRemovedAt):null; const label=d&&!Number.isNaN(d.getTime())?d.toLocaleString('it-IT',{dateStyle:'medium',timeStyle:'short'}):''; document.getElementById('external-detached-banner').classList.remove('hidden'); document.getElementById('external-detached-date').textContent=label?`Decisione registrata il ${label}`:'Decisione di mantenimento registrata'; }
                 document.getElementById('studio-edit-event-id').value = editEv.id;
                 document.getElementById('studio-title').value = (editEv.title || '').replace('⚠️ [CONFLITTO] ', '');
                 
@@ -2626,9 +2629,9 @@
                 if (decision==='keep' && !ev) throw new Error('Appuntamento non trovato nello stato locale');
                 try {
                     if (decision==='keep' && ev) {
-                        ev.extendedProps={...(ev.extendedProps||{}),detachedFromExternal:true,externalCalendarStatus:'Rimosso dal calendario originale e mantenuto localmente',externalRemovedAt:new Date().toISOString()};
-                        const note=[ev.extendedProps.notes,'Evento rimosso dal calendario originale e mantenuto nella propria agenda.'].filter(Boolean).join('\n');
-                        ev.extendedProps.notes=note;
+                        const keptAt=new Date(); ev.extendedProps={...(ev.extendedProps||{}),detachedFromExternal:true,externalCalendarStatus:'Cancellato dal calendario originale e mantenuto nel calendario personale',externalRemovedAt:keptAt.toISOString()};
+                        const statusNote=`[STATO CALENDARIO] Cancellato dal calendario originale e mantenuto nel calendario personale. Decisione registrata il ${keptAt.toLocaleString('it-IT',{dateStyle:'medium',timeStyle:'short'})}.`;
+                        const existingNotes=String(ev.extendedProps.notes||'').replace(/\n?\[STATO CALENDARIO\][^\n]*/g,'').trim(); ev.extendedProps.notes=[existingNotes,statusNote].filter(Boolean).join('\n');
                         await setDoc(sharedDocument('studio_events',eventId),ev,{merge:true});
                     } else if (decision==='remove') {
                         appState.events=appState.events.filter(x=>x.id!==eventId);
@@ -3014,8 +3017,9 @@
                             }
                         }
 
-                        let titlePrefix = hasConflict ? '⚠️ [CONFLITTO] ' : '';
-                        let cleanTitle = (ev.title || '').replace('⚠️ [CONFLITTO] ', '');
+                        const isDetached=ev.extendedProps?.detachedFromExternal===true;
+                        let titlePrefix=hasConflict?'⚠️ [CONFLITTO] ':(isDetached?'📌 [MANTENUTO] ':'');
+                        let cleanTitle=(ev.title||'').replace('⚠️ [CONFLITTO] ','').replace('📌 [MANTENUTO] ','');
                         return { 
                             ...ev, 
                             title: titlePrefix + cleanTitle,
@@ -3035,7 +3039,7 @@
                     } else {
                         openStudioModal({
                             id: info.event.id,
-                            title: info.event.title.replace('⚠️ [CONFLITTO] ', ''),
+                            title: info.event.title.replace('⚠️ [CONFLITTO] ', '').replace('📌 [MANTENUTO] ', ''),
                             start: info.event.start?.toISOString(),
                             end: info.event.end?.toISOString(),
                             extendedProps: info.event.extendedProps
