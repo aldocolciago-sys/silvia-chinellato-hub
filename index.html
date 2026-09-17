@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Silvia Chinellato | Osteopata & Idrocolonterapia</title>
-    <meta name="app-build" content="shared-data-v25-stable-non-clinical-calendar">
+    <meta name="app-build" content="shared-data-v26-non-clinical-visibility-exclusions">
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -830,7 +830,7 @@
                             <label for="new-center-public" class="text-xs font-semibold text-slate-700">Visibile clienti</label></div><div class="flex items-center gap-2.5 px-2"><input type="checkbox" id="new-center-finance" checked class="w-4 h-4 text-emerald-600 rounded"><label for="new-center-finance" class="text-xs font-semibold text-slate-700">Includi nelle finanze</label>
                         </div>
                         <div class="sm:col-span-3 p-3 bg-sky-50 border border-sky-200 rounded-2xl flex items-start gap-3">
-                            <input type="checkbox" id="new-center-non-clinical" class="w-4 h-4 mt-0.5 text-sky-600 rounded focus:ring-sky-500">
+                            <input type="checkbox" id="new-center-non-clinical" onchange="applyNonClinicalCenterFormState()" class="w-4 h-4 mt-0.5 text-sky-600 rounded focus:ring-sky-500">
                             <label for="new-center-non-clinical" class="text-xs text-sky-950"><strong class="block">Calendario non Clinico</strong><span class="text-[10px] text-sky-800">Gli eventi restano in agenda e generano conflitti, ma non entrano in pazienti, storico, richiami, archivio clinico, compensi o appuntamenti senza paziente.</span></label>
                         </div>
                     </div>
@@ -1332,7 +1332,7 @@
         function renderPublicCenters() {
             const grid = document.getElementById('public-centers-grid');
             if (!grid) return;
-            const visibleCenters = appState.centers.filter(c => c.showPublic !== false);
+            const visibleCenters = appState.centers.filter(c => c.showPublic !== false && c.isNonClinicalCalendar !== true);
             if (visibleCenters.length === 0) {
                 grid.innerHTML = `<p class="text-xs text-slate-400 italic col-span-2 text-center py-6">Nessun poliambulatorio registrato.</p>`;
                 return;
@@ -1446,7 +1446,7 @@
         function renderHeaderLegend() {
             const legend = document.getElementById('header-centers-legend');
             if (!legend) return;
-            legend.innerHTML = appState.centers.map(center => `
+            legend.innerHTML = appState.centers.filter(center => center.isNonClinicalCalendar !== true).map(center => `
                 <div class="inline-flex items-center gap-1.5 px-2.5 py-0.5 bg-white/90 rounded-full border border-nature-200 shadow-2xs flex-shrink-0">
                     <span class="w-2 h-2 rounded-full flex-shrink-0" style="background-color: ${center.color || '#3f5e4e'};"></span>
                     <i class="fa-solid ${center.icon || 'fa-hospital'} text-[10px]" style="color: ${center.color || '#3f5e4e'};"></i>
@@ -1563,7 +1563,7 @@
         window.openStudioModal = function(editEv = null) {
             pendingAppointmentPatientId = null;
             populateTimeSelects();
-            populateCenterDropdown();
+            populateCenterDropdown(editEv?.extendedProps?.centerId || null);
             const form = document.getElementById('studio-event-form');
             form.reset();
             setAppointmentClinicalSectionsVisibility(false);
@@ -1678,10 +1678,16 @@
             window.openPatientEditModal(patient);
         }
 
-        function populateCenterDropdown() {
+        function populateCenterDropdown(currentCenterId = null) {
             const sel = document.getElementById('studio-center-select');
             if (!sel) return;
-            sel.innerHTML = '<option value="">Studio Privato (Default)</option>' + appState.centers.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+            const selectableCenters = appState.centers.filter(c => c.isNonClinicalCalendar !== true);
+            let options = selectableCenters.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+            if (currentCenterId && !selectableCenters.some(c => String(c.id) === String(currentCenterId))) {
+                const currentCenter = appState.centers.find(c => String(c.id) === String(currentCenterId));
+                if (currentCenter) options += `<option value="${currentCenter.id}" data-non-clinical="true">${currentCenter.name} (Calendario non Clinico)</option>`;
+            }
+            sel.innerHTML = '<option value="">Studio Privato (Default)</option>' + options;
         }
 
         window.onPatientSelectChange = function() {
@@ -2421,6 +2427,20 @@
             btnElement.classList.add('ring-nature-600', 'ring-2');
         }
 
+        window.applyNonClinicalCenterFormState = function() {
+            const nonClinical = document.getElementById('new-center-non-clinical').checked;
+            const publicToggle = document.getElementById('new-center-public');
+            const financeToggle = document.getElementById('new-center-finance');
+            if (nonClinical) {
+                publicToggle.checked = false;
+                financeToggle.checked = false;
+            }
+            publicToggle.disabled = nonClinical;
+            financeToggle.disabled = nonClinical;
+            publicToggle.closest('div')?.classList.toggle('opacity-50', nonClinical);
+            financeToggle.closest('div')?.classList.toggle('opacity-50', nonClinical);
+        }
+
         window.handleCenterSubmit = async function(e) {
             e.preventDefault();
             const id = document.getElementById('center-edit-id').value || 'c_' + Date.now();
@@ -2433,8 +2453,8 @@
             const siteUrl = document.getElementById('new-center-site').value.trim();
             const bookingUrl = document.getElementById('new-center-booking').value.trim();
             const icalUrl = document.getElementById('new-center-ical').value.trim();
-            const showPublic = document.getElementById('new-center-public').checked;
             const isNonClinicalCalendar = document.getElementById('new-center-non-clinical').checked;
+            const showPublic = isNonClinicalCalendar ? false : document.getElementById('new-center-public').checked;
             const includeInFinance = isNonClinicalCalendar ? false : document.getElementById('new-center-finance').checked;
             const newC = { id, name, service, icon, color, address, phone, siteUrl, bookingUrl, icalUrl, showPublic, includeInFinance, isNonClinicalCalendar };
             const idx = appState.centers.findIndex(c => c.id === id);
@@ -2510,6 +2530,7 @@
             document.getElementById('new-center-public').checked = c.showPublic !== false;
             document.getElementById('new-center-finance').checked = c.includeInFinance !== false;
             document.getElementById('new-center-non-clinical').checked = c.isNonClinicalCalendar === true;
+            applyNonClinicalCenterFormState();
             document.getElementById('center-form-title').textContent = 'Modifica Poliambulatorio';
             document.getElementById('center-submit-btn-text').textContent = 'Aggiorna';
             document.getElementById('center-cancel-edit').classList.remove('hidden');
@@ -2521,6 +2542,7 @@
             document.getElementById('new-center-color').value = '#3f5e4e';
             document.getElementById('new-center-finance').checked = true;
             document.getElementById('new-center-non-clinical').checked = false;
+            applyNonClinicalCenterFormState();
             const colorButtons = document.querySelectorAll('#center-color-preset-container button');
             colorButtons.forEach((b, idx) => {
                 if (idx === 0) {
@@ -3337,7 +3359,7 @@
                 treatments: structuredClone(appState.treatments || []), news: structuredClone(appState.news || []),
                 preparations: structuredClone(appState.preparations || [])
             };
-            return { schema: BACKUP_SCHEMA, schemaVersion: BACKUP_SCHEMA_VERSION, appBuild: 'v25-stable', createdAt, exportedBy: appState.currentUserEmail || null, counts: backupCounts(data), data };
+            return { schema: BACKUP_SCHEMA, schemaVersion: BACKUP_SCHEMA_VERSION, appBuild: 'v26', createdAt, exportedBy: appState.currentUserEmail || null, counts: backupCounts(data), data };
         }
         function renderBackupDashboard() {
             const counts = backupCounts(appState);
@@ -3393,6 +3415,7 @@
                 if(typeof center.isNonClinicalCalendar==='undefined'){center.isNonClinicalCalendar=false;changed=true;}
                 if(typeof center.includeInFinance==='undefined'){center.includeInFinance=true;changed=true;}
                 if(center.isNonClinicalCalendar && center.includeInFinance!==false){center.includeInFinance=false;changed=true;}
+                if(center.isNonClinicalCalendar && center.showPublic!==false){center.showPublic=false;changed=true;}
                 if(changed){await setDoc(sharedDocument('centers_list',center.id),center,{merge:true});await setDoc(doc(db,'artifacts',appId,'public','data','centers_list',center.id),center,{merge:true});}
             }
         }
