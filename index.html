@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Silvia Chinellato | Osteopata & Idrocolonterapia</title>
-    <meta name="app-build" content="shared-data-v14-recall-filter-contacts">
+    <meta name="app-build" content="shared-data-v15-external-deletion-confirm-fix">
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -936,7 +936,7 @@
       </div>
     </div>
     <!-- CONFIRM MODAL -->
-    <div id="confirm-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-md hidden z-[70] flex items-center justify-center p-4">
+    <div id="confirm-modal" class="fixed inset-0 bg-slate-950/65 backdrop-blur-md hidden z-[120] flex items-center justify-center p-4">
         <div class="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-sm overflow-hidden flex flex-col border border-nature-100 p-6 text-center space-y-4">
             <div class="w-14 h-14 rounded-full bg-rose-50 text-rose-600 flex items-center justify-center mx-auto text-xl shadow-inner">
                 <i class="fa-solid fa-triangle-exclamation"></i>
@@ -2623,6 +2623,7 @@
             const action=decision==='keep'?'mantenere definitivamente questo appuntamento nella tua agenda':'rimuovere definitivamente questo appuntamento dalla tua agenda';
             showConfirmDialog('Conferma scelta',`Sei sicura di voler ${action}?`,async()=>{
                 const ev=appState.events.find(x=>x.id===eventId);
+                if (decision==='keep' && !ev) throw new Error('Appuntamento non trovato nello stato locale');
                 try {
                     if (decision==='keep' && ev) {
                         ev.extendedProps={...(ev.extendedProps||{}),detachedFromExternal:true,externalCalendarStatus:'Rimosso dal calendario originale e mantenuto localmente',externalRemovedAt:new Date().toISOString()};
@@ -2636,8 +2637,12 @@
                     item.decision=decision; item.decidedAt=new Date().toISOString(); saveLastSyncReport(report);
                     document.getElementById('sync-report-content').innerHTML=buildSyncDecisionReport(report); updateSyncCloseState(report);
                     if(calendarInstance)calendarInstance.refetchEvents();
-                } catch(err) { console.error('Errore scelta cancellazione esterna:',err); showToast('Errore: scelta non salvata.'); }
-            });
+                } catch(err) {
+                    console.error('Errore scelta cancellazione esterna:',err);
+                    showToast('Errore: scelta non salvata.');
+                    throw err;
+                }
+            }, decision==='keep' ? 'Sì, mantieni' : 'Sì, rimuovi');
         }
         window.openLastSyncReport = function() {
             const report=loadLastSyncReport();
@@ -2691,20 +2696,38 @@
         }
 
         let confirmCallback = null;
-        function showConfirmDialog(title, text, onOk) {
+        function showConfirmDialog(title, text, onOk, confirmLabel = 'Conferma') {
+            const modal = document.getElementById('confirm-modal');
+            const okButton = document.getElementById('confirm-ok-btn');
             document.getElementById('confirm-title').textContent = title;
             document.getElementById('confirm-text').textContent = text;
+            okButton.textContent = confirmLabel;
+            okButton.disabled = false;
+            okButton.classList.remove('opacity-50','cursor-not-allowed');
             confirmCallback = onOk;
-            document.getElementById('confirm-modal').classList.remove('hidden');
+            modal.style.zIndex = '120';
+            modal.classList.remove('hidden');
         }
         document.getElementById('confirm-cancel-btn').addEventListener('click', () => {
             document.getElementById('confirm-modal').classList.add('hidden');
             confirmCallback = null;
         });
-        document.getElementById('confirm-ok-btn').addEventListener('click', () => {
-            document.getElementById('confirm-modal').classList.add('hidden');
-            if (confirmCallback) confirmCallback();
+        document.getElementById('confirm-ok-btn').addEventListener('click', async () => {
+            const callback = confirmCallback;
+            if (!callback) return;
+            const button = document.getElementById('confirm-ok-btn');
+            button.disabled = true;
+            button.classList.add('opacity-50','cursor-not-allowed');
             confirmCallback = null;
+            try {
+                await callback();
+                document.getElementById('confirm-modal').classList.add('hidden');
+            } catch (err) {
+                console.error('Errore operazione confermata:', err);
+                button.disabled = false;
+                button.classList.remove('opacity-50','cursor-not-allowed');
+                showToast('Errore: operazione non completata.');
+            }
         });
 
         window.openBusinessDashboard = function() {
