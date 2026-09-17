@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Silvia Chinellato | Osteopata & Idrocolonterapia</title>
-    <meta name="app-build" content="shared-data-v22-backup-restore">
+    <meta name="app-build" content="shared-data-v23-strict-history-unassigned-events">
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -438,6 +438,9 @@
                 <button onclick="openRecallModal()" class="w-7 h-7 bg-orange-50 hover:bg-orange-100 text-orange-800 rounded-xl transition flex items-center justify-center border border-orange-200 shadow-xs" title="Pazienti da richiamare">
                     <i class="fa-solid fa-phone-volume text-[10px]"></i>
                 </button>
+                <button onclick="openUnassignedEventsModal()" class="w-7 h-7 bg-rose-50 hover:bg-rose-100 text-rose-700 rounded-xl transition flex items-center justify-center border border-rose-200 shadow-xs" title="Appuntamenti senza paziente">
+                    <i class="fa-solid fa-user-slash text-[10px]"></i>
+                </button>
                 <button onclick="openBackupModal()" class="w-7 h-7 bg-indigo-50 hover:bg-indigo-100 text-indigo-800 rounded-xl transition flex items-center justify-center border border-indigo-200 shadow-xs" title="Backup & Ripristino">
                     <i class="fa-solid fa-database text-[10px]"></i>
                 </button>
@@ -484,6 +487,7 @@
                 <button type="button" onclick="mobileOpenAdmin(openBusinessDashboard)"><i class="fa-solid fa-chart-line"></i>Compensi</button>
                 <button type="button" onclick="mobileOpenAdmin(openRecallModal)"><i class="fa-solid fa-phone-volume"></i>Richiami</button>
                 <button type="button" onclick="mobileOpenAdmin(openLastSyncReport)"><i class="fa-solid fa-clock-rotate-left"></i>Ultime novità</button>
+                <button type="button" onclick="mobileOpenAdmin(openUnassignedEventsModal)"><i class="fa-solid fa-user-slash"></i>Senza paziente</button>
                 <button type="button" onclick="mobileOpenAdmin(openBackupModal)"><i class="fa-solid fa-database"></i>Backup e ripristino</button>
                 <button type="button" onclick="handleLogout()"><i class="fa-solid fa-right-from-bracket text-rose-600"></i>Esci</button>
             </div>
@@ -944,6 +948,24 @@
         <div class="p-4 sm:p-6 overflow-y-auto space-y-4 flex-1">
           <div class="flex items-center gap-3"><label class="text-xs font-bold text-slate-600">Mostra inattivi da almeno</label><select id="recall-threshold" onchange="renderRecallList()" class="px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-2xl text-xs"><option value="60">60 giorni</option><option value="90">90 giorni</option><option value="120" selected>120 giorni</option><option value="180">180 giorni</option><option value="365">1 anno</option></select></div>
           <div id="recall-list" class="space-y-3"></div>
+        </div>
+      </div>
+    </div>
+    <!-- UNASSIGNED EVENTS MODAL -->
+    <div id="unassigned-events-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-md hidden z-[75] flex items-center justify-center p-4">
+      <div class="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-5xl overflow-hidden flex flex-col max-h-[92vh]">
+        <div class="px-5 sm:px-6 py-4 border-b border-rose-100 flex items-center justify-between bg-rose-50/60">
+          <div><h3 class="font-editorial text-lg font-bold text-slate-900 italic"><i class="fa-solid fa-user-slash mr-2 text-rose-700"></i>Appuntamenti senza paziente</h3><p class="text-[10px] text-slate-500">Eventi privi di un’associazione esplicita in anagrafica</p></div>
+          <button type="button" onclick="closeUnassignedEventsModal()" class="w-10 h-10 rounded-full bg-white"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div class="p-4 sm:p-6 overflow-y-auto space-y-4 flex-1">
+          <div class="flex flex-col sm:flex-row gap-3 sm:items-center justify-between">
+            <div id="unassigned-events-summary" class="p-3 bg-rose-50 border border-rose-200 rounded-2xl text-xs"></div>
+            <select id="unassigned-events-filter" onchange="renderUnassignedEventsList()" class="px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-2xl text-xs">
+              <option value="all">Tutti</option><option value="past">Passati</option><option value="future">Futuri</option>
+            </select>
+          </div>
+          <div id="unassigned-events-list" class="space-y-3"></div>
         </div>
       </div>
     </div>
@@ -2082,7 +2104,7 @@
             document.getElementById('patient-history-title').textContent = `Storico: ${pat.name}`;
             
             const listEl = document.getElementById('patient-history-list');
-            const patientEvents = appState.events.filter(ev => String(ev.extendedProps?.patientId || '') === String(patientId) || (!ev.extendedProps?.patientId && ev.title && ev.title.toLowerCase().includes(pat.name.toLowerCase())));
+            const patientEvents = appState.events.filter(ev => String(ev.extendedProps?.patientId || '') === String(patientId));
 
             if (patientEvents.length === 0) {
                 listEl.innerHTML = `<p class="text-xs text-slate-400 italic text-center py-6">Nessun appuntamento passato o futuro registrato per questo paziente.</p>`;
@@ -2097,10 +2119,10 @@
                     let timeStr = `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
                     let isPast = d < new Date();
                     return `
-                        <div class="p-3.5 bg-slate-50 border border-slate-200 rounded-2xl flex items-center justify-between text-xs">
-                            <div class="space-y-1">
-                                <div class="flex items-center gap-2">
-                                    <strong class="font-editorial text-slate-900 text-sm italic">${ev.title}</strong><span class="text-[10px] text-purple-700 font-bold">Associato a: ${pat.name}</span>
+                        <button type="button" onclick="openEventFromHistory('${encodeURIComponent(ev.id)}')" class="w-full p-3.5 bg-slate-50 hover:bg-amber-50 border border-slate-200 hover:border-amber-300 rounded-2xl flex items-center justify-between gap-3 text-xs text-left transition">
+                            <div class="space-y-1 min-w-0 flex-1">
+                                <div class="flex items-center gap-2 flex-wrap">
+                                    <strong class="font-editorial text-slate-900 text-sm italic">${escapePatientText(ev.title)}</strong><span class="text-[10px] text-purple-700 font-bold">Associato a: ${escapePatientText(pat.name)}</span>
                                     <span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${isPast ? 'bg-slate-200 text-slate-700' : 'bg-emerald-100 text-emerald-800'}">${isPast ? 'Passato' : 'Futuro'}</span>
                                 </div>
                                 <p class="text-slate-500"><i class="fa-regular fa-calendar text-nature-600 mr-1"></i> ${dateStr} alle ${timeStr} • <span class="font-medium text-slate-700">${ev.extendedProps?.centerName || 'Studio Privato'}</span></p>
@@ -2108,7 +2130,8 @@
                                 ${clinicalOutcome ? `<p class="text-slate-600"><strong>Esito:</strong> ${escapePatientText(clinicalOutcome)}</p>` : ''}
                                 ${Number(ev.extendedProps?.fee || 0) > 0 ? `<p class="text-emerald-700 font-bold">€ ${Number(ev.extendedProps.fee).toFixed(2)} • ${ev.extendedProps?.paymentStatus === 'unpaid' ? 'Da incassare' : 'Pagato'}</p>` : ''}
                             </div>
-                        </div>
+                            <span class="flex-shrink-0 px-3 py-2 bg-amber-100 text-amber-900 rounded-xl font-bold"><i class="fa-solid fa-pen-to-square mr-1"></i>Apri</span>
+                        </button>
                     `;
                 }).join('');
             }
@@ -2116,6 +2139,14 @@
         }
         window.closePatientHistoryModal = function() {
             document.getElementById('patient-history-modal').classList.add('hidden');
+        }
+        window.openEventFromHistory = function(encodedEventId) {
+            const eventId = decodeURIComponent(encodedEventId);
+            const eventData = appState.events.find(ev => String(ev.id) === String(eventId));
+            if (!eventData) { showToast('Appuntamento non trovato.'); return; }
+            document.getElementById('patient-history-modal').classList.add('hidden');
+            openStudioModal(eventData);
+            updateModalState();
         }
 
         window.filterPatientsList = function() {
@@ -3203,6 +3234,46 @@
                 closeMergePatientsModal(); renderPatientsList(); populatePatientDropdown(); if(calendarInstance)calendarInstance.refetchEvents(); showToast('Pazienti uniti con successo.');
             } catch(err) { console.error('Errore merge pazienti:',err); showToast('Errore durante l’unione: nessuna scheda è stata rimossa localmente.'); }
         }
+
+        function getUnassignedEvents() {
+            return (appState.events || []).filter(ev => !String(ev.extendedProps?.patientId || '').trim());
+        }
+        function getEventPatientSuggestions(eventData) {
+            return appState.patients.map(patient => ({ patient, score: patientMatchScore(eventData.title || '', patient.name || '') }))
+                .filter(item => item.score >= 0.35).sort((a,b) => b.score - a.score).slice(0,3);
+        }
+        window.openUnassignedEventsModal = function() {
+            document.getElementById('unassigned-events-filter').value = 'all';
+            renderUnassignedEventsList();
+            document.getElementById('unassigned-events-modal').classList.remove('hidden');
+        };
+        window.closeUnassignedEventsModal = function() {
+            document.getElementById('unassigned-events-modal').classList.add('hidden');
+            updateModalState();
+        };
+        window.renderUnassignedEventsList = function() {
+            const now = new Date();
+            const filter = document.getElementById('unassigned-events-filter')?.value || 'all';
+            const all = getUnassignedEvents().map(ev => ({ ev, date: new Date(ev.start) })).filter(item => !Number.isNaN(item.date.getTime()));
+            const shown = all.filter(item => filter === 'all' || (filter === 'past' ? item.date < now : item.date >= now)).sort((a,b) => a.date - b.date);
+            const pastCount = all.filter(item => item.date < now).length;
+            const futureCount = all.filter(item => item.date >= now).length;
+            document.getElementById('unassigned-events-summary').innerHTML = `<strong>${all.length}</strong> appuntamenti senza paziente • ${pastCount} passati • ${futureCount} futuri`;
+            document.getElementById('unassigned-events-list').innerHTML = shown.length ? shown.map(({ev,date}) => {
+                const suggestions = getEventPatientSuggestions(ev);
+                const suggestionHtml = suggestions.length ? `<div class="mt-2 flex flex-wrap gap-1.5"><span class="text-[10px] text-slate-500 self-center">Possibili:</span>${suggestions.map(item => `<span class="px-2 py-1 bg-amber-50 border border-amber-200 rounded-full text-[10px] text-amber-900">${escapePatientText(item.patient.name)} ${Math.round(item.score*100)}%</span>`).join('')}</div>` : '<p class="mt-2 text-[10px] text-slate-400 italic">Nessuna corrispondenza suggerita.</p>';
+                return `<button type="button" onclick="openUnassignedEvent('${encodeURIComponent(ev.id)}')" class="w-full p-4 bg-white hover:bg-rose-50 border border-slate-200 hover:border-rose-300 rounded-2xl text-left transition flex flex-col sm:flex-row sm:items-center justify-between gap-3"><div class="min-w-0"><div class="flex items-center gap-2 flex-wrap"><strong class="font-editorial italic text-base text-slate-900">${escapePatientText(ev.title || 'Appuntamento')}</strong><span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${date < now ? 'bg-slate-100 text-slate-700' : 'bg-emerald-100 text-emerald-800'}">${date < now ? 'Passato' : 'Futuro'}</span></div><p class="mt-1 text-xs text-slate-500"><i class="fa-regular fa-calendar mr-1"></i>${date.toLocaleString('it-IT',{dateStyle:'medium',timeStyle:'short'})} • ${escapePatientText(ev.extendedProps?.centerName || 'Studio Privato')}</p>${suggestionHtml}</div><span class="flex-shrink-0 px-3 py-2 bg-rose-100 text-rose-800 rounded-xl text-xs font-bold"><i class="fa-solid fa-pen-to-square mr-1"></i>Apri e assegna</span></button>`;
+            }).join('') : '<p class="p-8 text-center text-slate-400 italic">Nessun appuntamento corrisponde al filtro selezionato.</p>';
+        };
+        window.openUnassignedEvent = function(encodedEventId) {
+            const eventId = decodeURIComponent(encodedEventId);
+            const eventData = appState.events.find(ev => String(ev.id) === String(eventId));
+            if (!eventData) { showToast('Appuntamento non trovato.'); return; }
+            document.getElementById('unassigned-events-modal').classList.add('hidden');
+            openStudioModal(eventData);
+            showPatientMatchSuggestions(eventData);
+            updateModalState();
+        };
 
         let pendingBackupData = null;
         const BACKUP_SCHEMA = 'silvia-chinellato-backup';
