@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Silvia Chinellato | Osteopata & Idrocolonterapia</title>
-    <meta name="app-build" content="shared-data-v4-patients-matching-merge-finance">
+    <meta name="app-build" content="shared-data-v4.1-patient-crud-migration-fixed">
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -991,7 +991,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, getDocs, getDoc, deleteDoc, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         const AUTHORIZED_EMAILS = ['silviachine@gmail.com', 'aldo.colciago@gmail.com'];
         const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {
@@ -1046,24 +1046,31 @@
             checkCalendarConflicts();
         }
 
-        async function migrateCurrentUserDataToShared() {
+        async function migrateCurrentUserDataToSharedOnce() {
             if (!db || !userId || !appState.isLoggedIn) return;
-            const mappings = [
-                ['centers_list', 'centers_list'],
-                ['studio_events', 'studio_events'],
-                ['patients_list', 'patients_list']
-            ];
-            for (const [legacyName, sharedName] of mappings) {
-                try {
+            const markerRef = sharedDocument('_meta', `legacy-migration-${userId}`);
+            try {
+                const marker = await getDoc(markerRef);
+                if (marker.exists()) return;
+                const mappings = [
+                    ['centers_list', 'centers_list'],
+                    ['studio_events', 'studio_events'],
+                    ['patients_list', 'patients_list']
+                ];
+                for (const [legacyName, sharedName] of mappings) {
                     const oldSnap = await getDocs(collection(db, 'artifacts', appId, 'users', userId, legacyName));
                     for (const oldDoc of oldSnap.docs) {
                         const item = oldDoc.data();
                         const itemId = item.id || oldDoc.id;
-                        await setDoc(sharedDocument(sharedName, itemId), item, { merge: true });
+                        const target = sharedDocument(sharedName, itemId);
+                        const alreadyShared = await getDoc(target);
+                        if (!alreadyShared.exists()) await setDoc(target, item);
                     }
-                } catch (err) {
-                    console.warn(`Migrazione ${legacyName} non completata:`, err);
                 }
+                await setDoc(markerRef, { completed: true, userId, completedAt: new Date().toISOString() });
+            } catch (err) {
+                console.error('Migrazione legacy non completata:', err);
+                throw err;
             }
         }
 
@@ -1082,8 +1089,11 @@
                 refreshPrivateUI();
             }));
             sharedUnsubscribers.push(onSnapshot(sharedCollection('patients_list'), snapshot => {
-                appState.patients = snapshot.docs.map(d => d.data());
+                appState.patients = snapshot.docs.map(d => ({ id: d.data().id || d.id, ...d.data() }));
                 refreshPrivateUI();
+            }, err => {
+                console.error('Errore sincronizzazione pazienti:', err);
+                showToast('Sincronizzazione pazienti non disponibile: verifica i permessi Firestore.');
             }));
         }
 
@@ -1175,7 +1185,7 @@
             try {
                 await loadPublicDataFromFirestore();
                 if (appState.isLoggedIn) {
-                    await migrateCurrentUserDataToShared();
+                    await migrateCurrentUserDataToSharedOnce();
 
                     const centersSnap = await getDocs(sharedCollection('centers_list'));
                     if (!centersSnap.empty) appState.centers = centersSnap.docs.map(d => d.data());
@@ -1736,48 +1746,66 @@
             }
             document.getElementById('patient-edit-modal').classList.remove('hidden');
         }
+        window.editPatientById = function(patientId) {
+            const patient = appState.patients.find(p => String(p.id) === String(patientId));
+            if (!patient) { showToast('Paziente non trovato. Aggiorna la pagina e riprova.'); return; }
+            window.openPatientEditModal(patient);
+        }
         window.closePatientEditModal = function() { document.getElementById('patient-edit-modal').classList.add('hidden'); }
 
         window.handlePatientSubmit = async function(e) {
             e.preventDefault();
             const id = document.getElementById('patient-edit-id').value || 'pat_' + Date.now();
-            const name = document.getElementById('patient-name').value.trim();
-            const phone = document.getElementById('patient-phone').value.trim();
-            const email = document.getElementById('patient-email').value.trim();
-            const notes = document.getElementById('patient-notes').value.trim();
-            const currentIssues = document.getElementById('patient-current-issues').value.trim();
-            const goals = document.getElementById('patient-goals').value.trim();
-            const allergies = document.getElementById('patient-allergies').value.trim();
-            const medications = document.getElementById('patient-medications').value.trim();
-            const tags = document.getElementById('patient-tags').value.split(',').map(x => x.trim()).filter(Boolean);
-            const recallDays = Number(document.getElementById('patient-recall-days').value || 120);
-            const newPat = { id, name, phone, email, notes, currentIssues, goals, allergies, medications, tags, recallDays };
-            const idx = appState.patients.findIndex(p => p.id === id);
-            if (idx >= 0) appState.patients[idx] = newPat;
-            else appState.patients.push(newPat);
-
-            if (db && userId) {
-                try { await setDoc(sharedDocument('patients_list', id), newPat); } catch(e){}
+            const existing = appState.patients.find(p => String(p.id) === String(id)) || {};
+            const updatedPatient = {
+                ...existing,
+                id,
+                name: document.getElementById('patient-name').value.trim(),
+                phone: document.getElementById('patient-phone').value.trim(),
+                email: document.getElementById('patient-email').value.trim(),
+                notes: document.getElementById('patient-notes').value.trim(),
+                currentIssues: document.getElementById('patient-current-issues').value.trim(),
+                goals: document.getElementById('patient-goals').value.trim(),
+                allergies: document.getElementById('patient-allergies').value.trim(),
+                medications: document.getElementById('patient-medications').value.trim(),
+                tags: document.getElementById('patient-tags').value.split(',').map(x => x.trim()).filter(Boolean),
+                recallDays: Number(document.getElementById('patient-recall-days').value || 120),
+                updatedAt: new Date().toISOString()
+            };
+            try {
+                await setDoc(sharedDocument('patients_list', id), updatedPatient, { merge: true });
+                const idx = appState.patients.findIndex(p => String(p.id) === String(id));
+                if (idx >= 0) appState.patients[idx] = updatedPatient; else appState.patients.push(updatedPatient);
+                closePatientEditModal(); renderPatientsList(); populatePatientDropdown();
+                showToast('Paziente salvato con successo!');
+            } catch (err) {
+                console.error('Errore salvataggio paziente:', err);
+                showToast('Errore: il paziente non è stato salvato. Controlla i permessi Firestore.');
             }
-
-            closePatientEditModal();
-            renderPatientsList();
-            populatePatientDropdown();
-            showToast("Paziente salvato con successo!");
         }
-
         window.confirmDeletePatient = function(id) {
-            showConfirmDialog("Elimina Paziente", "Sei sicura di voler eliminare questo paziente dall'anagrafica?", async () => {
-                appState.patients = appState.patients.filter(p => p.id !== id);
-                if (db && userId) {
-                    try { await deleteDoc(sharedDocument('patients_list', id)); } catch(e){}
+            showConfirmDialog('Elimina Paziente', "Sei sicura di voler eliminare questo paziente dall'anagrafica? Gli appuntamenti resteranno in agenda ma senza associazione.", async () => {
+                try {
+                    const relatedEvents = appState.events.filter(ev => ev.extendedProps?.patientId === id);
+                    for (const ev of relatedEvents) {
+                        ev.extendedProps = { ...(ev.extendedProps || {}), patientId: null };
+                        await setDoc(sharedDocument('studio_events', ev.id), ev, { merge: true });
+                    }
+                    await deleteDoc(sharedDocument('patients_list', id));
+                    if (userId) {
+                        try { await deleteDoc(doc(db, 'artifacts', appId, 'users', userId, 'patients_list', id)); } catch (legacyErr) { console.warn('Record legacy non eliminato:', legacyErr); }
+                    }
+                    const verification = await getDoc(sharedDocument('patients_list', id));
+                    if (verification.exists()) throw new Error('Il documento condiviso risulta ancora presente');
+                    appState.patients = appState.patients.filter(p => String(p.id) !== String(id));
+                    renderPatientsList(); populatePatientDropdown(); if (calendarInstance) calendarInstance.refetchEvents();
+                    showToast('Paziente eliminato definitivamente.');
+                } catch (err) {
+                    console.error('Errore eliminazione paziente:', err);
+                    showToast('Errore: eliminazione non completata. Controlla i permessi Firestore.');
                 }
-                renderPatientsList();
-                populatePatientDropdown();
-                showToast("Paziente eliminato.");
             });
         }
-
         window.openPatientHistoryModal = function(patientId) {
             const pat = appState.patients.find(p => p.id === patientId);
             if (!pat) return;
@@ -1846,21 +1874,13 @@
                     </div>
                     <div class="flex items-center gap-1.5 self-end sm:self-center flex-wrap">
                         <button onclick="openPatientHistoryModal('${p.id}')" class="px-3 py-1.5 bg-amber-50 text-amber-800 font-semibold rounded-xl hover:bg-amber-100 transition"><i class="fa-solid fa-calendar-days mr-1"></i> Storico</button>
-                        <button type="button" data-action="edit-patient" data-patient-id="${p.id}" class="px-3 py-1.5 bg-nature-50 text-nature-700 font-semibold rounded-xl hover:bg-nature-100 transition">Modifica</button>
+                        <button type="button" onclick="editPatientById('${p.id}')" class="px-3 py-1.5 bg-nature-50 text-nature-700 font-semibold rounded-xl hover:bg-nature-100 transition">Modifica</button>
                         <button onclick="confirmDeletePatient('${p.id}')" class="px-3 py-1.5 bg-rose-50 text-rose-600 font-semibold rounded-xl hover:bg-rose-100 transition">Elimina</button>
                     </div>
                 </div>
             `).join('');
         }
 
-        document.addEventListener('click', event => {
-            const button = event.target.closest('[data-action="edit-patient"]');
-            if (!button) return;
-            event.preventDefault();
-            const patient = appState.patients.find(p => p.id === button.dataset.patientId);
-            if (!patient) { showToast('Paziente non trovato. Aggiorna i dati e riprova.'); return; }
-            openPatientEditModal(patient);
-        });
 
         function populatePatientDropdown() {
             const sel = document.getElementById('studio-patient-select');
