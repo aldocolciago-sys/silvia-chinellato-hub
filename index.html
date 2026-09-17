@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Silvia Chinellato | Osteopata & Idrocolonterapia</title>
-    <meta name="app-build" content="shared-data-v21-mobile-nav-modal-state-fix">
+    <meta name="app-build" content="shared-data-v22-backup-restore">
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -438,6 +438,9 @@
                 <button onclick="openRecallModal()" class="w-7 h-7 bg-orange-50 hover:bg-orange-100 text-orange-800 rounded-xl transition flex items-center justify-center border border-orange-200 shadow-xs" title="Pazienti da richiamare">
                     <i class="fa-solid fa-phone-volume text-[10px]"></i>
                 </button>
+                <button onclick="openBackupModal()" class="w-7 h-7 bg-indigo-50 hover:bg-indigo-100 text-indigo-800 rounded-xl transition flex items-center justify-center border border-indigo-200 shadow-xs" title="Backup & Ripristino">
+                    <i class="fa-solid fa-database text-[10px]"></i>
+                </button>
                 <button onclick="handleLogout()" class="w-6 h-6 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-600 flex items-center justify-center transition shadow-xs" title="Esci">
                     <i class="fa-solid fa-right-from-bracket text-[9px]"></i>
                 </button>
@@ -481,6 +484,7 @@
                 <button type="button" onclick="mobileOpenAdmin(openBusinessDashboard)"><i class="fa-solid fa-chart-line"></i>Compensi</button>
                 <button type="button" onclick="mobileOpenAdmin(openRecallModal)"><i class="fa-solid fa-phone-volume"></i>Richiami</button>
                 <button type="button" onclick="mobileOpenAdmin(openLastSyncReport)"><i class="fa-solid fa-clock-rotate-left"></i>Ultime novità</button>
+                <button type="button" onclick="mobileOpenAdmin(openBackupModal)"><i class="fa-solid fa-database"></i>Backup e ripristino</button>
                 <button type="button" onclick="handleLogout()"><i class="fa-solid fa-right-from-bracket text-rose-600"></i>Esci</button>
             </div>
         </div>
@@ -940,6 +944,35 @@
         <div class="p-4 sm:p-6 overflow-y-auto space-y-4 flex-1">
           <div class="flex items-center gap-3"><label class="text-xs font-bold text-slate-600">Mostra inattivi da almeno</label><select id="recall-threshold" onchange="renderRecallList()" class="px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-2xl text-xs"><option value="60">60 giorni</option><option value="90">90 giorni</option><option value="120" selected>120 giorni</option><option value="180">180 giorni</option><option value="365">1 anno</option></select></div>
           <div id="recall-list" class="space-y-3"></div>
+        </div>
+      </div>
+    </div>
+    <!-- BACKUP & RESTORE MODAL -->
+    <div id="backup-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-md hidden z-[85] flex items-center justify-center p-4">
+      <div class="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-4xl overflow-hidden flex flex-col max-h-[92vh]">
+        <div class="px-5 sm:px-6 py-4 border-b border-indigo-100 flex items-center justify-between bg-indigo-50/60">
+          <div><h3 class="font-editorial text-lg font-bold text-slate-900 italic"><i class="fa-solid fa-database mr-2 text-indigo-700"></i>Backup & Ripristino</h3><p class="text-[10px] text-slate-500">Copia completa dei dati del gestionale</p></div>
+          <button type="button" onclick="closeBackupModal()" class="w-10 h-10 rounded-full bg-white"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div class="p-4 sm:p-6 overflow-y-auto space-y-5 flex-1">
+          <div id="backup-kpis" class="grid grid-cols-2 lg:grid-cols-4 gap-3"></div>
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <section class="p-5 bg-emerald-50 border border-emerald-200 rounded-3xl space-y-3">
+              <h4 class="font-editorial text-lg font-bold italic text-emerald-900">Esporta backup</h4>
+              <p class="text-xs text-slate-600">Scarica un file JSON completo. Conservalo in una posizione protetta perché contiene dati clinici e personali.</p>
+              <button type="button" onclick="exportCompleteBackup()" class="w-full py-3 bg-emerald-700 hover:bg-emerald-800 text-white font-bold rounded-2xl text-xs"><i class="fa-solid fa-download mr-2"></i>Esporta backup completo</button>
+              <p id="backup-last-export" class="text-[10px] text-emerald-800"></p>
+            </section>
+            <section class="p-5 bg-amber-50 border border-amber-200 rounded-3xl space-y-3">
+              <h4 class="font-editorial text-lg font-bold italic text-amber-900">Ripristina backup</h4>
+              <p class="text-xs text-slate-600">Il file viene analizzato prima di qualsiasi scrittura. Il ripristino può aggiungere o sovrascrivere record con lo stesso ID, senza eliminare automaticamente gli altri dati.</p>
+              <input type="file" id="backup-file-input" accept="application/json,.json" onchange="analyzeBackupFile(event)" class="w-full px-3 py-3 bg-white border border-amber-200 rounded-2xl text-xs">
+              <div id="backup-analysis" class="hidden p-3 bg-white border border-amber-200 rounded-2xl text-xs"></div>
+              <button id="backup-restore-btn" type="button" onclick="requestBackupRestore()" disabled class="w-full py-3 bg-amber-700 text-white font-bold rounded-2xl text-xs opacity-50 cursor-not-allowed"><i class="fa-solid fa-upload mr-2"></i>Ripristina dati analizzati</button>
+            </section>
+          </div>
+          <div class="p-4 bg-rose-50 border border-rose-200 rounded-2xl text-xs text-rose-900"><strong>Importante:</strong> il backup non è cifrato. Non inviarlo tramite canali non protetti e non conservarlo su dispositivi condivisi.</div>
+          <div id="backup-progress" class="hidden p-4 bg-water-50 border border-water-200 rounded-2xl text-xs"></div>
         </div>
       </div>
     </div>
@@ -3169,6 +3202,78 @@
                 appState.patients=appState.patients.filter(p=>p.id!==removeId);
                 closeMergePatientsModal(); renderPatientsList(); populatePatientDropdown(); if(calendarInstance)calendarInstance.refetchEvents(); showToast('Pazienti uniti con successo.');
             } catch(err) { console.error('Errore merge pazienti:',err); showToast('Errore durante l’unione: nessuna scheda è stata rimossa localmente.'); }
+        }
+
+        let pendingBackupData = null;
+        const BACKUP_SCHEMA = 'silvia-chinellato-backup';
+        const BACKUP_SCHEMA_VERSION = 1;
+        function backupCounts(data) {
+            return {
+                patients: Array.isArray(data?.patients) ? data.patients.length : 0,
+                events: Array.isArray(data?.events) ? data.events.length : 0,
+                clinicalSessions: Array.isArray(data?.clinicalSessions) ? data.clinicalSessions.length : 0,
+                centers: Array.isArray(data?.centers) ? data.centers.length : 0,
+                treatments: Array.isArray(data?.treatments) ? data.treatments.length : 0,
+                news: Array.isArray(data?.news) ? data.news.length : 0,
+                preparations: Array.isArray(data?.preparations) ? data.preparations.length : 0
+            };
+        }
+        function buildBackupPayload() {
+            const createdAt = new Date().toISOString();
+            const data = {
+                patients: structuredClone(appState.patients || []), events: structuredClone(appState.events || []),
+                clinicalSessions: structuredClone(appState.clinicalSessions || []), centers: structuredClone(appState.centers || []),
+                treatments: structuredClone(appState.treatments || []), news: structuredClone(appState.news || []),
+                preparations: structuredClone(appState.preparations || [])
+            };
+            return { schema: BACKUP_SCHEMA, schemaVersion: BACKUP_SCHEMA_VERSION, appBuild: 'v22', createdAt, exportedBy: appState.currentUserEmail || null, counts: backupCounts(data), data };
+        }
+        function renderBackupDashboard() {
+            const counts = backupCounts(appState);
+            const cards = [['Pazienti',counts.patients,'fa-user-group'],['Appuntamenti',counts.events,'fa-calendar-check'],['Sedute cliniche',counts.clinicalSessions,'fa-notes-medical'],['Contenuti e sedi',counts.centers+counts.treatments+counts.news+counts.preparations,'fa-folder-tree']];
+            document.getElementById('backup-kpis').innerHTML=cards.map(x=>`<div class="p-4 bg-white border border-slate-200 rounded-2xl"><i class="fa-solid ${x[2]} text-indigo-700"></i><p class="text-[10px] uppercase text-slate-500 mt-2">${x[0]}</p><strong class="text-lg">${x[1]}</strong></div>`).join('');
+            const last=localStorage.getItem('lastCompleteBackupAt');
+            document.getElementById('backup-last-export').textContent=last?'Ultimo export da questo dispositivo: '+new Date(last).toLocaleString('it-IT'):'Nessun export registrato su questo dispositivo.';
+        }
+        window.openBackupModal = function() { pendingBackupData=null; document.getElementById('backup-file-input').value=''; document.getElementById('backup-analysis').classList.add('hidden'); const btn=document.getElementById('backup-restore-btn'); btn.disabled=true; btn.classList.add('opacity-50','cursor-not-allowed'); renderBackupDashboard(); document.getElementById('backup-modal').classList.remove('hidden'); };
+        window.closeBackupModal = function() { document.getElementById('backup-modal').classList.add('hidden'); pendingBackupData=null; updateModalState(); };
+        window.exportCompleteBackup = function() {
+            if (!appState.isLoggedIn || !isAuthorizedFirebaseUser()) { showToast('Accesso autorizzato necessario.'); return; }
+            const payload=buildBackupPayload(); const json=JSON.stringify(payload,null,2); const blob=new Blob([json],{type:'application/json;charset=utf-8'}); const url=URL.createObjectURL(blob); const a=document.createElement('a'); const stamp=payload.createdAt.replace(/[:T]/g,'-').slice(0,16); a.href=url; a.download=`backup_silvia_${stamp}.json`; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url); localStorage.setItem('lastCompleteBackupAt',payload.createdAt); renderBackupDashboard(); showToast('Backup completo esportato.');
+        };
+        function validateBackupPayload(payload) {
+            if (!payload || payload.schema !== BACKUP_SCHEMA || Number(payload.schemaVersion)!==BACKUP_SCHEMA_VERSION || !payload.data) throw new Error('Formato backup non riconosciuto.');
+            for (const key of ['patients','events','clinicalSessions','centers','treatments','news','preparations']) if (!Array.isArray(payload.data[key])) throw new Error(`Sezione ${key} mancante o non valida.`);
+            const idSections=['patients','events','clinicalSessions','centers','treatments','news','preparations'];
+            for (const key of idSections) for (const item of payload.data[key]) if (!item || typeof item!=='object' || !String(item.id || item.eventId || '').trim()) throw new Error(`Record senza ID nella sezione ${key}.`);
+            return payload;
+        }
+        window.analyzeBackupFile = async function(event) {
+            pendingBackupData=null; const box=document.getElementById('backup-analysis'); const btn=document.getElementById('backup-restore-btn'); btn.disabled=true; btn.classList.add('opacity-50','cursor-not-allowed');
+            try { const file=event.target.files?.[0]; if(!file)return; if(file.size>25*1024*1024)throw new Error('Il file supera il limite di 25 MB.'); const payload=validateBackupPayload(JSON.parse(await file.text())); pendingBackupData=payload; const c=backupCounts(payload.data); box.innerHTML=`<strong>Backup valido</strong><p class="mt-1">Creato: ${escapePatientText(new Date(payload.createdAt).toLocaleString('it-IT'))}</p><div class="grid grid-cols-2 gap-1 mt-2"><span>Pazienti: <b>${c.patients}</b></span><span>Appuntamenti: <b>${c.events}</b></span><span>Sedute: <b>${c.clinicalSessions}</b></span><span>Sedi: <b>${c.centers}</b></span><span>Trattamenti: <b>${c.treatments}</b></span><span>News/guide: <b>${c.news+c.preparations}</b></span></div>`; box.classList.remove('hidden'); btn.disabled=false; btn.classList.remove('opacity-50','cursor-not-allowed'); }
+            catch(err){box.innerHTML=`<strong class="text-rose-700">Backup non valido</strong><p class="mt-1">${escapePatientText(err.message)}</p>`;box.classList.remove('hidden');showToast('File di backup non valido.');}
+        };
+        window.requestBackupRestore = function() {
+            if(!pendingBackupData)return; const c=backupCounts(pendingBackupData.data); showConfirmDialog('Conferma ripristino',`Verranno aggiunti o sovrascritti ${c.patients} pazienti, ${c.events} appuntamenti e ${c.clinicalSessions} sedute cliniche. I record non presenti nel backup non saranno eliminati. Procedere?`,performBackupRestore,'Sì, ripristina');
+        };
+        async function restoreCollection(items, referenceFactory, label, progress) {
+            let completed=0; for(const item of items){const id=String(item.id||item.eventId); await setDoc(referenceFactory(id),item,{merge:false}); completed++; progress.textContent=`Ripristino ${label}: ${completed}/${items.length}`;}
+        }
+        async function performBackupRestore() {
+            if(!pendingBackupData || !db || !appState.isLoggedIn || !isAuthorizedFirebaseUser()) throw new Error('Sessione non autorizzata.');
+            const data=pendingBackupData.data; const progress=document.getElementById('backup-progress'); progress.classList.remove('hidden'); progress.textContent='Avvio ripristino...';
+            sharedUnsubscribers.forEach(u=>u()); sharedUnsubscribers=[];
+            try {
+                await restoreCollection(data.centers,id=>sharedDocument('centers_list',id),'sedi',progress);
+                for(const item of data.centers) await setDoc(doc(db,'artifacts',appId,'public','data','centers_list',String(item.id)),item,{merge:false});
+                await restoreCollection(data.patients,id=>sharedDocument('patients_list',id),'pazienti',progress);
+                await restoreCollection(data.events,id=>sharedDocument('studio_events',id),'appuntamenti',progress);
+                await restoreCollection(data.clinicalSessions,id=>sharedDocument('clinical_sessions',id),'sedute cliniche',progress);
+                await restoreCollection(data.treatments,id=>doc(db,'artifacts',appId,'public','data','treatments_list',id),'trattamenti',progress);
+                await restoreCollection(data.news,id=>doc(db,'artifacts',appId,'public','data','news_list',id),'news',progress);
+                await restoreCollection(data.preparations,id=>doc(db,'artifacts',appId,'public','data','preparations_list',id),'guide',progress);
+                localStorage.setItem('lastRestoreAt',new Date().toISOString()); pendingBackupData=null; await loadAllDataFromFirestore(); progress.textContent='Ripristino completato con successo.'; renderBackupDashboard(); if(calendarInstance){calendarInstance.refetchEvents();calendarInstance.updateSize();} showToast('Ripristino completato.');
+            } catch(err){startSharedRealtimeSync();progress.textContent='Ripristino interrotto: '+err.message;throw err;}
         }
 
         async function ensureCenterFinanceDefaults() {
