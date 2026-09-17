@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Silvia Chinellato | Osteopata & Idrocolonterapia</title>
-    <meta name="app-build" content="shared-data-v18-separate-clinical-archive">
+    <meta name="app-build" content="shared-data-v19-patient-clinical-panel-migration">
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -638,7 +638,7 @@
     </div>
 
     <div id="patient-edit-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-md hidden z-[60] flex items-center justify-center p-4">
-        <div class="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-md overflow-hidden flex flex-col border border-amber-100 max-h-[90vh]">
+        <div class="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-3xl overflow-hidden flex flex-col border border-amber-100 max-h-[90vh]">
             <div class="px-5 sm:px-6 py-4 border-b border-amber-100 flex items-center justify-between bg-amber-50/50">
                 <h3 id="patient-edit-modal-title" class="font-editorial text-base sm:text-lg font-bold text-slate-900 italic">Scheda Paziente</h3>
                 <button type="button" onclick="closePatientEditModal()" class="text-slate-400 hover:text-slate-600 w-8 h-8 rounded-full flex items-center justify-center"><i class="fa-solid fa-xmark"></i></button>
@@ -668,9 +668,17 @@
                     <div class="space-y-1"><label class="text-[11px] font-bold text-slate-600">Richiamo dopo (giorni)</label><input type="number" min="1" id="patient-recall-days" value="120" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-xs"></div>
                 </div>
                 <div class="space-y-1">
-                    <label class="text-[11px] font-bold text-slate-600">Note Anamnestiche & Cliniche</label>
-                    <textarea id="patient-notes" placeholder="Anamnesi, patologie, interventi..." class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-xs h-28 resize-none"></textarea>
+                    <label class="text-[11px] font-bold text-slate-600">Note anamnestiche generali</label>
+                    <textarea id="patient-notes" placeholder="Anamnesi, patologie, interventi e informazioni generali..." class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-xs h-28 resize-y"></textarea>
+                    <p class="text-[10px] text-slate-500">Le note delle singole visite sono archiviate separatamente nel pannello sottostante.</p>
                 </div>
+                <section id="patient-clinical-archive-panel" class="hidden space-y-3 p-4 bg-water-50/60 border border-water-200 rounded-2xl">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                        <div><h4 class="font-editorial font-bold italic text-base text-water-900"><i class="fa-solid fa-notes-medical mr-1"></i>Archivio Clinico</h4><p class="text-[10px] text-slate-500">Sedute ordinate dalla più recente.</p></div>
+                        <div id="patient-clinical-archive-summary" class="text-[10px] font-bold text-water-800 bg-white border border-water-200 px-3 py-1.5 rounded-full"></div>
+                    </div>
+                    <div id="patient-clinical-archive-list" class="space-y-2 max-h-72 overflow-y-auto pr-1"></div>
+                </section>
                 <div class="flex justify-end gap-2 pt-2">
                     <button type="button" onclick="closePatientEditModal()" class="px-4 py-3 bg-slate-200 text-slate-700 font-semibold rounded-2xl text-xs">Annulla</button>
                     <button type="submit" class="px-5 py-3 bg-amber-600 hover:bg-amber-700 text-white font-semibold rounded-2xl text-xs transition">Salva Paziente</button>
@@ -1197,6 +1205,7 @@
                     const clinicalSnap = await getDocs(sharedCollection('clinical_sessions'));
                     appState.clinicalSessions = clinicalSnap.docs.map(d => ({ id: d.data().id || d.id, ...d.data() }));
                     await migrateEventClinicalDataToArchiveOnce();
+                    await migrateLegacyClinicalBlocksFromPatientNotesOnce();
                     startSharedRealtimeSync();
                 }
                 renderAllPublicUI();
@@ -1726,6 +1735,91 @@
             appState.clinicalSessions = snap.docs.map(d => ({ id: d.data().id || d.id, ...d.data() }));
         }
 
+        function extractLegacyClinicalBlocks(notes) {
+            const source = String(notes || '');
+            const blocks = [];
+            const patterns = [
+                /\[APPUNTAMENTO\s+([^\]|]*)\s*\|\s*ID:([^\]]+)\]([\s\S]*?)\[FINE APPUNTAMENTO[^\]]*\|\s*ID:\2\]/gi,
+                /\[SEDUTA:([^\]]+)\]([\s\S]*?)\[\/SEDUTA:\1\]/gi
+            ];
+            let cleaned = source;
+            for (const pattern of patterns) {
+                cleaned = cleaned.replace(pattern, (full, a, b, c) => {
+                    const modern = pattern.source.startsWith('\\[APPUNTAMENTO');
+                    const eventId = String(modern ? b : a).trim();
+                    const body = String(modern ? c : b).trim();
+                    const dateText = modern ? String(a || '').trim() : '';
+                    const noteMatch = body.match(/Nota seduta:\s*([\s\S]*?)(?=\n\s*Esito:|$)/i);
+                    const outcomeMatch = body.match(/Esito:\s*([\s\S]*?)$/i);
+                    const centerMatch = body.match(/Sede:\s*([^\n]+)/i);
+                    const lines = body.split(/\n/).map(x=>x.trim()).filter(Boolean);
+                    const title = lines.find(x => !/^(Sede:|Nota seduta:|Esito:)/i.test(x)) || 'Seduta clinica';
+                    blocks.push({ eventId, dateText, title, centerName:centerMatch?.[1]?.trim() || 'Studio Privato', clinicalNote:noteMatch?.[1]?.trim() || '', clinicalOutcome:outcomeMatch?.[1]?.trim() || '' });
+                    return '';
+                });
+            }
+            return { blocks, cleaned: cleaned.replace(/\n{3,}/g,'\n\n').trim() };
+        }
+        async function migrateLegacyClinicalBlocksFromPatientNotesOnce() {
+            const markerRef = sharedDocument('_meta','patient-notes-clinical-blocks-migration-v2');
+            const marker = await getDoc(markerRef);
+            if (marker.exists()) return;
+            let migratedBlocks = 0;
+            let cleanedPatients = 0;
+            for (const patient of appState.patients) {
+                const extracted = extractLegacyClinicalBlocks(patient.notes);
+                if (!extracted.blocks.length) continue;
+                for (const block of extracted.blocks) {
+                    const eventData = appState.events.find(ev => String(ev.id) === String(block.eventId));
+                    const existing = appState.clinicalSessions.find(item => String(item.eventId) === String(block.eventId));
+                    let parsedDate = eventData?.start || existing?.start || null;
+                    if (!parsedDate && block.dateText) {
+                        const candidate = new Date(block.dateText);
+                        if (!Number.isNaN(candidate.getTime())) parsedDate = candidate.toISOString();
+                    }
+                    const record = {
+                        id:block.eventId, eventId:block.eventId, patientId:patient.id,
+                        title:eventData?.title || existing?.title || block.title,
+                        start:parsedDate, end:eventData?.end || existing?.end || null,
+                        centerId:eventData?.extendedProps?.centerId || existing?.centerId || null,
+                        centerName:eventData?.extendedProps?.centerName || existing?.centerName || block.centerName,
+                        clinicalNote:existing?.clinicalNote || eventData?.extendedProps?.clinicalNote || block.clinicalNote,
+                        clinicalOutcome:existing?.clinicalOutcome || eventData?.extendedProps?.clinicalOutcome || block.clinicalOutcome,
+                        fee:Number(eventData?.extendedProps?.fee || existing?.fee || 0),
+                        paymentStatus:eventData?.extendedProps?.paymentStatus || existing?.paymentStatus || 'paid',
+                        migratedFromPatientNotes:true, updatedAt:new Date().toISOString()
+                    };
+                    if (record.clinicalNote || record.clinicalOutcome) {
+                        await setDoc(sharedDocument('clinical_sessions',block.eventId),record,{merge:true});
+                        const idx=appState.clinicalSessions.findIndex(item=>String(item.eventId)===String(block.eventId));
+                        if(idx>=0) appState.clinicalSessions[idx]={...appState.clinicalSessions[idx],...record}; else appState.clinicalSessions.push(record);
+                        migratedBlocks++;
+                    }
+                }
+                patient.notes=extracted.cleaned;
+                patient.updatedAt=new Date().toISOString();
+                await setDoc(sharedDocument('patients_list',patient.id),patient,{merge:true});
+                cleanedPatients++;
+            }
+            await setDoc(markerRef,{completed:true,migratedBlocks,cleanedPatients,completedAt:new Date().toISOString()});
+        }
+        function renderPatientClinicalArchive(patientId) {
+            const panel=document.getElementById('patient-clinical-archive-panel');
+            const list=document.getElementById('patient-clinical-archive-list');
+            const summary=document.getElementById('patient-clinical-archive-summary');
+            if(!panel||!list||!summary)return;
+            if(!patientId){panel.classList.add('hidden');list.innerHTML='';return;}
+            const sessions=appState.clinicalSessions.filter(item=>String(item.patientId)===String(patientId)).sort((a,b)=>new Date(b.start||0)-new Date(a.start||0));
+            panel.classList.remove('hidden');
+            const latest=sessions[0]?.start ? new Date(sessions[0].start) : null;
+            summary.textContent=`${sessions.length} sedute${latest&&!Number.isNaN(latest.getTime())?' • ultima '+latest.toLocaleDateString('it-IT'):''}`;
+            list.innerHTML=sessions.length?sessions.map(session=>{
+                const d=session.start?new Date(session.start):null;
+                const when=d&&!Number.isNaN(d.getTime())?d.toLocaleString('it-IT',{dateStyle:'medium',timeStyle:'short'}):'Data non disponibile';
+                return `<article class="p-3 bg-white border border-water-200 rounded-xl text-xs"><div class="flex flex-col sm:flex-row sm:items-start justify-between gap-1"><strong class="font-editorial italic text-sm text-slate-900">${escapePatientText(session.title||'Seduta clinica')}</strong><span class="text-[10px] font-semibold text-water-700">${escapePatientText(when)}</span></div><p class="text-[10px] text-slate-500 mt-1"><i class="fa-solid fa-location-dot mr-1"></i>${escapePatientText(session.centerName||'Studio Privato')}</p>${session.clinicalNote?`<div class="mt-2 p-2 bg-water-50 rounded-lg whitespace-pre-wrap"><b>Nota seduta:</b> ${escapePatientText(session.clinicalNote)}</div>`:''}${session.clinicalOutcome?`<p class="mt-2 text-slate-700"><b>Esito:</b> ${escapePatientText(session.clinicalOutcome)}</p>`:''}</article>`;
+            }).join(''):'<p class="p-4 text-center text-slate-400 italic bg-white rounded-xl border">Nessuna seduta clinica archiviata.</p>';
+        }
+
         window.handleStudioEventSubmit = async function(e) {
             e.preventDefault();
             const id = document.getElementById('studio-edit-event-id').value || 'evt_' + Date.now();
@@ -1831,7 +1925,7 @@
             form.reset();
             document.getElementById('patient-edit-id').value = '';
             document.getElementById('patient-edit-modal-title').textContent = 'Nuovo Paziente';
-
+            renderPatientClinicalArchive(null);
             if (pat) {
                 document.getElementById('patient-edit-modal-title').textContent = 'Modifica Paziente';
                 document.getElementById('patient-edit-id').value = pat.id;
@@ -1845,6 +1939,7 @@
                 document.getElementById('patient-medications').value = pat.medications || '';
                 document.getElementById('patient-tags').value = (pat.tags || []).join ? pat.tags.join(', ') : (pat.tags || '');
                 document.getElementById('patient-recall-days').value = pat.recallDays || 120;
+                renderPatientClinicalArchive(pat.id);
             }
             document.getElementById('patient-edit-modal').classList.remove('hidden');
         }
@@ -2037,7 +2132,7 @@
                     patientDetailItem('Farmaci',p.medications),
                     patientDetailItem('Tag clinici',tags),
                     patientDetailItem('Richiamo previsto',(p.recallDays || 120) + ' giorni'),
-                    patientDetailItem('Note anamnestiche e cliniche',p.notes,true)
+                    patientDetailItem('Note anamnestiche generali',p.notes,true)
                 ].join('');
                 return `<div class="bg-white border border-slate-200 rounded-2xl shadow-2xs overflow-hidden">
                     <div class="p-3 sm:p-4 flex items-center gap-3">
