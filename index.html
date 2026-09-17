@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Silvia Chinellato | Osteopata & Idrocolonterapia</title>
-    <meta name="app-build" content="shared-data-v19-patient-clinical-panel-migration">
+    <meta name="app-build" content="shared-data-v20-latest-clinical-summary">
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -2098,6 +2098,46 @@
             if (days >= limit) return { label: 'Da richiamare', detail: days + ' giorni dall’ultima visita', classes: 'bg-orange-100 text-orange-800', icon: 'fa-phone-volume' };
             return { label: 'Attivo', detail: days + ' giorni dall’ultima visita', classes: 'bg-emerald-100 text-emerald-800', icon: 'fa-circle-check' };
         }
+        function getLatestPatientClinicalSession(patientId, lastVisitEvent = null) {
+            const sessions = appState.clinicalSessions
+                .filter(item => String(item.patientId) === String(patientId))
+                .filter(item => item.clinicalNote || item.clinicalOutcome)
+                .sort((a,b) => new Date(b.start || 0) - new Date(a.start || 0));
+            if (lastVisitEvent?.event?.id) {
+                const exact = sessions.find(item => String(item.eventId) === String(lastVisitEvent.event.id));
+                if (exact) return exact;
+                const ev = lastVisitEvent.event;
+                if (ev.extendedProps?.clinicalNote || ev.extendedProps?.clinicalOutcome) {
+                    return {
+                        eventId: ev.id,
+                        patientId,
+                        start: ev.start,
+                        title: ev.title,
+                        centerName: ev.extendedProps?.centerName || 'Studio Privato',
+                        clinicalNote: ev.extendedProps?.clinicalNote || '',
+                        clinicalOutcome: ev.extendedProps?.clinicalOutcome || ''
+                    };
+                }
+            }
+            return sessions[0] || null;
+        }
+        function renderLatestClinicalVisitCard(status, latestSession) {
+            const visitDate = patientDateLabel(status.lastVisit?.date,'Nessuna visita registrata');
+            if (!status.lastVisit) {
+                return `<div class="p-3 bg-white border rounded-xl"><span class="block text-[10px] font-bold text-slate-500">ULTIMA VISITA</span><span class="text-xs">${escapePatientText(visitDate)}</span></div>`;
+            }
+            const note = latestSession?.clinicalNote || '';
+            const outcome = latestSession?.clinicalOutcome || '';
+            return `<div class="sm:col-span-2 p-3 bg-white border border-water-200 rounded-xl">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
+                    <span class="block text-[10px] font-bold text-water-700">ULTIMA SEDUTA CLINICA</span>
+                    <span class="text-[10px] font-semibold text-slate-500">${escapePatientText(visitDate)}</span>
+                </div>
+                ${note ? `<div class="mt-2 p-2.5 bg-water-50 rounded-lg text-xs text-slate-700 whitespace-pre-wrap break-words"><strong class="block text-[10px] text-water-800 mb-1">NOTA SEDUTA</strong>${escapePatientText(note)}</div>` : '<p class="mt-2 text-xs text-slate-400 italic">Nessuna nota registrata per l’ultima visita.</p>'}
+                ${outcome ? `<div class="mt-2 p-2.5 bg-nature-50 rounded-lg text-xs text-slate-700 whitespace-pre-wrap break-words"><strong class="block text-[10px] text-nature-800 mb-1">ESITO</strong>${escapePatientText(outcome)}</div>` : '<p class="mt-1 text-xs text-slate-400 italic">Nessun esito registrato per l’ultima visita.</p>'}
+            </div>`;
+        }
+
         function patientDetailItem(label,value,wide=false) {
             if (!value) return '';
             return `<div class="${wide?'sm:col-span-2 ':''}p-3 bg-slate-50 border border-slate-100 rounded-xl"><span class="block text-[10px] font-bold text-slate-500 uppercase mb-1">${label}</span><div class="text-xs text-slate-700 whitespace-pre-wrap break-words">${escapePatientText(value)}</div></div>`;
@@ -2123,6 +2163,8 @@
                 const status = getPatientRecallStatus(p);
                 const badge = patientOperationalBadge(p,status);
                 const lastVisit = patientDateLabel(status.lastVisit?.date,'Nessuna visita registrata');
+                const latestClinicalSession = getLatestPatientClinicalSession(p.id, status.lastVisit);
+                const latestVisitCard = renderLatestClinicalVisitCard(status, latestClinicalSession);
                 const nextVisit = patientDateLabel(status.nextAppointment?.date,'Nessun appuntamento futuro');
                 const tags = Array.isArray(p.tags) ? p.tags.join(', ') : (p.tags || '');
                 const details = [
@@ -2152,8 +2194,8 @@
                     </div>
                     ${expanded?`<div class="px-3 sm:px-4 pb-4 border-t border-slate-100 bg-slate-50/40">
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 py-3">
-                            <div class="p-3 bg-white border rounded-xl"><span class="block text-[10px] font-bold text-slate-500">ULTIMA VISITA</span><span class="text-xs">${escapePatientText(lastVisit)}</span></div>
-                            <div class="p-3 bg-white border rounded-xl"><span class="block text-[10px] font-bold text-slate-500">PROSSIMO APPUNTAMENTO</span><span class="text-xs">${escapePatientText(nextVisit)}</span></div>
+                            ${latestVisitCard}
+                            <div class="sm:col-span-2 p-3 bg-white border rounded-xl"><span class="block text-[10px] font-bold text-slate-500">PROSSIMO APPUNTAMENTO</span><span class="text-xs">${escapePatientText(nextVisit)}</span></div>
                             ${details || '<p class="sm:col-span-2 text-xs text-slate-400 italic">Nessun dettaglio clinico aggiuntivo.</p>'}
                         </div>
                         <div class="flex flex-wrap justify-end gap-2">
