@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Silvia Chinellato | Osteopata & Idrocolonterapia</title>
-    <meta name="app-build" content="shared-data-v16-detached-event-visibility">
+    <meta name="app-build" content="shared-data-v17-strict-auth-gate">
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -958,7 +958,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged, signInAnonymously, signInWithCustomToken, setPersistence, inMemoryPersistence } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, collection, addDoc, getDocs, getDoc, deleteDoc, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         const AUTHORIZED_EMAILS = ['silviachine@gmail.com', 'aldo.colciago@gmail.com'];
@@ -1065,43 +1065,67 @@
             }));
         }
 
+        let authGateReady = false;
+        let authorizedSessionUid = null;
+        function isAuthorizedFirebaseUser(user = auth?.currentUser) {
+            const email = String(user?.email || '').toLowerCase();
+            return Boolean(user && email && AUTHORIZED_EMAILS.includes(email));
+        }
+        async function applyAuthenticatedState(user) {
+            if (!isAuthorizedFirebaseUser(user)) {
+                authorizedSessionUid = null;
+                appState.isLoggedIn = false;
+                appState.currentUserEmail = null;
+                sharedUnsubscribers.forEach(unsubscribe => unsubscribe());
+                sharedUnsubscribers = [];
+                showPublicView();
+                return;
+            }
+            if (authorizedSessionUid === user.uid && appState.isLoggedIn) return;
+            authorizedSessionUid = user.uid;
+            appState.isLoggedIn = true;
+            appState.currentUserEmail = user.email.toLowerCase();
+            userId = user.uid;
+            showPrivateView();
+            await loadAllDataFromFirestore();
+            if (!isAuthorizedFirebaseUser()) return;
+            await executeIcalSync(true);
+        }
         try {
             const app = initializeApp(firebaseConfig);
             db = getFirestore(app);
             auth = getAuth(app);
-            
+            onAuthStateChanged(auth, async user => {
+                if (!authGateReady) return;
+                await applyAuthenticatedState(user);
+            });
             const initAuth = async () => {
                 try {
-                    if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                        await signInWithCustomToken(auth, __initial_auth_token);
-                    } else {
-                        await signInAnonymously(auth);
-                    }
+                    // Nessuna sessione amministrativa sopravvive alla chiusura o al riavvio della pagina.
+                    await setPersistence(auth, inMemoryPersistence);
+                    await signOut(auth);
+                    await signInAnonymously(auth);
                     userId = auth.currentUser?.uid || 'anonymous-user';
+                    authGateReady = true;
                     updateFirebaseStatus(true, 'Connesso');
+                    await applyAuthenticatedState(auth.currentUser);
                     await loadAllDataFromFirestore();
                 } catch (err) {
-                    updateFirebaseStatus(false, 'Offline Mode');
-                    renderAllPublicUI();
+                    authGateReady = false;
+                    appState.isLoggedIn = false;
+                    appState.currentUserEmail = null;
+                    updateFirebaseStatus(false, 'Accesso non disponibile');
+                    showPublicView();
                 }
             };
             initAuth();
-
-            onAuthStateChanged(auth, async (user) => {
-                if (user && user.email && AUTHORIZED_EMAILS.includes(user.email.toLowerCase())) {
-                    appState.isLoggedIn = true;
-                    appState.currentUserEmail = user.email.toLowerCase();
-                    userId = user.uid;
-                    showPrivateView();
-                    await loadAllDataFromFirestore();
-                    // Auto sync on login
-                    await executeIcalSync(true);
-                }
-            });
         } catch (e) {
+            authGateReady = false;
+            appState.isLoggedIn = false;
             userId = 'offline-user';
             updateFirebaseStatus(false, 'Non disponibile');
             renderAllPublicUI();
+            showPublicView();
         }
 
         function updateFirebaseStatus(isOnline, text) {
@@ -1197,6 +1221,12 @@
         }
 
         function showPrivateView() {
+            if (!authGateReady || !isAuthorizedFirebaseUser() || !appState.isLoggedIn) {
+                appState.isLoggedIn = false;
+                appState.currentUserEmail = null;
+                showPublicView();
+                return;
+            }
             document.body.classList.add('mobile-admin-active');
             document.getElementById('public-view').classList.add('hidden');
             document.getElementById('private-view').classList.remove('hidden');
@@ -1352,32 +1382,32 @@
         window.closeLoginModal = function() { document.getElementById('login-modal').classList.add('hidden'); }
 
         window.handleGoogleLogin = async function() {
-            if (!auth) return;
+            if (!auth || !authGateReady) { showToast('Autenticazione non ancora disponibile.'); return; }
             try {
+                await setPersistence(auth, inMemoryPersistence);
                 const provider = new GoogleAuthProvider();
                 const result = await signInWithPopup(auth, provider);
-                const email = result.user.email ? result.user.email.toLowerCase() : '';
-                if (AUTHORIZED_EMAILS.includes(email)) {
-                    appState.isLoggedIn = true;
-                    appState.currentUserEmail = email;
-                    userId = result.user.uid;
-                    closeLoginModal();
-                    showPrivateView();
-                    await loadAllDataFromFirestore();
-                    // La sincronizzazione automatica parte da onAuthStateChanged.
-                    showToast('Accesso effettuato con successo!');
-                } else {
+                const email = String(result.user?.email || '').toLowerCase();
+                if (!AUTHORIZED_EMAILS.includes(email)) {
                     await signOut(auth);
-                    showToast(`Email ${email} non autorizzata.`);
+                    showToast(`Email ${email || 'sconosciuta'} non autorizzata.`);
+                    return;
                 }
+                closeLoginModal();
+                showToast('Accesso effettuato con successo!');
+                // L'apertura dell'area amministrativa avviene solo da onAuthStateChanged.
             } catch (err) {
+                appState.isLoggedIn = false;
+                appState.currentUserEmail = null;
+                showPublicView();
                 showToast("Errore durante l'accesso Google.");
             }
         }
-
         window.handleLogout = async function() {
             if (auth) { try { await signOut(auth); } catch (e) {} }
             appState.isLoggedIn = false;
+            appState.currentUserEmail = null;
+            authorizedSessionUid = null;
             sharedUnsubscribers.forEach(unsubscribe => unsubscribe());
             sharedUnsubscribers = [];
             showPublicView();
@@ -2347,6 +2377,14 @@
         }
 
         async function executeIcalSync(isAutoLogin = false) {
+            if (!authGateReady || !appState.isLoggedIn || !isAuthorizedFirebaseUser()) {
+                appState.isLoggedIn = false;
+                appState.currentUserEmail = null;
+                showPublicView();
+                openLoginModal();
+                showToast('Accedi con un account autorizzato prima di sincronizzare.');
+                return;
+            }
             const modal = document.getElementById('sync-report-modal');
             const titleEl = document.getElementById('sync-modal-title');
             const contentEl = document.getElementById('sync-report-content');
