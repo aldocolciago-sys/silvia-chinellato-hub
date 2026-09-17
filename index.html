@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Silvia Chinellato | Osteopata & Idrocolonterapia</title>
-    <meta name="app-build" content="shared-data-v20-latest-clinical-summary">
+    <meta name="app-build" content="shared-data-v21-mobile-nav-modal-state-fix">
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -1565,7 +1565,10 @@
             document.getElementById('studio-modal').classList.remove('hidden');
         }
 
-        window.closeStudioModal = function() { document.getElementById('studio-modal').classList.add('hidden'); }
+        window.closeStudioModal = function() {
+            document.getElementById('studio-modal').classList.add('hidden');
+            updateModalState();
+        }
 
         let patientCreationContext = 'registry';
         let pendingAppointmentPatientId = null;
@@ -1885,7 +1888,15 @@
             pendingAppointmentPatientId = null;
 
             closeStudioModal();
-            if (calendarInstance) calendarInstance.refetchEvents();
+            if (calendarInstance) {
+                calendarInstance.refetchEvents();
+                calendarInstance.updateSize();
+            }
+            updateModalState();
+            requestAnimationFrame(() => {
+                updateModalState();
+                if (calendarInstance) calendarInstance.updateSize();
+            });
             checkCalendarConflicts();
             showToast("Appuntamento salvato con successo!");
         }
@@ -3317,10 +3328,29 @@
         }
 
         function updateModalState() {
-            const anyOpen = Array.from(document.querySelectorAll('[id$="-modal"]')).some(m => !m.classList.contains('hidden'));
+            const anyOpen = Array.from(document.querySelectorAll('[id$="-modal"]')).some(modal => !modal.classList.contains('hidden'));
             document.body.classList.toggle('modal-open', anyOpen);
+            const mobileNav = document.getElementById('mobile-admin-nav');
+            if (mobileNav) {
+                mobileNav.setAttribute('aria-hidden', anyOpen ? 'true' : 'false');
+                if (!anyOpen && appState.isLoggedIn && window.innerWidth < 768) {
+                    document.body.classList.add('mobile-admin-active');
+                }
+            }
+        }
+        function initializeModalStateObserver() {
+            const observer = new MutationObserver(mutations => {
+                if (mutations.some(mutation => mutation.type === 'attributes' && mutation.attributeName === 'class')) {
+                    updateModalState();
+                }
+            });
+            document.querySelectorAll('[id$="-modal"]').forEach(modal => {
+                observer.observe(modal, { attributes: true, attributeFilter: ['class'] });
+            });
+            updateModalState();
         }
         document.addEventListener('click', () => setTimeout(updateModalState, 0));
+        document.addEventListener('DOMContentLoaded', initializeModalStateObserver);
 
         window.showToast = function(message) {
             const toast = document.getElementById('toast');
