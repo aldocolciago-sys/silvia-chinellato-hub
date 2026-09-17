@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Silvia Chinellato | Osteopata & Idrocolonterapia</title>
-    <meta name="app-build" content="shared-data-v12-sync-report-flat-fixed">
+    <meta name="app-build" content="shared-data-v13-flat-sync-single-login">
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -1364,7 +1364,7 @@
                     closeLoginModal();
                     showPrivateView();
                     await loadAllDataFromFirestore();
-                    // La sincronizzazione automatica viene avviata una sola volta da onAuthStateChanged.
+                    // La sincronizzazione automatica parte da onAuthStateChanged.
                     showToast('Accesso effettuato con successo!');
                 } else {
                     await signOut(auth);
@@ -2339,16 +2339,11 @@
             });
         }
 
-        let icalSyncInProgress = false;
         window.triggerIcalSync = async function() {
             await executeIcalSync(false);
         }
+
         async function executeIcalSync(isAutoLogin = false) {
-            if (icalSyncInProgress) {
-                showToast('Sincronizzazione già in corso.');
-                return;
-            }
-            icalSyncInProgress = true;
             const modal = document.getElementById('sync-report-modal');
             const titleEl = document.getElementById('sync-modal-title');
             const contentEl = document.getElementById('sync-report-content');
@@ -2366,7 +2361,6 @@
                 if (spinner) spinner.classList.remove('animate-spin');
                 if (titleEl) titleEl.textContent = 'Sincronizzazione completata';
                 if (footer) footer.classList.remove('hidden');
-                icalSyncInProgress = false;
                 return;
             }
 
@@ -2555,9 +2549,9 @@
             const report = {
                 syncedAt: new Date().toISOString(),
                 centers: icalCenters.map(c => c.name),
-                added: addedEventsDetail.map(item => ({...item})),
-                modified: modifiedEventsDetail.map(item => ({...item})),
-                deleted: deletedEventsDetail.map(item => ({...item}))
+                added: addedEventsDetail.map(item => ({ ...item })),
+                modified: modifiedEventsDetail.map(item => ({ ...item })),
+                deleted: deletedEventsDetail.map(item => ({ ...item }))
             };
             saveLastSyncReport(report);
             if (contentEl) contentEl.innerHTML = buildSyncDecisionReport(report);
@@ -2596,11 +2590,22 @@
             const summary=`<div class="grid grid-cols-3 gap-2 text-center"><div class="p-3 bg-emerald-50 rounded-xl"><b>${report.added.length}</b><small class="block">Aggiunti</small></div><div class="p-3 bg-amber-50 rounded-xl"><b>${report.modified.length}</b><small class="block">Modificati</small></div><div class="p-3 bg-rose-50 rounded-xl"><b>${report.deleted.length}</b><small class="block">Rimossi alla fonte</small></div></div>`;
             const warning=pendingDeletionCount(report)?`<div class="p-3 bg-rose-50 border border-rose-200 rounded-xl text-xs text-rose-900"><b>Scelta obbligatoria:</b> decidi cosa fare per ${pendingDeletionCount(report)} appuntamenti rimossi dal calendario originale. La finestra non può essere chiusa prima.</div>`:'';
             const centers=allCenters.map(name=>{
-                const a=report.added.filter(x=>x.center===name), m=report.modified.filter(x=>x.center===name), d=report.deleted.filter(x=>x.center===name);
+                const a=report.added.filter(x=>x.center===name);
+                const m=report.modified.filter(x=>x.center===name);
+                const d=report.deleted.filter(x=>x.center===name);
                 const total=a.length+m.length+d.length;
-                return `<section class="border border-slate-200 rounded-2xl p-3 sm:p-4 bg-white"><div class="flex items-center justify-between gap-2 pb-2 border-b border-slate-100"><h4 class="font-editorial font-bold italic text-base text-slate-900">${escapeReport(name)}</h4><span class="px-2.5 py-1 rounded-full text-[10px] font-bold ${total?'bg-purple-100 text-purple-800':'bg-emerald-100 text-emerald-800'}">${total?total+' variazioni':'Nessuna variazione'}</span></div>${buildChangeSection('Aggiunti',a,'bg-emerald-50')}${buildChangeSection('Modificati',m,'bg-amber-50')}${buildDeletedSection(d)}${!total?'<p class="text-xs text-slate-400 mt-3"><i class="fa-solid fa-circle-check text-emerald-600 mr-1"></i>Nessun appuntamento aggiunto, modificato o rimosso.</p>':''}</section>`;
+                return `<section class="border border-slate-200 rounded-2xl p-3 sm:p-4 bg-white">
+                    <div class="flex items-center justify-between gap-2 pb-2 border-b border-slate-100">
+                        <h4 class="font-editorial font-bold italic text-base text-slate-900">${escapeReport(name)}</h4>
+                        <span class="px-2.5 py-1 rounded-full text-[10px] font-bold ${total?'bg-purple-100 text-purple-800':'bg-emerald-100 text-emerald-800'}">${total?total+' variazioni':'Nessuna variazione'}</span>
+                    </div>
+                    ${buildChangeSection('Aggiunti',a,'bg-emerald-50')}
+                    ${buildChangeSection('Modificati',m,'bg-amber-50')}
+                    ${buildDeletedSection(d)}
+                    ${!total?'<p class="text-xs text-slate-400 mt-3"><i class="fa-solid fa-circle-check text-emerald-600 mr-1"></i>Nessun appuntamento aggiunto, modificato o rimosso.</p>':''}
+                </section>`;
             }).join('');
-            return `<div class="space-y-4 max-h-[58vh] overflow-y-auto pr-1">${warning}${summary}<div class="space-y-3">${centers}</div></div>`;
+            return `<div class="space-y-4">${warning}${summary}<div class="space-y-3">${centers}</div></div>`;
         }
         function updateSyncCloseState(report) {
             const button=document.querySelector('#sync-modal-footer button');
