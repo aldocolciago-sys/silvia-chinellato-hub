@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Silvia Chinellato | Osteopata & Idrocolonterapia</title>
-    <meta name="app-build" content="shared-data-v23-strict-history-unassigned-events">
+    <meta name="app-build" content="shared-data-v24-history-modal-stack-fix">
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -2145,8 +2145,11 @@
             const eventData = appState.events.find(ev => String(ev.id) === String(eventId));
             if (!eventData) { showToast('Appuntamento non trovato.'); return; }
             document.getElementById('patient-history-modal').classList.add('hidden');
+            document.getElementById('patients-modal').classList.add('hidden');
+            document.getElementById('patient-edit-modal').classList.add('hidden');
             openStudioModal(eventData);
             updateModalState();
+            requestAnimationFrame(() => updateModalState());
         }
 
         window.filterPatientsList = function() {
