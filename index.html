@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Silvia Chinellato | Osteopata & Idrocolonterapia</title>
-    <meta name="app-build" content="shared-data-v8-sync-change-dashboard">
+    <meta name="app-build" content="shared-data-v11-compact-expandable-patients">
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -405,9 +405,7 @@
                             <span id="firebase-dot" class="w-1.5 h-1.5 rounded-full bg-amber-500 inline-block"></span>
                             <span id="firebase-text">Connessione...</span>
                         </div>
-                        <button onclick="openLastSyncReport()" id="last-sync-report-btn" class="inline-flex items-center gap-1 bg-amber-50 hover:bg-amber-100 text-amber-800 px-2.5 py-0.5 rounded-full text-[10px] font-bold border border-amber-200 transition shadow-2xs" title="Vedi novità dell'ultima sincronizzazione">
-                            <i class="fa-solid fa-clock-rotate-left text-[9px]"></i> <span>Ultime novità</span>
-                        </button>
+                        <button onclick="openLastSyncReport()" class="inline-flex items-center gap-1 bg-amber-50 hover:bg-amber-100 text-amber-800 px-2.5 py-0.5 rounded-full text-[10px] font-bold border border-amber-200"><i class="fa-solid fa-clock-rotate-left"></i><span>Ultime novità</span></button>
                         <button onclick="triggerIcalSync()" id="sync-ical-btn" class="inline-flex items-center gap-1 bg-water-50 hover:bg-water-100 text-water-800 px-2.5 py-0.5 rounded-full text-[10px] font-bold border border-water-200 transition shadow-2xs" title="Sincronizza Calendari Poliambulatori">
                             <i class="fa-solid fa-rotate text-[9px]"></i> <span>Sincronizza Calendari</span>
                         </button>
@@ -1905,38 +1903,92 @@
             renderPatientsList(query);
         }
 
+        const expandedPatientCards = new Set();
+        window.togglePatientCard = function(patientId) {
+            if (expandedPatientCards.has(patientId)) expandedPatientCards.delete(patientId);
+            else expandedPatientCards.add(patientId);
+            const query = document.getElementById('patient-search-input')?.value.toLowerCase().trim() || '';
+            renderPatientsList(query);
+        }
+        function patientDateLabel(date, fallback) {
+            return date ? date.toLocaleString('it-IT',{dateStyle:'medium',timeStyle:'short'}) : fallback;
+        }
+        function patientOperationalBadge(patient, status) {
+            const now = new Date();
+            if (status.nextAppointment) return { label: 'Prenotato', detail: patientDateLabel(status.nextAppointment.date,''), classes: 'bg-water-100 text-water-800', icon: 'fa-calendar-check' };
+            if (!status.lastVisit) return { label: 'Nuovo', detail: 'Nessuna visita registrata', classes: 'bg-slate-100 text-slate-700', icon: 'fa-user-clock' };
+            const days = Math.max(0, Math.floor((now-status.lastVisit.date)/86400000));
+            const limit = Number(patient.recallDays || 120);
+            if (days >= limit) return { label: 'Da richiamare', detail: days + ' giorni dall’ultima visita', classes: 'bg-orange-100 text-orange-800', icon: 'fa-phone-volume' };
+            return { label: 'Attivo', detail: days + ' giorni dall’ultima visita', classes: 'bg-emerald-100 text-emerald-800', icon: 'fa-circle-check' };
+        }
+        function patientDetailItem(label,value,wide=false) {
+            if (!value) return '';
+            return `<div class="${wide?'sm:col-span-2 ':''}p-3 bg-slate-50 border border-slate-100 rounded-xl"><span class="block text-[10px] font-bold text-slate-500 uppercase mb-1">${label}</span><div class="text-xs text-slate-700 whitespace-pre-wrap break-words">${escapePatientText(value)}</div></div>`;
+        }
         function renderPatientsList(searchQuery = '') {
             const container = document.getElementById('patients-alphabetical-list');
             if (!container) return;
             let filtered = appState.patients;
             if (searchQuery) {
-                filtered = appState.patients.filter(p => p.name.toLowerCase().includes(searchQuery) || (p.phone && p.phone.includes(searchQuery)) || (p.email && p.email.toLowerCase().includes(searchQuery)));
+                filtered = appState.patients.filter(p => {
+                    const tags = Array.isArray(p.tags) ? p.tags.join(' ') : (p.tags || '');
+                    const haystack = [p.name,p.phone,p.email,tags,p.currentIssues,p.goals].filter(Boolean).join(' ').toLowerCase();
+                    return haystack.includes(searchQuery);
+                });
             }
             if (filtered.length === 0) {
                 container.innerHTML = `<p class="text-xs text-slate-400 italic text-center py-6">Nessun paziente trovato.</p>`;
                 return;
             }
-            let sorted = [...filtered].sort((a,b) => a.name.localeCompare(b.name));
-            container.innerHTML = sorted.map(p => `
-                <div class="p-4 bg-white border border-slate-200 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs shadow-2xs">
-                    <div class="space-y-1">
-                        <div class="flex items-center gap-2">
-                            <strong class="font-editorial text-slate-900 text-sm italic">${p.name}</strong>
-                            ${p.phone ? `<span class="text-slate-500"><i class="fa-solid fa-phone text-[10px] text-nature-600"></i> ${p.phone}</span>` : ''}
-                            ${p.email ? `<span class="text-slate-500"><i class="fa-solid fa-envelope text-[10px] text-water-600"></i> ${p.email}</span>` : ''}
+            const sorted = [...filtered].sort((a,b) => a.name.localeCompare(b.name));
+            container.innerHTML = sorted.map(p => {
+                const expanded = expandedPatientCards.has(String(p.id));
+                const status = getPatientRecallStatus(p);
+                const badge = patientOperationalBadge(p,status);
+                const lastVisit = patientDateLabel(status.lastVisit?.date,'Nessuna visita registrata');
+                const nextVisit = patientDateLabel(status.nextAppointment?.date,'Nessun appuntamento futuro');
+                const tags = Array.isArray(p.tags) ? p.tags.join(', ') : (p.tags || '');
+                const details = [
+                    patientDetailItem('Problemi attuali',p.currentIssues),
+                    patientDetailItem('Obiettivi terapeutici',p.goals),
+                    patientDetailItem('Allergie',p.allergies),
+                    patientDetailItem('Farmaci',p.medications),
+                    patientDetailItem('Tag clinici',tags),
+                    patientDetailItem('Richiamo previsto',(p.recallDays || 120) + ' giorni'),
+                    patientDetailItem('Note anamnestiche e cliniche',p.notes,true)
+                ].join('');
+                return `<div class="bg-white border border-slate-200 rounded-2xl shadow-2xs overflow-hidden">
+                    <div class="p-3 sm:p-4 flex items-center gap-3">
+                        <button type="button" onclick="togglePatientCard('${p.id}')" class="flex-1 min-w-0 text-left flex items-center gap-3" aria-expanded="${expanded}">
+                            <span class="w-9 h-9 rounded-full bg-amber-50 text-amber-800 flex items-center justify-center flex-shrink-0"><i class="fa-solid fa-user"></i></span>
+                            <span class="min-w-0 flex-1">
+                                <span class="flex items-center gap-2 flex-wrap"><strong class="font-editorial text-slate-900 text-base italic truncate">${escapePatientText(p.name)}</strong><span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${badge.classes}"><i class="fa-solid ${badge.icon} mr-1"></i>${badge.label}</span></span>
+                                <span class="mt-1 flex flex-wrap gap-x-3 gap-y-1 text-[10px] text-slate-500">${p.phone?`<span><i class="fa-solid fa-phone text-nature-600 mr-1"></i>${escapePatientText(p.phone)}</span>`:''}${p.email?`<span><i class="fa-solid fa-envelope text-water-600 mr-1"></i>${escapePatientText(p.email)}</span>`:''}</span>
+                                <span class="mt-1 block text-[10px] text-slate-500"><i class="fa-regular fa-clock mr-1"></i>${escapePatientText(badge.detail)}</span>
+                            </span>
+                            <i class="fa-solid fa-chevron-${expanded?'up':'down'} text-slate-400"></i>
+                        </button>
+                        <div class="hidden sm:flex items-center gap-1.5 flex-shrink-0">
+                            <button onclick="openPatientHistoryModal('${p.id}')" class="px-3 py-1.5 bg-amber-50 text-amber-800 font-semibold rounded-xl">Storico</button>
+                            <button type="button" onclick="editPatientById('${p.id}')" class="px-3 py-1.5 bg-nature-50 text-nature-700 font-semibold rounded-xl">Modifica</button>
                         </div>
-                        ${p.notes ? `<p class="text-slate-600 font-light text-[11px] bg-slate-50 p-2 rounded-xl"><strong>Note:</strong> ${p.notes}</p>` : ''}
                     </div>
-                    <div class="flex items-center gap-1.5 self-end sm:self-center flex-wrap">
-                        <button onclick="openPatientHistoryModal('${p.id}')" class="px-3 py-1.5 bg-amber-50 text-amber-800 font-semibold rounded-xl hover:bg-amber-100 transition"><i class="fa-solid fa-calendar-days mr-1"></i> Storico</button>
-                        <button type="button" onclick="editPatientById('${p.id}')" class="px-3 py-1.5 bg-nature-50 text-nature-700 font-semibold rounded-xl hover:bg-nature-100 transition">Modifica</button>
-                        <button onclick="confirmDeletePatient('${p.id}')" class="px-3 py-1.5 bg-rose-50 text-rose-600 font-semibold rounded-xl hover:bg-rose-100 transition">Elimina</button>
-                    </div>
-                </div>
-            `).join('');
+                    ${expanded?`<div class="px-3 sm:px-4 pb-4 border-t border-slate-100 bg-slate-50/40">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 py-3">
+                            <div class="p-3 bg-white border rounded-xl"><span class="block text-[10px] font-bold text-slate-500">ULTIMA VISITA</span><span class="text-xs">${escapePatientText(lastVisit)}</span></div>
+                            <div class="p-3 bg-white border rounded-xl"><span class="block text-[10px] font-bold text-slate-500">PROSSIMO APPUNTAMENTO</span><span class="text-xs">${escapePatientText(nextVisit)}</span></div>
+                            ${details || '<p class="sm:col-span-2 text-xs text-slate-400 italic">Nessun dettaglio clinico aggiuntivo.</p>'}
+                        </div>
+                        <div class="flex flex-wrap justify-end gap-2">
+                            <button onclick="openPatientHistoryModal('${p.id}')" class="px-3 py-2 bg-amber-100 text-amber-900 font-bold rounded-xl text-xs"><i class="fa-solid fa-calendar-days mr-1"></i>Storico</button>
+                            <button type="button" onclick="editPatientById('${p.id}')" class="px-3 py-2 bg-nature-100 text-nature-800 font-bold rounded-xl text-xs">Modifica</button>
+                            <button onclick="confirmDeletePatient('${p.id}')" class="px-3 py-2 bg-rose-50 text-rose-600 font-bold rounded-xl text-xs">Elimina</button>
+                        </div>
+                    </div>`:''}
+                </div>`;
+            }).join('');
         }
-
-
         function populatePatientDropdown() {
             const sel = document.getElementById('studio-patient-select');
             if (!sel) return;
@@ -2299,7 +2351,6 @@
             const footer = document.getElementById('sync-modal-footer');
 
             if (modal) modal.classList.remove('hidden');
-            if (contentEl) contentEl.innerHTML = '';
             if (titleEl) titleEl.textContent = isAutoLogin ? 'Sincronizzazione automatica all’accesso...' : 'Sincronizzazione Calendari in corso...';
             if (spinner) spinner.classList.add('animate-spin');
             if (footer) footer.classList.add('hidden');
@@ -2334,10 +2385,9 @@
             let addedEventsDetail = [];
             let modifiedEventsDetail = [];
             let deletedEventsDetail = [];
-            const syncStartedAt = new Date();
 
             let activeIcalEventIds = new Set();
-            let oldEventsMap = new Map(appState.events.filter(e => e.id.startsWith('ical_')).map(ev => [ev.id, ev]));
+            let oldEventsMap = new Map(appState.events.filter(e => e.id.startsWith('ical_') && !e.extendedProps?.detachedFromExternal).map(ev => [ev.id, ev]));
 
             for (let center of icalCenters) {
                 let statusEl = document.getElementById(`sync-status-${center.id}`);
@@ -2433,16 +2483,7 @@
                                     let oldEv = appState.events[existingIdx];
                                     if (oldEv.title !== parsedEvent.title || oldEv.start !== parsedEvent.start || oldEv.end !== parsedEvent.end) {
                                         centerModified++;
-                                        modifiedEventsDetail.push({
-                                            title: eventTitleClean,
-                                            center: center.name,
-                                            when: `${dateFormatted} alle ${timeFormatted}`,
-                                            previousTitle: oldEv.title || 'Appuntamento',
-                                            previousWhen: formatSyncEventDate(oldEv.start),
-                                            currentTitle: parsedEvent.title || 'Appuntamento',
-                                            currentWhen: formatSyncEventDate(parsedEvent.start),
-                                            changes: describeSyncChanges(oldEv, parsedEvent)
-                                        });
+                                        modifiedEventsDetail.push({ title: eventTitleClean, center: center.name, when: `${dateFormatted} alle ${timeFormatted}` });
                                     }
                                     appState.events[existingIdx] = parsedEvent;
                                 } else {
@@ -2488,17 +2529,17 @@
             }
 
             const removedIds = Array.from(oldEventsMap.keys()).filter(id => id.startsWith('ical_') && !activeIcalEventIds.has(id));
-            for (let remId of removedIds) {
-                let evToRem = oldEventsMap.get(remId);
-                if (evToRem) {
-                    deletedEventsDetail.push({ title: evToRem.title, center: evToRem.extendedProps?.centerName || 'Poliambulatorio', when: formatSyncEventDate(evToRem.start) });
-                }
-                appState.events = appState.events.filter(e => e.id !== remId);
-                if (db && userId) {
-                    try { await deleteDoc(sharedDocument('studio_events', remId)); } catch(e){}
-                }
+            for (const remId of removedIds) {
+                const evToRem = oldEventsMap.get(remId);
+                if (!evToRem) continue;
+                deletedEventsDetail.push({
+                    id: remId,
+                    title: evToRem.title,
+                    center: evToRem.extendedProps?.centerName || 'Poliambulatorio',
+                    when: formatDeletionEventDate(evToRem.start),
+                    decision: null
+                });
             }
-
             if (calendarInstance) calendarInstance.refetchEvents();
             checkCalendarConflicts();
 
@@ -2506,78 +2547,95 @@
             if (titleEl) titleEl.textContent = 'Sincronizzazione completata';
 
             const report = {
-                syncedAt: syncStartedAt.toISOString(),
-                calendarsChecked: icalCenters.length,
+                syncedAt: new Date().toISOString(),
+                centers: icalCenters.map(c => c.name),
                 added: addedEventsDetail,
                 modified: modifiedEventsDetail,
-                deleted: deletedEventsDetail,
-                centers: icalCenters.map(center => ({
-                    id: center.id,
-                    name: center.name,
-                    added: addedEventsDetail.filter(x => x.center === center.name),
-                    modified: modifiedEventsDetail.filter(x => x.center === center.name),
-                    deleted: deletedEventsDetail.filter(x => x.center === center.name)
-                }))
+                deleted: deletedEventsDetail
             };
             saveLastSyncReport(report);
-            if (contentEl) contentEl.innerHTML = buildSyncReportHtml(report);
+            if (contentEl) contentEl.innerHTML = buildSyncDecisionReport(report);
+            updateSyncCloseState(report);
             if (footer) footer.classList.remove('hidden');
         }
 
-        function formatSyncEventDate(value) {
-            if (!value) return 'Data non disponibile';
-            const date = new Date(value);
-            if (Number.isNaN(date.getTime())) return String(value);
-            return date.toLocaleString('it-IT', { day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit' });
+        function formatDeletionEventDate(value) {
+            const d=new Date(value);
+            return Number.isNaN(d.getTime()) ? String(value || '') : d.toLocaleString('it-IT',{dateStyle:'medium',timeStyle:'short'});
         }
-        function describeSyncChanges(previousEvent, currentEvent) {
-            const changes = [];
-            if ((previousEvent.title || '') !== (currentEvent.title || '')) changes.push(`Titolo: ${previousEvent.title || 'Appuntamento'} → ${currentEvent.title || 'Appuntamento'}`);
-            if (previousEvent.start !== currentEvent.start) changes.push(`Inizio: ${formatSyncEventDate(previousEvent.start)} → ${formatSyncEventDate(currentEvent.start)}`);
-            if ((previousEvent.end || '') !== (currentEvent.end || '')) changes.push(`Fine: ${formatSyncEventDate(previousEvent.end)} → ${formatSyncEventDate(currentEvent.end)}`);
-            return changes;
-        }
-        function escapeSyncText(value) {
-            return String(value || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;');
-        }
-        function syncChangeRows(items, type) {
-            if (!items.length) return '';
-            const styles = {
-                added: { icon:'fa-plus', title:'Aggiunti', box:'bg-emerald-50 border-emerald-200', text:'text-emerald-800' },
-                modified: { icon:'fa-pen', title:'Modificati', box:'bg-amber-50 border-amber-200', text:'text-amber-800' },
-                deleted: { icon:'fa-trash', title:'Cancellati', box:'bg-rose-50 border-rose-200', text:'text-rose-800' }
-            };
-            const style=styles[type];
-            const rows=items.map(item => `<div class="p-3 bg-white border border-slate-200 rounded-xl"><div class="flex flex-col sm:flex-row sm:justify-between gap-1"><strong class="text-slate-900">${escapeSyncText(item.title)}</strong><span class="text-slate-500">${escapeSyncText(item.when || item.currentWhen)}</span></div>${type==='modified' && item.changes?.length ? `<ul class="mt-2 space-y-1 text-[11px] text-slate-600">${item.changes.map(change=>`<li><i class="fa-solid fa-arrow-right text-amber-600 mr-1"></i>${escapeSyncText(change)}</li>`).join('')}</ul>`:''}</div>`).join('');
-            return `<div class="mt-3 p-3 border rounded-2xl ${style.box}"><div class="font-bold text-xs ${style.text} mb-2"><i class="fa-solid ${style.icon} mr-1"></i>${style.title} (${items.length})</div><div class="space-y-2">${rows}</div></div>`;
-        }
-        function buildSyncReportHtml(report) {
-            const syncedAt=formatSyncEventDate(report.syncedAt);
-            const total=report.added.length+report.modified.length+report.deleted.length;
-            const summary=`<div class="grid grid-cols-2 sm:grid-cols-4 gap-2"><div class="p-3 rounded-2xl bg-slate-50 border text-center"><strong class="text-lg">${report.calendarsChecked}</strong><p class="text-[10px] text-slate-500">Calendari</p></div><div class="p-3 rounded-2xl bg-emerald-50 border border-emerald-200 text-center"><strong class="text-lg text-emerald-800">${report.added.length}</strong><p class="text-[10px] text-emerald-700">Aggiunti</p></div><div class="p-3 rounded-2xl bg-amber-50 border border-amber-200 text-center"><strong class="text-lg text-amber-800">${report.modified.length}</strong><p class="text-[10px] text-amber-700">Modificati</p></div><div class="p-3 rounded-2xl bg-rose-50 border border-rose-200 text-center"><strong class="text-lg text-rose-800">${report.deleted.length}</strong><p class="text-[10px] text-rose-700">Cancellati</p></div></div>`;
-            const centers=report.centers.map((center,index)=>{
-                const count=center.added.length+center.modified.length+center.deleted.length;
-                return `<details class="border border-slate-200 rounded-2xl overflow-hidden bg-white" ${count ? 'open' : ''}><summary class="cursor-pointer p-4 flex items-center justify-between gap-3"><span class="font-editorial italic font-bold text-base">${escapeSyncText(center.name)}</span><span class="text-[10px] font-bold ${count?'text-purple-800 bg-purple-50':'text-slate-500 bg-slate-100'} px-2.5 py-1 rounded-full">${count ? `${count} variazioni` : 'Nessuna variazione'}</span></summary><div class="px-4 pb-4">${count ? syncChangeRows(center.added,'added')+syncChangeRows(center.modified,'modified')+syncChangeRows(center.deleted,'deleted') : '<p class="text-xs text-slate-400 italic py-2">Nessun appuntamento aggiunto, modificato o cancellato.</p>'}</div></details>`;
-            }).join('');
-            return `<div class="space-y-4"><div class="flex items-center justify-between gap-3"><div><p class="text-[10px] text-slate-500 uppercase font-bold">Ultima sincronizzazione</p><p class="text-xs font-semibold text-slate-700">${syncedAt}</p></div><span class="px-3 py-1.5 rounded-full text-xs font-bold ${total?'bg-purple-100 text-purple-800':'bg-emerald-100 text-emerald-800'}">${total ? `${total} variazioni totali` : 'Agenda invariata'}</span></div>${summary}<div class="space-y-3"><h4 class="font-bold text-xs text-slate-700">Dettaglio per poliambulatorio</h4>${centers}</div></div>`;
+        function escapeReport(value) {
+            return String(value||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;');
         }
         function saveLastSyncReport(report) {
-            try { localStorage.setItem('lastIcalSyncReport', JSON.stringify(report)); } catch(e) { console.warn('Report sync non salvato localmente',e); }
+            try { localStorage.setItem('lastIcalSyncReport',JSON.stringify(report)); } catch(e) {}
+        }
+        function loadLastSyncReport() {
+            try { return JSON.parse(localStorage.getItem('lastIcalSyncReport')||'null'); } catch(e) { return null; }
+        }
+        function pendingDeletionCount(report) {
+            return (report?.deleted || []).filter(x => !x.decision).length;
+        }
+        function buildChangeSection(title,items,color) {
+            if (!items.length) return '';
+            return `<div class="mt-3 p-3 ${color} rounded-2xl"><strong class="text-xs">${title} (${items.length})</strong><div class="space-y-2 mt-2">${items.map(x=>`<div class="bg-white border rounded-xl p-3 text-xs"><b>${escapeReport(x.title)}</b><p class="text-slate-500 mt-1">${escapeReport(x.when||'')}</p></div>`).join('')}</div></div>`;
+        }
+        function buildDeletedSection(items) {
+            if (!items.length) return '';
+            return `<div class="mt-3 p-3 bg-rose-50 border border-rose-200 rounded-2xl"><strong class="text-xs text-rose-800">Rimossi dal calendario originale (${items.length})</strong><div class="space-y-3 mt-2">${items.map(x=>{
+                const decided=x.decision;
+                return `<div class="bg-white border rounded-xl p-3 text-xs"><b>${escapeReport(x.title)}</b><p class="text-slate-500 mt-1">${escapeReport(x.when||'')}</p>${decided?`<p class="mt-2 font-bold ${decided==='keep'?'text-amber-700':'text-rose-700'}">Scelta registrata: ${decided==='keep'?'mantieni nella mia agenda':'rimuovi dalla mia agenda'}</p>`:`<div class="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-3"><button type="button" onclick="requestExternalDeletionDecision('${x.id}','keep')" class="px-3 py-2 bg-amber-100 text-amber-900 rounded-xl font-bold">Mantieni nella mia agenda</button><button type="button" onclick="requestExternalDeletionDecision('${x.id}','remove')" class="px-3 py-2 bg-rose-600 text-white rounded-xl font-bold">Rimuovi dalla mia agenda</button></div>`}</div>`}).join('')}</div></div>`;
+        }
+        function buildSyncDecisionReport(report) {
+            const allCenters=[...new Set(report.centers||[])];
+            const summary=`<div class="grid grid-cols-3 gap-2 text-center"><div class="p-3 bg-emerald-50 rounded-xl"><b>${report.added.length}</b><small class="block">Aggiunti</small></div><div class="p-3 bg-amber-50 rounded-xl"><b>${report.modified.length}</b><small class="block">Modificati</small></div><div class="p-3 bg-rose-50 rounded-xl"><b>${report.deleted.length}</b><small class="block">Rimossi alla fonte</small></div></div>`;
+            const warning=pendingDeletionCount(report)?`<div class="p-3 bg-rose-50 border border-rose-200 rounded-xl text-xs text-rose-900"><b>Scelta obbligatoria:</b> decidi cosa fare per ${pendingDeletionCount(report)} appuntamenti rimossi dal calendario originale. La finestra non può essere chiusa prima.</div>`:'';
+            const centers=allCenters.map(name=>{const a=report.added.filter(x=>x.center===name),m=report.modified.filter(x=>x.center===name),d=report.deleted.filter(x=>x.center===name);const total=a.length+m.length+d.length;return `<details class="border rounded-2xl p-3" ${total?'open':''}><summary class="font-bold cursor-pointer">${escapeReport(name)} <span class="text-[10px] text-slate-500">${total?total+' variazioni':'nessuna variazione'}</span></summary>${buildChangeSection('Aggiunti',a,'bg-emerald-50')}${buildChangeSection('Modificati',m,'bg-amber-50')}${buildDeletedSection(d)}${!total?'<p class="text-xs text-slate-400 mt-2">Nessuna variazione.</p>':''}</details>`}).join('');
+            return `<div class="space-y-4">${warning}${summary}${centers}</div>`;
+        }
+        function updateSyncCloseState(report) {
+            const button=document.querySelector('#sync-modal-footer button');
+            const pending=pendingDeletionCount(report);
+            if (!button) return;
+            button.disabled=pending>0;
+            button.textContent=pending>0?`Completa ${pending} scelte`:'Ho capito';
+            button.classList.toggle('opacity-50',pending>0);
+            button.classList.toggle('cursor-not-allowed',pending>0);
+        }
+        window.requestExternalDeletionDecision = function(eventId,decision) {
+            const report=loadLastSyncReport();
+            const item=report?.deleted?.find(x=>x.id===eventId);
+            if (!item) return;
+            const action=decision==='keep'?'mantenere definitivamente questo appuntamento nella tua agenda':'rimuovere definitivamente questo appuntamento dalla tua agenda';
+            showConfirmDialog('Conferma scelta',`Sei sicura di voler ${action}?`,async()=>{
+                const ev=appState.events.find(x=>x.id===eventId);
+                try {
+                    if (decision==='keep' && ev) {
+                        ev.extendedProps={...(ev.extendedProps||{}),detachedFromExternal:true,externalCalendarStatus:'Rimosso dal calendario originale e mantenuto localmente',externalRemovedAt:new Date().toISOString()};
+                        const note=[ev.extendedProps.notes,'Evento rimosso dal calendario originale e mantenuto nella propria agenda.'].filter(Boolean).join('\n');
+                        ev.extendedProps.notes=note;
+                        await setDoc(sharedDocument('studio_events',eventId),ev,{merge:true});
+                    } else if (decision==='remove') {
+                        appState.events=appState.events.filter(x=>x.id!==eventId);
+                        await deleteDoc(sharedDocument('studio_events',eventId));
+                    }
+                    item.decision=decision; item.decidedAt=new Date().toISOString(); saveLastSyncReport(report);
+                    document.getElementById('sync-report-content').innerHTML=buildSyncDecisionReport(report); updateSyncCloseState(report);
+                    if(calendarInstance)calendarInstance.refetchEvents();
+                } catch(err) { console.error('Errore scelta cancellazione esterna:',err); showToast('Errore: scelta non salvata.'); }
+            });
         }
         window.openLastSyncReport = function() {
-            const modal=document.getElementById('sync-report-modal');
-            const title=document.getElementById('sync-modal-title');
-            const content=document.getElementById('sync-report-content');
-            const spinner=document.getElementById('sync-spinner');
-            const footer=document.getElementById('sync-modal-footer');
-            let report=null;
-            try { report=JSON.parse(localStorage.getItem('lastIcalSyncReport') || 'null'); } catch(e) {}
-            title.textContent='Novità dell’ultima sincronizzazione'; spinner.classList.remove('animate-spin'); footer.classList.remove('hidden');
-            content.innerHTML=report ? buildSyncReportHtml(report) : '<div class="p-5 bg-amber-50 border border-amber-200 rounded-2xl text-xs text-amber-900 text-center">Nessun report disponibile su questo dispositivo. Avvia una sincronizzazione per generarlo.</div>';
-            modal.classList.remove('hidden');
+            const report=loadLastSyncReport();
+            document.getElementById('sync-modal-title').textContent='Novità dell’ultima sincronizzazione';
+            document.getElementById('sync-spinner').classList.remove('animate-spin');
+            document.getElementById('sync-report-content').innerHTML=report?buildSyncDecisionReport(report):'<p class="p-4 text-center">Nessun report disponibile.</p>';
+            document.getElementById('sync-modal-footer').classList.remove('hidden'); updateSyncCloseState(report||{deleted:[]});
+            document.getElementById('sync-report-modal').classList.remove('hidden');
         }
 
         window.closeSyncReportModal = function() {
+            const report=loadLastSyncReport();
+            if (pendingDeletionCount(report)>0) { showToast('Completa prima tutte le scelte sugli appuntamenti rimossi.'); return; }
             document.getElementById('sync-report-modal').classList.add('hidden');
         }
 
@@ -2662,17 +2720,34 @@
             const rows = Object.entries(groups).sort((a,b)=>b[1].total-a[1].total).map(([name,g]) => `<tr class="border-t border-slate-200"><td class="p-3 font-bold">${name}</td><td class="p-3 text-center">${g.count}</td><td class="p-3 text-right">${euro(g.paid)}</td><td class="p-3 text-right text-orange-700">${euro(g.unpaid)}</td><td class="p-3 text-right font-bold">${euro(g.total)}</td></tr>`).join('');
             document.getElementById('business-by-center').innerHTML = `<table class="w-full text-xs min-w-[560px]"><thead><tr class="text-slate-500"><th class="p-3 text-left">Sede</th><th>Visite</th><th class="text-right">Incassato</th><th class="text-right">Da incassare</th><th class="p-3 text-right">Totale</th></tr></thead><tbody>${rows || '<tr><td colspan="5" class="p-8 text-center text-slate-400">Nessun compenso registrato nel mese.</td></tr>'}</tbody></table>`;
         }
-        function lastVisitForPatient(patient) {
-            return appState.events.filter(ev => ev.extendedProps?.patientId === patient.id || (ev.title||'').toLowerCase().includes((patient.name||'').toLowerCase())).map(ev => new Date(ev.start)).filter(d => !isNaN(d) && d <= new Date()).sort((a,b)=>b-a)[0] || null;
+        function getPatientRecallStatus(patient) {
+            const now = new Date();
+            const assigned = (appState.events || [])
+                .filter(ev => String(ev.extendedProps?.patientId || '') === String(patient.id))
+                .filter(ev => ev.extendedProps?.paymentStatus !== 'cancelled')
+                .map(ev => ({ event: ev, date: new Date(ev.start) }))
+                .filter(item => !Number.isNaN(item.date.getTime()));
+            return {
+                lastVisit: assigned.filter(x => x.date < now).sort((a,b)=>b.date-a.date)[0] || null,
+                nextAppointment: assigned.filter(x => x.date >= now).sort((a,b)=>a.date-b.date)[0] || null
+            };
         }
         window.openRecallModal = function() { renderRecallList(); document.getElementById('recall-modal').classList.remove('hidden'); }
         window.closeRecallModal = function() { document.getElementById('recall-modal').classList.add('hidden'); }
         window.renderRecallList = function() {
             const threshold = Number(document.getElementById('recall-threshold').value || 120), now = new Date();
-            const items = appState.patients.map(p => { const last=lastVisitForPatient(p); const days=last ? Math.floor((now-last)/86400000) : Infinity; return {p,last,days}; }).filter(x => x.days >= Math.min(threshold, Number(x.p.recallDays || threshold))).sort((a,b)=>b.days-a.days);
-            document.getElementById('recall-list').innerHTML = items.map(({p,last,days}) => { const label=last ? `${last.toLocaleDateString('it-IT')} • ${days} giorni fa` : 'Nessuna visita registrata'; const phone=(p.phone||'').replace(/[^0-9+]/g,''); const mail=p.email||''; return `<div class="p-4 border border-slate-200 rounded-2xl bg-white flex flex-col sm:flex-row sm:items-center justify-between gap-3"><div><div class="flex items-center gap-2"><strong class="font-editorial text-lg italic">${p.name}</strong><span class="px-2 py-1 rounded-full text-[10px] font-bold ${days===Infinity||days>180?'bg-rose-100 text-rose-800':'bg-amber-100 text-amber-800'}">${label}</span></div><p class="text-xs text-slate-500 mt-1">Richiamo previsto: ${p.recallDays || 120} giorni</p></div><div class="flex gap-2">${phone?`<a target="_blank" href="https://wa.me/${phone.replace('+','')}?text=${encodeURIComponent('Buongiorno '+p.name+', la contatto dallo studio per sapere come sta e valutare un eventuale nuovo appuntamento.')}" class="px-3 py-2 bg-emerald-600 text-white rounded-xl text-xs font-bold"><i class="fa-brands fa-whatsapp mr-1"></i>WhatsApp</a>`:''}${mail?`<a href="mailto:${mail}?subject=${encodeURIComponent('Richiamo dallo studio')}&body=${encodeURIComponent('Buongiorno '+p.name+',\n\nla contatto dallo studio per sapere come sta e valutare un eventuale nuovo appuntamento.')}" class="px-3 py-2 bg-water-600 text-white rounded-xl text-xs font-bold"><i class="fa-solid fa-envelope mr-1"></i>Email</a>`:''}</div></div>`; }).join('') || '<p class="text-center text-slate-400 py-10">Nessun paziente da richiamare con il filtro scelto.</p>';
+            const statuses = appState.patients.map(p => ({p,status:getPatientRecallStatus(p)}));
+            const excluded = statuses.filter(x => x.status.nextAppointment).length;
+            const items = statuses.map(({p,status}) => {
+                if (status.nextAppointment) return null;
+                const last=status.lastVisit?.date || null;
+                const days=last ? Math.floor((now-last)/86400000) : Infinity;
+                return {p,last,days,limit:Number(p.recallDays || threshold)};
+            }).filter(x => x && x.days >= x.limit).sort((a,b)=>b.days-a.days);
+            const info=`<div class="p-3 bg-water-50 border border-water-200 rounded-2xl text-xs"><strong>${excluded}</strong> pazienti esclusi perché hanno già un appuntamento futuro associato.</div>`;
+            const rows=items.map(({p,last,days,limit})=>{const phone=(p.phone||'').replace(/[^0-9+]/g,'');const mail=p.email||'';return `<div class="p-4 border rounded-2xl bg-white"><div class="flex flex-col sm:flex-row justify-between gap-3"><div><strong class="font-editorial text-lg italic">${p.name}</strong><div class="grid sm:grid-cols-2 gap-2 mt-2 text-xs"><p class="p-2 bg-slate-50 rounded-xl"><b class="block text-[10px]">ULTIMA VISITA</b>${last?last.toLocaleString('it-IT',{dateStyle:'medium',timeStyle:'short'}):'Nessuna visita passata associata'}</p><p class="p-2 bg-orange-50 rounded-xl"><b class="block text-[10px]">STATO</b>${days===Infinity?'Mai visitato':days+' giorni dall’ultima visita'}</p></div><p class="text-[10px] text-slate-500 mt-2">Nessun appuntamento futuro associato • soglia ${limit} giorni</p></div><div class="flex gap-2">${phone?`<a target="_blank" href="https://wa.me/${phone.replace('+','')}" class="px-3 py-2 bg-emerald-600 text-white rounded-xl text-xs font-bold">WhatsApp</a>`:''}${mail?`<a href="mailto:${mail}" class="px-3 py-2 bg-water-600 text-white rounded-xl text-xs font-bold">Email</a>`:''}</div></div></div>`}).join('');
+            document.getElementById('recall-list').innerHTML=info+(rows||'<p class="text-center text-slate-400 py-10">Nessun paziente da richiamare.</p>');
         }
-
         function normalizePersonName(value) {
             return (value || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9 ]/g,' ').replace(/\s+/g,' ').trim();
         }
