@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Silvia Chinellato | Osteopata & Idrocolonterapia</title>
-    <meta name="app-build" content="shared-data-v30-forfettario-tax-simulator">
+    <meta name="app-build" content="shared-data-v31-tax-current-advance-split">
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -3237,9 +3237,10 @@
             const nextYearCashNeed=currentLiability+indicativeAdvance;
             const reserveRate=revenue>0?nextYearCashNeed/revenue*100:0;
             const priorDelta=revenue-p.previousYearRevenue;
-            target.innerHTML=[['Fatturato '+year,financeEuro(revenue),'fa-euro-sign'],['Reddito forfettario',financeEuro(grossTaxable),'fa-chart-pie'],['Contributi stimati',financeEuro(contributions),'fa-shield-heart'],['Imposta stimata',financeEuro(substituteTax),'fa-landmark'],['Fabbisogno indicativo',financeEuro(nextYearCashNeed),'fa-piggy-bank']].map(k=>`<div class="p-3 bg-white border border-violet-200 rounded-2xl"><i class="fa-solid ${k[2]} text-violet-700"></i><p class="text-[10px] uppercase text-slate-500 mt-1">${k[0]}</p><strong class="text-base">${k[1]}</strong></div>`).join('');
+            const nextYear=String(Number(year)+1);
+            target.innerHTML=[['Fatturato '+year,financeEuro(revenue),'fa-euro-sign'],['Contributi '+year,financeEuro(contributions),'fa-shield-heart'],['Imposta '+year,financeEuro(substituteTax),'fa-landmark'],['Acconto imposta '+nextYear,financeEuro(indicativeAdvance),'fa-forward'],['Totale da accantonare',financeEuro(nextYearCashNeed),'fa-piggy-bank']].map(k=>`<div class="p-3 bg-white border border-violet-200 rounded-2xl"><i class="fa-solid ${k[2]} text-violet-700"></i><p class="text-[10px] uppercase text-slate-500 mt-1">${k[0]}</p><strong class="text-base">${k[1]}</strong></div>`).join('');
             const tone=reserveRate<=25?'emerald':reserveRate<=35?'amber':'rose';
-            document.getElementById('tax-simulator-detail').innerHTML=`<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2"><div><strong class="text-violet-950">Accantonamento prudenziale indicativo</strong><p class="text-[10px] text-slate-500">Somma di onere corrente stimato e acconto imposta indicativo.</p></div><span class="px-3 py-1.5 rounded-full bg-${tone}-100 text-${tone}-800 font-bold">${reserveRate.toFixed(1).replace('.',',')}% del fatturato</span></div><div class="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-2 border-t border-violet-100"><p><b>Base imposta dopo contributi stimati:</b> ${financeEuro(substituteBase)}</p><p><b>Acconto imposta indicativo:</b> ${financeEuro(indicativeAdvance)}</p><p><b>Fatturato anno precedente:</b> ${financeEuro(p.previousYearRevenue)}</p><p><b>Variazione rispetto all'anno precedente:</b> ${priorDelta>=0?'+':''}${financeEuro(priorDelta)}</p></div>`;
+            document.getElementById('tax-simulator-detail').innerHTML=`<div class="grid grid-cols-1 lg:grid-cols-2 gap-3"><section class="p-4 bg-violet-50 border border-violet-200 rounded-2xl"><p class="text-[10px] uppercase font-bold text-violet-700">Debito stimato ${year}</p><div class="mt-2 space-y-2"><div class="flex justify-between gap-3"><span>Contributi previdenziali ${year}</span><b>${financeEuro(contributions)}</b></div><div class="flex justify-between gap-3"><span>Imposta sostitutiva ${year}</span><b>${financeEuro(substituteTax)}</b></div><div class="flex justify-between gap-3 pt-2 border-t border-violet-200 text-violet-950"><strong>Totale competenza ${year}</strong><strong>${financeEuro(currentLiability)}</strong></div></div></section><section class="p-4 bg-sky-50 border border-sky-200 rounded-2xl"><p class="text-[10px] uppercase font-bold text-sky-700">Anticipo sull'anno ${nextYear}</p><div class="mt-2 space-y-2"><div class="flex justify-between gap-3"><span>Acconto imposta ${nextYear}</span><b>${financeEuro(indicativeAdvance)}</b></div><p class="text-[10px] text-sky-800">Calcolato applicando il ${p.advanceRate.toFixed(0)}% all'imposta stimata ${year}.</p></div></section></div><div class="mt-3 p-4 bg-white border border-violet-200 rounded-2xl"><div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2"><div><strong class="text-violet-950">Totale prudenziale da accantonare</strong><p class="text-[10px] text-slate-500">Debito stimato ${year} più acconto imposta ${nextYear}.</p></div><div class="text-right"><strong class="block text-lg text-violet-950">${financeEuro(nextYearCashNeed)}</strong><span class="inline-block mt-1 px-3 py-1 rounded-full bg-${tone}-100 text-${tone}-800 font-bold">${reserveRate.toFixed(1).replace('.',',')}% del fatturato</span></div></div><div class="grid grid-cols-1 sm:grid-cols-3 gap-2 pt-3 mt-3 border-t border-violet-100"><p><b>Reddito forfettario:</b> ${financeEuro(grossTaxable)}</p><p><b>Base imposta dopo contributi:</b> ${financeEuro(substituteBase)}</p><p><b>Confronto anno precedente:</b> ${priorDelta>=0?'+':''}${financeEuro(priorDelta)}</p></div></div>`;
         };
 
         let financeReturnContext = null;
@@ -3569,7 +3570,7 @@
                 treatments: structuredClone(appState.treatments || []), news: structuredClone(appState.news || []),
                 preparations: structuredClone(appState.preparations || []), manualRevenues: structuredClone(appState.manualRevenues || []), taxProfile: appState.taxProfile ? structuredClone(appState.taxProfile) : null
             };
-            return { schema: BACKUP_SCHEMA, schemaVersion: BACKUP_SCHEMA_VERSION, appBuild: 'v30', createdAt, exportedBy: appState.currentUserEmail || null, counts: backupCounts(data), data };
+            return { schema: BACKUP_SCHEMA, schemaVersion: BACKUP_SCHEMA_VERSION, appBuild: 'v31', createdAt, exportedBy: appState.currentUserEmail || null, counts: backupCounts(data), data };
         }
         function renderBackupDashboard() {
             const counts = backupCounts(appState);
