@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Silvia Chinellato | Osteopata & Idrocolonterapia</title>
-    <meta name="app-build" content="shared-data-v27-finance-gaps-annual-summary">
+    <meta name="app-build" content="shared-data-v28-finance-annual-centers-return-flow">
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -943,7 +943,7 @@
           </div>
           <section class="space-y-3"><div><h4 class="font-editorial text-lg font-bold italic text-slate-900">Riepilogo mensile</h4><p class="text-[10px] text-slate-500">Calcolato dagli appuntamenti clinici del mese selezionato.</p></div><div id="business-kpis" class="grid grid-cols-2 lg:grid-cols-4 gap-3"></div></section>
           <div class="bg-slate-50 rounded-3xl border border-slate-200 overflow-hidden"><div class="px-4 py-3 font-bold text-sm text-slate-700">Dettaglio mensile per poliambulatorio</div><div id="business-by-center" class="overflow-x-auto"></div></div>
-          <section class="space-y-3 p-4 bg-indigo-50/60 border border-indigo-200 rounded-3xl"><div><h4 class="font-editorial text-lg font-bold italic text-indigo-950">Totale annuale</h4><p class="text-[10px] text-indigo-800">Riepilogo dell'anno selezionato, senza includere calendari non clinici o appuntamenti annullati.</p></div><div id="business-year-kpis" class="grid grid-cols-2 lg:grid-cols-5 gap-3"></div><div id="business-year-months" class="overflow-x-auto bg-white rounded-2xl border border-indigo-100"></div></section>
+          <section class="space-y-3 p-4 bg-indigo-50/60 border border-indigo-200 rounded-3xl"><div><h4 class="font-editorial text-lg font-bold italic text-indigo-950">Totale annuale</h4><p class="text-[10px] text-indigo-800">Riepilogo dell'anno selezionato, senza includere calendari non clinici o appuntamenti annullati.</p></div><div id="business-year-kpis" class="grid grid-cols-2 lg:grid-cols-5 gap-3"></div><div class="bg-white rounded-2xl border border-indigo-100 overflow-hidden"><div class="px-4 py-3 font-bold text-sm text-indigo-900 bg-indigo-50">Dettaglio annuale per poliambulatorio</div><div id="business-year-by-center" class="overflow-x-auto"></div></div></section>
           <section class="space-y-3 p-4 bg-amber-50/70 border border-amber-200 rounded-3xl"><div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2"><div><h4 class="font-editorial text-lg font-bold italic text-amber-950"><i class="fa-solid fa-triangle-exclamation mr-1"></i>Appuntamenti clinici senza tariffa</h4><p class="text-[10px] text-amber-800">Appuntamenti dell'anno selezionato con compenso assente o pari a zero.</p></div><span id="business-missing-fee-count" class="px-3 py-1.5 rounded-full bg-white border border-amber-200 text-xs font-bold text-amber-900"></span></div><div id="business-missing-fee-list" class="space-y-2"></div></section>
         </div>
       </div>
@@ -1997,6 +1997,17 @@
                 if (calendarInstance) calendarInstance.updateSize();
             });
             checkCalendarConflicts();
+            if (financeReturnContext === 'missing-fee') {
+                financeReturnContext = null;
+                renderBusinessDashboard();
+                document.getElementById('business-dashboard-modal').classList.remove('hidden');
+                requestAnimationFrame(() => {
+                    const dashboardBody = document.querySelector('#business-dashboard-modal .overflow-y-auto');
+                    if (dashboardBody) dashboardBody.scrollTop = financeReturnScrollTop;
+                    document.getElementById('business-missing-fee-list')?.scrollIntoView({ block: 'nearest' });
+                    updateModalState();
+                });
+            }
             showToast("Appuntamento salvato con successo!");
         }
 
@@ -3097,6 +3108,8 @@
             }
         });
 
+        let financeReturnContext = null;
+        let financeReturnScrollTop = 0;
         function isFinancialClinicalEvent(ev) {
             if (!ev || isNonClinicalEvent(ev) || ev.extendedProps?.paymentStatus === 'cancelled') return false;
             const centerId = ev.extendedProps?.centerId;
@@ -3124,6 +3137,9 @@
             const eventId = decodeURIComponent(encodedEventId);
             const eventData = appState.events.find(ev => String(ev.id) === String(eventId));
             if (!eventData) { showToast('Appuntamento non trovato.'); return; }
+            const dashboardBody = document.querySelector('#business-dashboard-modal .overflow-y-auto');
+            financeReturnScrollTop = dashboardBody?.scrollTop || 0;
+            financeReturnContext = 'missing-fee';
             document.getElementById('business-dashboard-modal').classList.add('hidden');
             openStudioModal(eventData);
             updateModalState();
@@ -3153,9 +3169,18 @@
             document.getElementById('business-year-kpis').innerHTML=[
               ['Anno',year,'fa-calendar'],['Appuntamenti',yearSummary.count,'fa-calendar-check'],['Fatturato',financeEuro(yearSummary.total),'fa-euro-sign'],['Incassato',financeEuro(yearSummary.paid),'fa-circle-check'],['Media visita',financeEuro(yearSummary.average),'fa-chart-simple']
             ].map(k=>`<div class="p-3 bg-white border border-indigo-100 rounded-2xl"><i class="fa-solid ${k[2]} text-indigo-700"></i><p class="text-[10px] uppercase text-slate-500 mt-1">${k[0]}</p><strong class="text-base">${k[1]}</strong></div>`).join('');
-            const monthNames=['Gennaio','Febbraio','Marzo','Aprile','Maggio','Giugno','Luglio','Agosto','Settembre','Ottobre','Novembre','Dicembre'];
-            const monthRows=monthNames.map((name,index)=>{const key=`${year}-${String(index+1).padStart(2,'0')}`;const summary=summarize(yearEvents.filter(ev=>String(ev.start||'').slice(0,7)===key));return `<tr class="border-t border-indigo-100"><td class="p-3 font-bold">${name}</td><td class="p-3 text-center">${summary.count}</td><td class="p-3 text-right">${financeEuro(summary.paid)}</td><td class="p-3 text-right text-orange-700">${financeEuro(summary.unpaid)}</td><td class="p-3 text-right font-bold">${financeEuro(summary.total)}</td></tr>`;}).join('');
-            document.getElementById('business-year-months').innerHTML=`<table class="w-full text-xs min-w-[560px]"><thead><tr class="text-indigo-900 bg-indigo-50"><th class="p-3 text-left">Mese</th><th>Visite</th><th class="text-right">Incassato</th><th class="text-right">Da incassare</th><th class="p-3 text-right">Totale</th></tr></thead><tbody>${monthRows}</tbody></table>`;
+            const yearGroups={};
+            yearEvents.forEach(ev=>{
+                const name=ev.extendedProps?.centerName||'Studio Privato';
+                yearGroups[name]||={count:0,total:0,paid:0,unpaid:0};
+                yearGroups[name].count++;
+                const fee=Number(ev.extendedProps?.fee||0);
+                yearGroups[name].total+=fee;
+                if(ev.extendedProps?.paymentStatus==='unpaid') yearGroups[name].unpaid+=fee;
+                else yearGroups[name].paid+=fee;
+            });
+            const yearCenterRows=Object.entries(yearGroups).sort((a,b)=>b[1].total-a[1].total).map(([name,g])=>`<tr class="border-t border-indigo-100"><td class="p-3 font-bold">${escapePatientText(name)}</td><td class="p-3 text-center">${g.count}</td><td class="p-3 text-right">${financeEuro(g.paid)}</td><td class="p-3 text-right text-orange-700">${financeEuro(g.unpaid)}</td><td class="p-3 text-right font-bold">${financeEuro(g.total)}</td></tr>`).join('');
+            document.getElementById('business-year-by-center').innerHTML=`<table class="w-full text-xs min-w-[560px]"><thead><tr class="text-indigo-900"><th class="p-3 text-left">Sede</th><th>Visite</th><th class="text-right">Incassato</th><th class="text-right">Da incassare</th><th class="p-3 text-right">Totale</th></tr></thead><tbody>${yearCenterRows||'<tr><td colspan="5" class="p-8 text-center text-slate-400">Nessun compenso registrato nell’anno selezionato.</td></tr>'}</tbody></table>`;
             const missingFee=yearEvents.filter(ev=>Number(ev.extendedProps?.fee || 0)<=0).sort((a,b)=>new Date(b.start)-new Date(a.start));
             document.getElementById('business-missing-fee-count').textContent=`${missingFee.length} da completare`;
             document.getElementById('business-missing-fee-list').innerHTML=missingFee.length?missingFee.map(ev=>{const d=new Date(ev.start);const when=Number.isNaN(d.getTime())?String(ev.start||''):d.toLocaleString('it-IT',{dateStyle:'medium',timeStyle:'short'});const patient=appState.patients.find(p=>String(p.id)===String(ev.extendedProps?.patientId||''));return `<button type="button" onclick="openFinanceEvent('${encodeURIComponent(ev.id)}')" class="w-full p-3 bg-white hover:bg-amber-100 border border-amber-200 rounded-2xl text-left flex flex-col sm:flex-row sm:items-center justify-between gap-2 transition"><div><strong class="font-editorial italic text-sm text-slate-900">${escapePatientText(ev.title||'Appuntamento')}</strong><p class="text-[10px] text-slate-500 mt-1">${escapePatientText(when)} • ${escapePatientText(ev.extendedProps?.centerName||'Studio Privato')}${patient?' • '+escapePatientText(patient.name):''}</p></div><span class="px-3 py-2 bg-amber-100 text-amber-900 rounded-xl text-xs font-bold"><i class="fa-solid fa-pen-to-square mr-1"></i>Imposta tariffa</span></button>`;}).join(''):'<p class="p-5 bg-white border border-amber-100 rounded-2xl text-center text-xs text-slate-500"><i class="fa-solid fa-circle-check text-emerald-600 mr-1"></i>Nessun appuntamento clinico senza tariffa nell’anno selezionato.</p>';
@@ -3399,7 +3424,7 @@
                 treatments: structuredClone(appState.treatments || []), news: structuredClone(appState.news || []),
                 preparations: structuredClone(appState.preparations || [])
             };
-            return { schema: BACKUP_SCHEMA, schemaVersion: BACKUP_SCHEMA_VERSION, appBuild: 'v27', createdAt, exportedBy: appState.currentUserEmail || null, counts: backupCounts(data), data };
+            return { schema: BACKUP_SCHEMA, schemaVersion: BACKUP_SCHEMA_VERSION, appBuild: 'v28', createdAt, exportedBy: appState.currentUserEmail || null, counts: backupCounts(data), data };
         }
         function renderBackupDashboard() {
             const counts = backupCounts(appState);
