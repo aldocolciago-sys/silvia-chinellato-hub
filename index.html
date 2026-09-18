@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Silvia Chinellato | Osteopata & Idrocolonterapia</title>
-    <meta name="app-build" content="shared-data-v28-finance-annual-centers-return-flow">
+    <meta name="app-build" content="shared-data-v29-manual-revenue">
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -944,6 +944,18 @@
           <section class="space-y-3"><div><h4 class="font-editorial text-lg font-bold italic text-slate-900">Riepilogo mensile</h4><p class="text-[10px] text-slate-500">Calcolato dagli appuntamenti clinici del mese selezionato.</p></div><div id="business-kpis" class="grid grid-cols-2 lg:grid-cols-4 gap-3"></div></section>
           <div class="bg-slate-50 rounded-3xl border border-slate-200 overflow-hidden"><div class="px-4 py-3 font-bold text-sm text-slate-700">Dettaglio mensile per poliambulatorio</div><div id="business-by-center" class="overflow-x-auto"></div></div>
           <section class="space-y-3 p-4 bg-indigo-50/60 border border-indigo-200 rounded-3xl"><div><h4 class="font-editorial text-lg font-bold italic text-indigo-950">Totale annuale</h4><p class="text-[10px] text-indigo-800">Riepilogo dell'anno selezionato, senza includere calendari non clinici o appuntamenti annullati.</p></div><div id="business-year-kpis" class="grid grid-cols-2 lg:grid-cols-5 gap-3"></div><div class="bg-white rounded-2xl border border-indigo-100 overflow-hidden"><div class="px-4 py-3 font-bold text-sm text-indigo-900 bg-indigo-50">Dettaglio annuale per poliambulatorio</div><div id="business-year-by-center" class="overflow-x-auto"></div></div></section>
+          <section class="space-y-4 p-4 bg-emerald-50/70 border border-emerald-200 rounded-3xl">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2"><div><h4 class="font-editorial text-lg font-bold italic text-emerald-950"><i class="fa-solid fa-file-invoice-dollar mr-1"></i>Entrate manuali</h4><p class="text-[10px] text-emerald-800">Entrate fatturate non registrate tramite appuntamenti. Sono incluse nei totali dell'anno selezionato.</p></div><span id="manual-revenue-year-total" class="px-3 py-1.5 rounded-full bg-white border border-emerald-200 text-xs font-bold text-emerald-900"></span></div>
+            <form id="manual-revenue-form" onsubmit="handleManualRevenueSubmit(event)" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 p-4 bg-white border border-emerald-200 rounded-2xl">
+              <input type="hidden" id="manual-revenue-edit-id">
+              <div><label class="block text-[10px] font-bold text-slate-500 mb-1">DATA *</label><input type="date" id="manual-revenue-date" required class="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs"></div>
+              <div><label class="block text-[10px] font-bold text-slate-500 mb-1">IMPORTO (€) *</label><input type="number" id="manual-revenue-amount" min="0.01" step="0.01" required placeholder="0,00" class="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs"></div>
+              <div><label class="block text-[10px] font-bold text-slate-500 mb-1">CATEGORIA *</label><select id="manual-revenue-category" required class="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs"><option value="Fatturato storico">Fatturato storico</option><option value="Prestazioni esterne">Prestazioni esterne</option><option value="Rettifica contabile">Rettifica contabile</option><option value="Altro">Altro</option></select></div>
+              <div><label class="block text-[10px] font-bold text-slate-500 mb-1">DESCRIZIONE *</label><input type="text" id="manual-revenue-description" required maxlength="160" placeholder="Es. Fatturato gennaio-agosto" class="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs"></div>
+              <div class="sm:col-span-2 lg:col-span-4 flex justify-end gap-2"><button type="button" id="manual-revenue-cancel" onclick="resetManualRevenueForm()" class="hidden px-4 py-2.5 bg-slate-100 text-slate-700 font-bold rounded-xl text-xs">Annulla modifica</button><button type="submit" class="px-4 py-2.5 bg-emerald-700 hover:bg-emerald-800 text-white font-bold rounded-xl text-xs"><i class="fa-solid fa-plus mr-1"></i><span id="manual-revenue-submit-label">Aggiungi entrata</span></button></div>
+            </form>
+            <div id="manual-revenue-list" class="space-y-2"></div>
+          </section>
           <section class="space-y-3 p-4 bg-amber-50/70 border border-amber-200 rounded-3xl"><div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2"><div><h4 class="font-editorial text-lg font-bold italic text-amber-950"><i class="fa-solid fa-triangle-exclamation mr-1"></i>Appuntamenti clinici senza tariffa</h4><p class="text-[10px] text-amber-800">Appuntamenti dell'anno selezionato con compenso assente o pari a zero.</p></div><span id="business-missing-fee-count" class="px-3 py-1.5 rounded-full bg-white border border-amber-200 text-xs font-bold text-amber-900"></span></div><div id="business-missing-fee-list" class="space-y-2"></div></section>
         </div>
       </div>
@@ -1065,7 +1077,8 @@
             ],
             patients: [],
             events: [],
-            clinicalSessions: []
+            clinicalSessions: [],
+            manualRevenues: []
         };
 
         let db = null;
@@ -1141,6 +1154,12 @@
                 appState.clinicalSessions = snapshot.docs.map(d => ({ id: d.data().id || d.id, ...d.data() }));
             }, err => {
                 console.error('Errore sincronizzazione archivio clinico:', err);
+            }));
+            sharedUnsubscribers.push(onSnapshot(sharedCollection('manual_revenue'), snapshot => {
+                appState.manualRevenues = snapshot.docs.map(d => ({ id: d.data().id || d.id, ...d.data() }));
+                if (!document.getElementById('business-dashboard-modal')?.classList.contains('hidden')) renderBusinessDashboard();
+            }, err => {
+                console.error('Errore sincronizzazione entrate manuali:', err);
             }));
         }
 
@@ -1269,6 +1288,8 @@
                     appState.patients = patientsSnap.docs.map(d => d.data());
                     const clinicalSnap = await getDocs(sharedCollection('clinical_sessions'));
                     appState.clinicalSessions = clinicalSnap.docs.map(d => ({ id: d.data().id || d.id, ...d.data() }));
+                    const manualRevenueSnap = await getDocs(sharedCollection('manual_revenue'));
+                    appState.manualRevenues = manualRevenueSnap.docs.map(d => ({ id: d.data().id || d.id, ...d.data() }));
                     await migrateEventClinicalDataToArchiveOnce();
                     await migrateLegacyClinicalBlocksFromPatientNotesOnce();
                     startSharedRealtimeSync();
@@ -3108,6 +3129,54 @@
             }
         });
 
+        function normalizeManualRevenue(item) {
+            return { ...item, amount: Number(item?.amount || 0), date: String(item?.date || ''), category: String(item?.category || 'Fatturato storico'), description: String(item?.description || '') };
+        }
+        window.resetManualRevenueForm = function() {
+            const form=document.getElementById('manual-revenue-form'); if(!form)return;
+            form.reset();
+            document.getElementById('manual-revenue-edit-id').value='';
+            document.getElementById('manual-revenue-date').value=new Date().toISOString().slice(0,10);
+            document.getElementById('manual-revenue-category').value='Fatturato storico';
+            document.getElementById('manual-revenue-submit-label').textContent='Aggiungi entrata';
+            document.getElementById('manual-revenue-cancel').classList.add('hidden');
+        };
+        window.handleManualRevenueSubmit = async function(event) {
+            event.preventDefault();
+            if(!db || !appState.isLoggedIn || !isAuthorizedFirebaseUser()){showToast('Accesso autorizzato necessario.');return;}
+            const id=document.getElementById('manual-revenue-edit-id').value || 'rev_'+Date.now();
+            const existing=appState.manualRevenues.find(item=>String(item.id)===String(id));
+            const amount=Number(document.getElementById('manual-revenue-amount').value || 0);
+            if(!(amount>0)){showToast('Inserisci un importo maggiore di zero.');return;}
+            const now=new Date().toISOString();
+            const record={id,date:document.getElementById('manual-revenue-date').value,amount,category:document.getElementById('manual-revenue-category').value,description:document.getElementById('manual-revenue-description').value.trim(),createdAt:existing?.createdAt||now,updatedAt:now};
+            try{
+                await setDoc(sharedDocument('manual_revenue',id),record,{merge:false});
+                const idx=appState.manualRevenues.findIndex(item=>String(item.id)===String(id));
+                if(idx>=0)appState.manualRevenues[idx]=record;else appState.manualRevenues.push(record);
+                resetManualRevenueForm();renderBusinessDashboard();showToast(existing?'Entrata manuale aggiornata.':'Entrata manuale aggiunta.');
+            }catch(err){console.error('Errore salvataggio entrata manuale:',err);showToast('Errore: entrata manuale non salvata.');}
+        };
+        window.editManualRevenue = function(encodedId) {
+            const id=decodeURIComponent(encodedId);const item=appState.manualRevenues.find(x=>String(x.id)===String(id));if(!item)return;
+            document.getElementById('manual-revenue-edit-id').value=item.id;
+            document.getElementById('manual-revenue-date').value=item.date||'';
+            document.getElementById('manual-revenue-amount').value=Number(item.amount||0);
+            document.getElementById('manual-revenue-category').value=item.category||'Fatturato storico';
+            document.getElementById('manual-revenue-description').value=item.description||'';
+            document.getElementById('manual-revenue-submit-label').textContent='Aggiorna entrata';
+            document.getElementById('manual-revenue-cancel').classList.remove('hidden');
+            document.getElementById('manual-revenue-form').scrollIntoView({behavior:'smooth',block:'center'});
+        };
+        window.confirmDeleteManualRevenue = function(encodedId) {
+            const id=decodeURIComponent(encodedId);const item=appState.manualRevenues.find(x=>String(x.id)===String(id));if(!item)return;
+            showConfirmDialog('Elimina entrata manuale',`Eliminare l'entrata “${item.description || item.category}” di ${financeEuro(item.amount)}?`,async()=>{
+                await deleteDoc(sharedDocument('manual_revenue',id));
+                appState.manualRevenues=appState.manualRevenues.filter(x=>String(x.id)!==String(id));
+                resetManualRevenueForm();renderBusinessDashboard();showToast('Entrata manuale eliminata.');
+            },'Sì, elimina');
+        };
+
         let financeReturnContext = null;
         let financeReturnScrollTop = 0;
         function isFinancialClinicalEvent(ev) {
@@ -3129,6 +3198,7 @@
             const yearInput = document.getElementById('business-year');
             if (!monthInput.value) monthInput.value = now.toISOString().slice(0,7);
             yearInput.value = monthInput.value.slice(0,4) || String(now.getFullYear());
+            resetManualRevenueForm();
             renderBusinessDashboard();
             document.getElementById('business-dashboard-modal').classList.remove('hidden');
         }
@@ -3151,6 +3221,10 @@
             const financialEvents = appState.events.filter(isFinancialClinicalEvent);
             const monthEvents = financialEvents.filter(ev => String(ev.start || '').slice(0,7) === month);
             const yearEvents = financialEvents.filter(ev => String(ev.start || '').slice(0,4) === year);
+            const monthManualRevenues = (appState.manualRevenues || []).map(normalizeManualRevenue).filter(item => item.date.slice(0,7) === month && item.amount > 0);
+            const yearManualRevenues = (appState.manualRevenues || []).map(normalizeManualRevenue).filter(item => item.date.slice(0,4) === year && item.amount > 0);
+            const monthManualTotal = monthManualRevenues.reduce((sum,item)=>sum+item.amount,0);
+            const yearManualTotal = yearManualRevenues.reduce((sum,item)=>sum+item.amount,0);
             const summarize = events => {
                 const total = events.reduce((sum,ev)=>sum+Number(ev.extendedProps?.fee || 0),0);
                 const paid = events.filter(ev=>ev.extendedProps?.paymentStatus !== 'unpaid').reduce((sum,ev)=>sum+Number(ev.extendedProps?.fee || 0),0);
@@ -3159,15 +3233,15 @@
             };
             const monthSummary=summarize(monthEvents), yearSummary=summarize(yearEvents);
             document.getElementById('business-kpis').innerHTML = [
-              ['Appuntamenti',monthSummary.count,'fa-calendar-check','text-water-700'],['Compensi totali',financeEuro(monthSummary.total),'fa-euro-sign','text-emerald-700'],
-              ['Incassato',financeEuro(monthSummary.paid),'fa-circle-check','text-nature-700'],['Da incassare',financeEuro(monthSummary.unpaid),'fa-clock','text-orange-700']
+              ['Appuntamenti',monthSummary.count,'fa-calendar-check','text-water-700'],['Fatturato totale',financeEuro(monthSummary.total+monthManualTotal),'fa-euro-sign','text-emerald-700'],
+              ['Incassato / fatturato',financeEuro(monthSummary.paid+monthManualTotal),'fa-circle-check','text-nature-700'],['Da incassare',financeEuro(monthSummary.unpaid),'fa-clock','text-orange-700']
             ].map(k=>`<div class="p-4 bg-white border border-slate-200 rounded-2xl shadow-sm"><i class="fa-solid ${k[2]} ${k[3]}"></i><p class="text-[10px] uppercase text-slate-500 mt-2">${k[0]}</p><strong class="text-lg text-slate-900">${k[1]}</strong></div>`).join('');
             const groups={};
             monthEvents.forEach(ev=>{const name=ev.extendedProps?.centerName||'Studio Privato';groups[name]||={count:0,total:0,paid:0,unpaid:0};groups[name].count++;const f=Number(ev.extendedProps?.fee||0);groups[name].total+=f;if(ev.extendedProps?.paymentStatus==='unpaid')groups[name].unpaid+=f;else groups[name].paid+=f;});
             const rows=Object.entries(groups).sort((a,b)=>b[1].total-a[1].total).map(([name,g])=>`<tr class="border-t border-slate-200"><td class="p-3 font-bold">${escapePatientText(name)}</td><td class="p-3 text-center">${g.count}</td><td class="p-3 text-right">${financeEuro(g.paid)}</td><td class="p-3 text-right text-orange-700">${financeEuro(g.unpaid)}</td><td class="p-3 text-right font-bold">${financeEuro(g.total)}</td></tr>`).join('');
             document.getElementById('business-by-center').innerHTML=`<table class="w-full text-xs min-w-[560px]"><thead><tr class="text-slate-500"><th class="p-3 text-left">Sede</th><th>Visite</th><th class="text-right">Incassato</th><th class="text-right">Da incassare</th><th class="p-3 text-right">Totale</th></tr></thead><tbody>${rows||'<tr><td colspan="5" class="p-8 text-center text-slate-400">Nessun compenso registrato nel mese.</td></tr>'}</tbody></table>`;
             document.getElementById('business-year-kpis').innerHTML=[
-              ['Anno',year,'fa-calendar'],['Appuntamenti',yearSummary.count,'fa-calendar-check'],['Fatturato',financeEuro(yearSummary.total),'fa-euro-sign'],['Incassato',financeEuro(yearSummary.paid),'fa-circle-check'],['Media visita',financeEuro(yearSummary.average),'fa-chart-simple']
+              ['Anno',year,'fa-calendar'],['Appuntamenti',yearSummary.count,'fa-calendar-check'],['Da appuntamenti',financeEuro(yearSummary.total),'fa-stethoscope'],['Entrate manuali',financeEuro(yearManualTotal),'fa-file-invoice-dollar'],['Fatturato totale',financeEuro(yearSummary.total+yearManualTotal),'fa-euro-sign']
             ].map(k=>`<div class="p-3 bg-white border border-indigo-100 rounded-2xl"><i class="fa-solid ${k[2]} text-indigo-700"></i><p class="text-[10px] uppercase text-slate-500 mt-1">${k[0]}</p><strong class="text-base">${k[1]}</strong></div>`).join('');
             const yearGroups={};
             yearEvents.forEach(ev=>{
@@ -3181,6 +3255,8 @@
             });
             const yearCenterRows=Object.entries(yearGroups).sort((a,b)=>b[1].total-a[1].total).map(([name,g])=>`<tr class="border-t border-indigo-100"><td class="p-3 font-bold">${escapePatientText(name)}</td><td class="p-3 text-center">${g.count}</td><td class="p-3 text-right">${financeEuro(g.paid)}</td><td class="p-3 text-right text-orange-700">${financeEuro(g.unpaid)}</td><td class="p-3 text-right font-bold">${financeEuro(g.total)}</td></tr>`).join('');
             document.getElementById('business-year-by-center').innerHTML=`<table class="w-full text-xs min-w-[560px]"><thead><tr class="text-indigo-900"><th class="p-3 text-left">Sede</th><th>Visite</th><th class="text-right">Incassato</th><th class="text-right">Da incassare</th><th class="p-3 text-right">Totale</th></tr></thead><tbody>${yearCenterRows||'<tr><td colspan="5" class="p-8 text-center text-slate-400">Nessun compenso registrato nell’anno selezionato.</td></tr>'}</tbody></table>`;
+            document.getElementById('manual-revenue-year-total').textContent=`${financeEuro(yearManualTotal)} nell'anno ${year}`;
+            document.getElementById('manual-revenue-list').innerHTML=yearManualRevenues.length?yearManualRevenues.sort((a,b)=>String(b.date).localeCompare(String(a.date))).map(item=>{const d=new Date(item.date+'T12:00:00');const when=Number.isNaN(d.getTime())?item.date:d.toLocaleDateString('it-IT',{dateStyle:'medium'});return `<article class="p-3 bg-white border border-emerald-200 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-3"><div class="min-w-0"><div class="flex items-center gap-2 flex-wrap"><strong class="text-emerald-900">${financeEuro(item.amount)}</strong><span class="px-2 py-0.5 bg-emerald-50 border border-emerald-100 rounded-full text-[10px] font-bold text-emerald-800">${escapePatientText(item.category)}</span></div><p class="text-xs text-slate-700 mt-1">${escapePatientText(item.description)}</p><p class="text-[10px] text-slate-500 mt-1">${escapePatientText(when)}</p></div><div class="flex gap-2"><button type="button" onclick="editManualRevenue('${encodeURIComponent(item.id)}')" class="px-3 py-2 bg-emerald-100 text-emerald-900 rounded-xl text-xs font-bold">Modifica</button><button type="button" onclick="confirmDeleteManualRevenue('${encodeURIComponent(item.id)}')" class="px-3 py-2 bg-rose-50 text-rose-700 rounded-xl text-xs font-bold">Elimina</button></div></article>`;}).join(''):'<p class="p-5 bg-white border border-emerald-100 rounded-2xl text-center text-xs text-slate-500">Nessuna entrata manuale registrata per l’anno selezionato.</p>';
             const missingFee=yearEvents.filter(ev=>Number(ev.extendedProps?.fee || 0)<=0).sort((a,b)=>new Date(b.start)-new Date(a.start));
             document.getElementById('business-missing-fee-count').textContent=`${missingFee.length} da completare`;
             document.getElementById('business-missing-fee-list').innerHTML=missingFee.length?missingFee.map(ev=>{const d=new Date(ev.start);const when=Number.isNaN(d.getTime())?String(ev.start||''):d.toLocaleString('it-IT',{dateStyle:'medium',timeStyle:'short'});const patient=appState.patients.find(p=>String(p.id)===String(ev.extendedProps?.patientId||''));return `<button type="button" onclick="openFinanceEvent('${encodeURIComponent(ev.id)}')" class="w-full p-3 bg-white hover:bg-amber-100 border border-amber-200 rounded-2xl text-left flex flex-col sm:flex-row sm:items-center justify-between gap-2 transition"><div><strong class="font-editorial italic text-sm text-slate-900">${escapePatientText(ev.title||'Appuntamento')}</strong><p class="text-[10px] text-slate-500 mt-1">${escapePatientText(when)} • ${escapePatientText(ev.extendedProps?.centerName||'Studio Privato')}${patient?' • '+escapePatientText(patient.name):''}</p></div><span class="px-3 py-2 bg-amber-100 text-amber-900 rounded-xl text-xs font-bold"><i class="fa-solid fa-pen-to-square mr-1"></i>Imposta tariffa</span></button>`;}).join(''):'<p class="p-5 bg-white border border-amber-100 rounded-2xl text-center text-xs text-slate-500"><i class="fa-solid fa-circle-check text-emerald-600 mr-1"></i>Nessun appuntamento clinico senza tariffa nell’anno selezionato.</p>';
@@ -3413,7 +3489,8 @@
                 centers: Array.isArray(data?.centers) ? data.centers.length : 0,
                 treatments: Array.isArray(data?.treatments) ? data.treatments.length : 0,
                 news: Array.isArray(data?.news) ? data.news.length : 0,
-                preparations: Array.isArray(data?.preparations) ? data.preparations.length : 0
+                preparations: Array.isArray(data?.preparations) ? data.preparations.length : 0,
+                manualRevenues: Array.isArray(data?.manualRevenues) ? data.manualRevenues.length : 0
             };
         }
         function buildBackupPayload() {
@@ -3422,13 +3499,13 @@
                 patients: structuredClone(appState.patients || []), events: structuredClone(appState.events || []),
                 clinicalSessions: structuredClone(appState.clinicalSessions || []), centers: structuredClone(appState.centers || []),
                 treatments: structuredClone(appState.treatments || []), news: structuredClone(appState.news || []),
-                preparations: structuredClone(appState.preparations || [])
+                preparations: structuredClone(appState.preparations || []), manualRevenues: structuredClone(appState.manualRevenues || [])
             };
-            return { schema: BACKUP_SCHEMA, schemaVersion: BACKUP_SCHEMA_VERSION, appBuild: 'v28', createdAt, exportedBy: appState.currentUserEmail || null, counts: backupCounts(data), data };
+            return { schema: BACKUP_SCHEMA, schemaVersion: BACKUP_SCHEMA_VERSION, appBuild: 'v29', createdAt, exportedBy: appState.currentUserEmail || null, counts: backupCounts(data), data };
         }
         function renderBackupDashboard() {
             const counts = backupCounts(appState);
-            const cards = [['Pazienti',counts.patients,'fa-user-group'],['Appuntamenti',counts.events,'fa-calendar-check'],['Sedute cliniche',counts.clinicalSessions,'fa-notes-medical'],['Contenuti e sedi',counts.centers+counts.treatments+counts.news+counts.preparations,'fa-folder-tree']];
+            const cards = [['Pazienti',counts.patients,'fa-user-group'],['Appuntamenti',counts.events,'fa-calendar-check'],['Sedute cliniche',counts.clinicalSessions,'fa-notes-medical'],['Contenuti e sedi',counts.centers+counts.treatments+counts.news+counts.preparations+counts.manualRevenues,'fa-folder-tree']];
             document.getElementById('backup-kpis').innerHTML=cards.map(x=>`<div class="p-4 bg-white border border-slate-200 rounded-2xl"><i class="fa-solid ${x[2]} text-indigo-700"></i><p class="text-[10px] uppercase text-slate-500 mt-2">${x[0]}</p><strong class="text-lg">${x[1]}</strong></div>`).join('');
             const last=localStorage.getItem('lastCompleteBackupAt');
             document.getElementById('backup-last-export').textContent=last?'Ultimo export da questo dispositivo: '+new Date(last).toLocaleString('it-IT'):'Nessun export registrato su questo dispositivo.';
@@ -3442,13 +3519,15 @@
         function validateBackupPayload(payload) {
             if (!payload || payload.schema !== BACKUP_SCHEMA || Number(payload.schemaVersion)!==BACKUP_SCHEMA_VERSION || !payload.data) throw new Error('Formato backup non riconosciuto.');
             for (const key of ['patients','events','clinicalSessions','centers','treatments','news','preparations']) if (!Array.isArray(payload.data[key])) throw new Error(`Sezione ${key} mancante o non valida.`);
-            const idSections=['patients','events','clinicalSessions','centers','treatments','news','preparations'];
+            if (typeof payload.data.manualRevenues === 'undefined') payload.data.manualRevenues = [];
+            if (!Array.isArray(payload.data.manualRevenues)) throw new Error('Sezione manualRevenues non valida.');
+            const idSections=['patients','events','clinicalSessions','centers','treatments','news','preparations','manualRevenues'];
             for (const key of idSections) for (const item of payload.data[key]) if (!item || typeof item!=='object' || !String(item.id || item.eventId || '').trim()) throw new Error(`Record senza ID nella sezione ${key}.`);
             return payload;
         }
         window.analyzeBackupFile = async function(event) {
             pendingBackupData=null; const box=document.getElementById('backup-analysis'); const btn=document.getElementById('backup-restore-btn'); btn.disabled=true; btn.classList.add('opacity-50','cursor-not-allowed');
-            try { const file=event.target.files?.[0]; if(!file)return; if(file.size>25*1024*1024)throw new Error('Il file supera il limite di 25 MB.'); const payload=validateBackupPayload(JSON.parse(await file.text())); pendingBackupData=payload; const c=backupCounts(payload.data); box.innerHTML=`<strong>Backup valido</strong><p class="mt-1">Creato: ${escapePatientText(new Date(payload.createdAt).toLocaleString('it-IT'))}</p><div class="grid grid-cols-2 gap-1 mt-2"><span>Pazienti: <b>${c.patients}</b></span><span>Appuntamenti: <b>${c.events}</b></span><span>Sedute: <b>${c.clinicalSessions}</b></span><span>Sedi: <b>${c.centers}</b></span><span>Trattamenti: <b>${c.treatments}</b></span><span>News/guide: <b>${c.news+c.preparations}</b></span></div>`; box.classList.remove('hidden'); btn.disabled=false; btn.classList.remove('opacity-50','cursor-not-allowed'); }
+            try { const file=event.target.files?.[0]; if(!file)return; if(file.size>25*1024*1024)throw new Error('Il file supera il limite di 25 MB.'); const payload=validateBackupPayload(JSON.parse(await file.text())); pendingBackupData=payload; const c=backupCounts(payload.data); box.innerHTML=`<strong>Backup valido</strong><p class="mt-1">Creato: ${escapePatientText(new Date(payload.createdAt).toLocaleString('it-IT'))}</p><div class="grid grid-cols-2 gap-1 mt-2"><span>Pazienti: <b>${c.patients}</b></span><span>Appuntamenti: <b>${c.events}</b></span><span>Sedute: <b>${c.clinicalSessions}</b></span><span>Sedi: <b>${c.centers}</b></span><span>Trattamenti: <b>${c.treatments}</b></span><span>News/guide: <b>${c.news+c.preparations}</b></span><span>Entrate manuali: <b>${c.manualRevenues}</b></span></div>`; box.classList.remove('hidden'); btn.disabled=false; btn.classList.remove('opacity-50','cursor-not-allowed'); }
             catch(err){box.innerHTML=`<strong class="text-rose-700">Backup non valido</strong><p class="mt-1">${escapePatientText(err.message)}</p>`;box.classList.remove('hidden');showToast('File di backup non valido.');}
         };
         window.requestBackupRestore = function() {
@@ -3470,6 +3549,7 @@
                 await restoreCollection(data.treatments,id=>doc(db,'artifacts',appId,'public','data','treatments_list',id),'trattamenti',progress);
                 await restoreCollection(data.news,id=>doc(db,'artifacts',appId,'public','data','news_list',id),'news',progress);
                 await restoreCollection(data.preparations,id=>doc(db,'artifacts',appId,'public','data','preparations_list',id),'guide',progress);
+                await restoreCollection(data.manualRevenues || [],id=>sharedDocument('manual_revenue',id),'entrate manuali',progress);
                 localStorage.setItem('lastRestoreAt',new Date().toISOString()); pendingBackupData=null; await loadAllDataFromFirestore(); progress.textContent='Ripristino completato con successo.'; renderBackupDashboard(); if(calendarInstance){calendarInstance.refetchEvents();calendarInstance.updateSize();} showToast('Ripristino completato.');
             } catch(err){startSharedRealtimeSync();progress.textContent='Ripristino interrotto: '+err.message;throw err;}
         }
