@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Silvia Chinellato | Osteopata & Idrocolonterapia</title>
-    <meta name="app-build" content="shared-data-v29-manual-revenue">
+    <meta name="app-build" content="shared-data-v30-forfettario-tax-simulator">
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -956,6 +956,20 @@
             </form>
             <div id="manual-revenue-list" class="space-y-2"></div>
           </section>
+          <section class="space-y-4 p-4 bg-violet-50/70 border border-violet-200 rounded-3xl">
+            <div class="flex flex-col sm:flex-row sm:items-start justify-between gap-3"><div><h4 class="font-editorial text-lg font-bold italic text-violet-950"><i class="fa-solid fa-calculator mr-1"></i>Simulatore fiscale forfettario</h4><p class="text-[10px] text-violet-800">Stima gestionale sull'anno selezionato. I parametri sono configurabili e salvati nel profilo fiscale.</p></div><span id="tax-profile-status" class="px-3 py-1.5 rounded-full bg-white border border-violet-200 text-[10px] font-bold text-violet-900">Profilo da salvare</span></div>
+            <div class="p-3 bg-amber-50 border border-amber-200 rounded-2xl text-[10px] leading-relaxed text-amber-950"><strong>Avvertenza:</strong> il risultato è una simulazione orientativa, non sostituisce il calcolo del commercialista. Acconti, saldi, minimali, gestione previdenziale, crediti e situazioni personali possono modificare gli importi effettivi.</div>
+            <form id="tax-profile-form" onsubmit="handleTaxProfileSubmit(event)" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 p-4 bg-white border border-violet-200 rounded-2xl">
+              <div><label class="block text-[10px] font-bold text-slate-500 mb-1">FATTURATO ANNO PRECEDENTE (€)</label><input type="number" min="0" step="0.01" id="tax-previous-revenue" class="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs"></div>
+              <div><label class="block text-[10px] font-bold text-slate-500 mb-1">COEFFICIENTE REDDITIVITÀ (%)</label><input type="number" min="0" max="100" step="0.01" id="tax-profitability" value="78" required oninput="renderTaxSimulator()" class="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs"></div>
+              <div><label class="block text-[10px] font-bold text-slate-500 mb-1">IMPOSTA SOSTITUTIVA (%)</label><select id="tax-substitute-rate" onchange="renderTaxSimulator()" class="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs"><option value="15">15% ordinaria</option><option value="5">5% nuova attività</option></select></div>
+              <div><label class="block text-[10px] font-bold text-slate-500 mb-1">ALIQUOTA PREVIDENZIALE (%)</label><input type="number" min="0" max="100" step="0.01" id="tax-inps-rate" value="26.07" required oninput="renderTaxSimulator()" class="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs"></div>
+              <div><label class="block text-[10px] font-bold text-slate-500 mb-1">ACCONTO IMPOSTA INDICATIVO (%)</label><input type="number" min="0" max="200" step="1" id="tax-advance-rate" value="100" required oninput="renderTaxSimulator()" class="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs"></div>
+              <div class="sm:col-span-2 lg:col-span-5 flex justify-end"><button type="submit" class="px-4 py-2.5 bg-violet-700 hover:bg-violet-800 text-white font-bold rounded-xl text-xs"><i class="fa-solid fa-floppy-disk mr-1"></i>Salva profilo fiscale</button></div>
+            </form>
+            <div id="tax-simulator-kpis" class="grid grid-cols-2 lg:grid-cols-5 gap-3"></div>
+            <div id="tax-simulator-detail" class="p-4 bg-white border border-violet-200 rounded-2xl text-xs space-y-2"></div>
+          </section>
           <section class="space-y-3 p-4 bg-amber-50/70 border border-amber-200 rounded-3xl"><div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2"><div><h4 class="font-editorial text-lg font-bold italic text-amber-950"><i class="fa-solid fa-triangle-exclamation mr-1"></i>Appuntamenti clinici senza tariffa</h4><p class="text-[10px] text-amber-800">Appuntamenti dell'anno selezionato con compenso assente o pari a zero.</p></div><span id="business-missing-fee-count" class="px-3 py-1.5 rounded-full bg-white border border-amber-200 text-xs font-bold text-amber-900"></span></div><div id="business-missing-fee-list" class="space-y-2"></div></section>
         </div>
       </div>
@@ -1078,7 +1092,8 @@
             patients: [],
             events: [],
             clinicalSessions: [],
-            manualRevenues: []
+            manualRevenues: [],
+            taxProfile: null
         };
 
         let db = null;
@@ -1161,6 +1176,11 @@
             }, err => {
                 console.error('Errore sincronizzazione entrate manuali:', err);
             }));
+            sharedUnsubscribers.push(onSnapshot(sharedDocument('tax_profile','default'), snapshot => {
+                appState.taxProfile = snapshot.exists() ? { id:'default', ...snapshot.data() } : null;
+                populateTaxProfileForm();
+                if (!document.getElementById('business-dashboard-modal')?.classList.contains('hidden')) renderBusinessDashboard();
+            }, err => console.error('Errore sincronizzazione profilo fiscale:', err)));
         }
 
         let authGateReady = false;
@@ -1290,6 +1310,8 @@
                     appState.clinicalSessions = clinicalSnap.docs.map(d => ({ id: d.data().id || d.id, ...d.data() }));
                     const manualRevenueSnap = await getDocs(sharedCollection('manual_revenue'));
                     appState.manualRevenues = manualRevenueSnap.docs.map(d => ({ id: d.data().id || d.id, ...d.data() }));
+                    const taxProfileSnap = await getDoc(sharedDocument('tax_profile','default'));
+                    appState.taxProfile = taxProfileSnap.exists() ? { id:'default', ...taxProfileSnap.data() } : null;
                     await migrateEventClinicalDataToArchiveOnce();
                     await migrateLegacyClinicalBlocksFromPatientNotesOnce();
                     startSharedRealtimeSync();
@@ -3177,6 +3199,49 @@
             },'Sì, elimina');
         };
 
+        function normalizeTaxProfile(profile = {}) {
+            return { id:'default', previousYearRevenue:Number(profile.previousYearRevenue||0), profitabilityCoefficient:Number(profile.profitabilityCoefficient||78), substituteTaxRate:Number(profile.substituteTaxRate||15), inpsRate:Number(profile.inpsRate||26.07), advanceRate:Number(profile.advanceRate??100), updatedAt:profile.updatedAt||null };
+        }
+        window.populateTaxProfileForm = function() {
+            const form=document.getElementById('tax-profile-form');if(!form)return;
+            const p=normalizeTaxProfile(appState.taxProfile||{});
+            document.getElementById('tax-previous-revenue').value=p.previousYearRevenue||'';
+            document.getElementById('tax-profitability').value=p.profitabilityCoefficient;
+            document.getElementById('tax-substitute-rate').value=String(p.substituteTaxRate);
+            document.getElementById('tax-inps-rate').value=p.inpsRate;
+            document.getElementById('tax-advance-rate').value=p.advanceRate;
+            const status=document.getElementById('tax-profile-status');
+            status.textContent=p.updatedAt?'Profilo salvato':'Profilo da salvare';
+        };
+        window.handleTaxProfileSubmit = async function(event) {
+            event.preventDefault();
+            if(!db||!appState.isLoggedIn||!isAuthorizedFirebaseUser()){showToast('Accesso autorizzato necessario.');return;}
+            const profile=normalizeTaxProfile({previousYearRevenue:document.getElementById('tax-previous-revenue').value,profitabilityCoefficient:document.getElementById('tax-profitability').value,substituteTaxRate:document.getElementById('tax-substitute-rate').value,inpsRate:document.getElementById('tax-inps-rate').value,advanceRate:document.getElementById('tax-advance-rate').value,updatedAt:new Date().toISOString()});
+            if(profile.profitabilityCoefficient<0||profile.profitabilityCoefficient>100||profile.substituteTaxRate<0||profile.substituteTaxRate>100||profile.inpsRate<0||profile.inpsRate>100){showToast('Controlla le aliquote inserite.');return;}
+            try{await setDoc(sharedDocument('tax_profile','default'),profile,{merge:false});appState.taxProfile=profile;populateTaxProfileForm();renderBusinessDashboard();showToast('Profilo fiscale salvato.');}catch(err){console.error('Errore salvataggio profilo fiscale:',err);showToast('Errore: profilo fiscale non salvato.');}
+        };
+        window.renderTaxSimulator = function(fatturatoOverride = null) {
+            const target=document.getElementById('tax-simulator-kpis');if(!target)return;
+            const year=String(document.getElementById('business-year')?.value||new Date().getFullYear());
+            const financialEvents=appState.events.filter(isFinancialClinicalEvent).filter(ev=>String(ev.start||'').slice(0,4)===year);
+            const eventRevenue=financialEvents.reduce((sum,ev)=>sum+Number(ev.extendedProps?.fee||0),0);
+            const manualRevenue=(appState.manualRevenues||[]).map(normalizeManualRevenue).filter(item=>item.date.slice(0,4)===year&&item.amount>0).reduce((sum,item)=>sum+item.amount,0);
+            const revenue=fatturatoOverride===null?eventRevenue+manualRevenue:Number(fatturatoOverride||0);
+            const p=normalizeTaxProfile({previousYearRevenue:document.getElementById('tax-previous-revenue')?.value??appState.taxProfile?.previousYearRevenue,profitabilityCoefficient:document.getElementById('tax-profitability')?.value??appState.taxProfile?.profitabilityCoefficient,substituteTaxRate:document.getElementById('tax-substitute-rate')?.value??appState.taxProfile?.substituteTaxRate,inpsRate:document.getElementById('tax-inps-rate')?.value??appState.taxProfile?.inpsRate,advanceRate:document.getElementById('tax-advance-rate')?.value??appState.taxProfile?.advanceRate});
+            const grossTaxable=revenue*p.profitabilityCoefficient/100;
+            const contributions=grossTaxable*p.inpsRate/100;
+            const substituteBase=Math.max(0,grossTaxable-contributions);
+            const substituteTax=substituteBase*p.substituteTaxRate/100;
+            const currentLiability=contributions+substituteTax;
+            const indicativeAdvance=substituteTax*p.advanceRate/100;
+            const nextYearCashNeed=currentLiability+indicativeAdvance;
+            const reserveRate=revenue>0?nextYearCashNeed/revenue*100:0;
+            const priorDelta=revenue-p.previousYearRevenue;
+            target.innerHTML=[['Fatturato '+year,financeEuro(revenue),'fa-euro-sign'],['Reddito forfettario',financeEuro(grossTaxable),'fa-chart-pie'],['Contributi stimati',financeEuro(contributions),'fa-shield-heart'],['Imposta stimata',financeEuro(substituteTax),'fa-landmark'],['Fabbisogno indicativo',financeEuro(nextYearCashNeed),'fa-piggy-bank']].map(k=>`<div class="p-3 bg-white border border-violet-200 rounded-2xl"><i class="fa-solid ${k[2]} text-violet-700"></i><p class="text-[10px] uppercase text-slate-500 mt-1">${k[0]}</p><strong class="text-base">${k[1]}</strong></div>`).join('');
+            const tone=reserveRate<=25?'emerald':reserveRate<=35?'amber':'rose';
+            document.getElementById('tax-simulator-detail').innerHTML=`<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2"><div><strong class="text-violet-950">Accantonamento prudenziale indicativo</strong><p class="text-[10px] text-slate-500">Somma di onere corrente stimato e acconto imposta indicativo.</p></div><span class="px-3 py-1.5 rounded-full bg-${tone}-100 text-${tone}-800 font-bold">${reserveRate.toFixed(1).replace('.',',')}% del fatturato</span></div><div class="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-2 border-t border-violet-100"><p><b>Base imposta dopo contributi stimati:</b> ${financeEuro(substituteBase)}</p><p><b>Acconto imposta indicativo:</b> ${financeEuro(indicativeAdvance)}</p><p><b>Fatturato anno precedente:</b> ${financeEuro(p.previousYearRevenue)}</p><p><b>Variazione rispetto all'anno precedente:</b> ${priorDelta>=0?'+':''}${financeEuro(priorDelta)}</p></div>`;
+        };
+
         let financeReturnContext = null;
         let financeReturnScrollTop = 0;
         function isFinancialClinicalEvent(ev) {
@@ -3199,6 +3264,7 @@
             if (!monthInput.value) monthInput.value = now.toISOString().slice(0,7);
             yearInput.value = monthInput.value.slice(0,4) || String(now.getFullYear());
             resetManualRevenueForm();
+            populateTaxProfileForm();
             renderBusinessDashboard();
             document.getElementById('business-dashboard-modal').classList.remove('hidden');
         }
@@ -3257,6 +3323,7 @@
             document.getElementById('business-year-by-center').innerHTML=`<table class="w-full text-xs min-w-[560px]"><thead><tr class="text-indigo-900"><th class="p-3 text-left">Sede</th><th>Visite</th><th class="text-right">Incassato</th><th class="text-right">Da incassare</th><th class="p-3 text-right">Totale</th></tr></thead><tbody>${yearCenterRows||'<tr><td colspan="5" class="p-8 text-center text-slate-400">Nessun compenso registrato nell’anno selezionato.</td></tr>'}</tbody></table>`;
             document.getElementById('manual-revenue-year-total').textContent=`${financeEuro(yearManualTotal)} nell'anno ${year}`;
             document.getElementById('manual-revenue-list').innerHTML=yearManualRevenues.length?yearManualRevenues.sort((a,b)=>String(b.date).localeCompare(String(a.date))).map(item=>{const d=new Date(item.date+'T12:00:00');const when=Number.isNaN(d.getTime())?item.date:d.toLocaleDateString('it-IT',{dateStyle:'medium'});return `<article class="p-3 bg-white border border-emerald-200 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-3"><div class="min-w-0"><div class="flex items-center gap-2 flex-wrap"><strong class="text-emerald-900">${financeEuro(item.amount)}</strong><span class="px-2 py-0.5 bg-emerald-50 border border-emerald-100 rounded-full text-[10px] font-bold text-emerald-800">${escapePatientText(item.category)}</span></div><p class="text-xs text-slate-700 mt-1">${escapePatientText(item.description)}</p><p class="text-[10px] text-slate-500 mt-1">${escapePatientText(when)}</p></div><div class="flex gap-2"><button type="button" onclick="editManualRevenue('${encodeURIComponent(item.id)}')" class="px-3 py-2 bg-emerald-100 text-emerald-900 rounded-xl text-xs font-bold">Modifica</button><button type="button" onclick="confirmDeleteManualRevenue('${encodeURIComponent(item.id)}')" class="px-3 py-2 bg-rose-50 text-rose-700 rounded-xl text-xs font-bold">Elimina</button></div></article>`;}).join(''):'<p class="p-5 bg-white border border-emerald-100 rounded-2xl text-center text-xs text-slate-500">Nessuna entrata manuale registrata per l’anno selezionato.</p>';
+            renderTaxSimulator(yearSummary.total+yearManualTotal);
             const missingFee=yearEvents.filter(ev=>Number(ev.extendedProps?.fee || 0)<=0).sort((a,b)=>new Date(b.start)-new Date(a.start));
             document.getElementById('business-missing-fee-count').textContent=`${missingFee.length} da completare`;
             document.getElementById('business-missing-fee-list').innerHTML=missingFee.length?missingFee.map(ev=>{const d=new Date(ev.start);const when=Number.isNaN(d.getTime())?String(ev.start||''):d.toLocaleString('it-IT',{dateStyle:'medium',timeStyle:'short'});const patient=appState.patients.find(p=>String(p.id)===String(ev.extendedProps?.patientId||''));return `<button type="button" onclick="openFinanceEvent('${encodeURIComponent(ev.id)}')" class="w-full p-3 bg-white hover:bg-amber-100 border border-amber-200 rounded-2xl text-left flex flex-col sm:flex-row sm:items-center justify-between gap-2 transition"><div><strong class="font-editorial italic text-sm text-slate-900">${escapePatientText(ev.title||'Appuntamento')}</strong><p class="text-[10px] text-slate-500 mt-1">${escapePatientText(when)} • ${escapePatientText(ev.extendedProps?.centerName||'Studio Privato')}${patient?' • '+escapePatientText(patient.name):''}</p></div><span class="px-3 py-2 bg-amber-100 text-amber-900 rounded-xl text-xs font-bold"><i class="fa-solid fa-pen-to-square mr-1"></i>Imposta tariffa</span></button>`;}).join(''):'<p class="p-5 bg-white border border-amber-100 rounded-2xl text-center text-xs text-slate-500"><i class="fa-solid fa-circle-check text-emerald-600 mr-1"></i>Nessun appuntamento clinico senza tariffa nell’anno selezionato.</p>';
@@ -3490,7 +3557,8 @@
                 treatments: Array.isArray(data?.treatments) ? data.treatments.length : 0,
                 news: Array.isArray(data?.news) ? data.news.length : 0,
                 preparations: Array.isArray(data?.preparations) ? data.preparations.length : 0,
-                manualRevenues: Array.isArray(data?.manualRevenues) ? data.manualRevenues.length : 0
+                manualRevenues: Array.isArray(data?.manualRevenues) ? data.manualRevenues.length : 0,
+                taxProfiles: data?.taxProfile && typeof data.taxProfile === 'object' ? 1 : 0
             };
         }
         function buildBackupPayload() {
@@ -3499,13 +3567,13 @@
                 patients: structuredClone(appState.patients || []), events: structuredClone(appState.events || []),
                 clinicalSessions: structuredClone(appState.clinicalSessions || []), centers: structuredClone(appState.centers || []),
                 treatments: structuredClone(appState.treatments || []), news: structuredClone(appState.news || []),
-                preparations: structuredClone(appState.preparations || []), manualRevenues: structuredClone(appState.manualRevenues || [])
+                preparations: structuredClone(appState.preparations || []), manualRevenues: structuredClone(appState.manualRevenues || []), taxProfile: appState.taxProfile ? structuredClone(appState.taxProfile) : null
             };
-            return { schema: BACKUP_SCHEMA, schemaVersion: BACKUP_SCHEMA_VERSION, appBuild: 'v29', createdAt, exportedBy: appState.currentUserEmail || null, counts: backupCounts(data), data };
+            return { schema: BACKUP_SCHEMA, schemaVersion: BACKUP_SCHEMA_VERSION, appBuild: 'v30', createdAt, exportedBy: appState.currentUserEmail || null, counts: backupCounts(data), data };
         }
         function renderBackupDashboard() {
             const counts = backupCounts(appState);
-            const cards = [['Pazienti',counts.patients,'fa-user-group'],['Appuntamenti',counts.events,'fa-calendar-check'],['Sedute cliniche',counts.clinicalSessions,'fa-notes-medical'],['Contenuti e sedi',counts.centers+counts.treatments+counts.news+counts.preparations+counts.manualRevenues,'fa-folder-tree']];
+            const cards = [['Pazienti',counts.patients,'fa-user-group'],['Appuntamenti',counts.events,'fa-calendar-check'],['Sedute cliniche',counts.clinicalSessions,'fa-notes-medical'],['Contenuti e sedi',counts.centers+counts.treatments+counts.news+counts.preparations+counts.manualRevenues+counts.taxProfiles,'fa-folder-tree']];
             document.getElementById('backup-kpis').innerHTML=cards.map(x=>`<div class="p-4 bg-white border border-slate-200 rounded-2xl"><i class="fa-solid ${x[2]} text-indigo-700"></i><p class="text-[10px] uppercase text-slate-500 mt-2">${x[0]}</p><strong class="text-lg">${x[1]}</strong></div>`).join('');
             const last=localStorage.getItem('lastCompleteBackupAt');
             document.getElementById('backup-last-export').textContent=last?'Ultimo export da questo dispositivo: '+new Date(last).toLocaleString('it-IT'):'Nessun export registrato su questo dispositivo.';
@@ -3521,13 +3589,15 @@
             for (const key of ['patients','events','clinicalSessions','centers','treatments','news','preparations']) if (!Array.isArray(payload.data[key])) throw new Error(`Sezione ${key} mancante o non valida.`);
             if (typeof payload.data.manualRevenues === 'undefined') payload.data.manualRevenues = [];
             if (!Array.isArray(payload.data.manualRevenues)) throw new Error('Sezione manualRevenues non valida.');
+            if (typeof payload.data.taxProfile === 'undefined') payload.data.taxProfile = null;
+            if (payload.data.taxProfile !== null && typeof payload.data.taxProfile !== 'object') throw new Error('Sezione taxProfile non valida.');
             const idSections=['patients','events','clinicalSessions','centers','treatments','news','preparations','manualRevenues'];
             for (const key of idSections) for (const item of payload.data[key]) if (!item || typeof item!=='object' || !String(item.id || item.eventId || '').trim()) throw new Error(`Record senza ID nella sezione ${key}.`);
             return payload;
         }
         window.analyzeBackupFile = async function(event) {
             pendingBackupData=null; const box=document.getElementById('backup-analysis'); const btn=document.getElementById('backup-restore-btn'); btn.disabled=true; btn.classList.add('opacity-50','cursor-not-allowed');
-            try { const file=event.target.files?.[0]; if(!file)return; if(file.size>25*1024*1024)throw new Error('Il file supera il limite di 25 MB.'); const payload=validateBackupPayload(JSON.parse(await file.text())); pendingBackupData=payload; const c=backupCounts(payload.data); box.innerHTML=`<strong>Backup valido</strong><p class="mt-1">Creato: ${escapePatientText(new Date(payload.createdAt).toLocaleString('it-IT'))}</p><div class="grid grid-cols-2 gap-1 mt-2"><span>Pazienti: <b>${c.patients}</b></span><span>Appuntamenti: <b>${c.events}</b></span><span>Sedute: <b>${c.clinicalSessions}</b></span><span>Sedi: <b>${c.centers}</b></span><span>Trattamenti: <b>${c.treatments}</b></span><span>News/guide: <b>${c.news+c.preparations}</b></span><span>Entrate manuali: <b>${c.manualRevenues}</b></span></div>`; box.classList.remove('hidden'); btn.disabled=false; btn.classList.remove('opacity-50','cursor-not-allowed'); }
+            try { const file=event.target.files?.[0]; if(!file)return; if(file.size>25*1024*1024)throw new Error('Il file supera il limite di 25 MB.'); const payload=validateBackupPayload(JSON.parse(await file.text())); pendingBackupData=payload; const c=backupCounts(payload.data); box.innerHTML=`<strong>Backup valido</strong><p class="mt-1">Creato: ${escapePatientText(new Date(payload.createdAt).toLocaleString('it-IT'))}</p><div class="grid grid-cols-2 gap-1 mt-2"><span>Pazienti: <b>${c.patients}</b></span><span>Appuntamenti: <b>${c.events}</b></span><span>Sedute: <b>${c.clinicalSessions}</b></span><span>Sedi: <b>${c.centers}</b></span><span>Trattamenti: <b>${c.treatments}</b></span><span>News/guide: <b>${c.news+c.preparations}</b></span><span>Entrate manuali: <b>${c.manualRevenues}</b></span><span>Profilo fiscale: <b>${c.taxProfiles}</b></span></div>`; box.classList.remove('hidden'); btn.disabled=false; btn.classList.remove('opacity-50','cursor-not-allowed'); }
             catch(err){box.innerHTML=`<strong class="text-rose-700">Backup non valido</strong><p class="mt-1">${escapePatientText(err.message)}</p>`;box.classList.remove('hidden');showToast('File di backup non valido.');}
         };
         window.requestBackupRestore = function() {
@@ -3550,6 +3620,7 @@
                 await restoreCollection(data.news,id=>doc(db,'artifacts',appId,'public','data','news_list',id),'news',progress);
                 await restoreCollection(data.preparations,id=>doc(db,'artifacts',appId,'public','data','preparations_list',id),'guide',progress);
                 await restoreCollection(data.manualRevenues || [],id=>sharedDocument('manual_revenue',id),'entrate manuali',progress);
+                if(data.taxProfile) await setDoc(sharedDocument('tax_profile','default'),{...data.taxProfile,id:'default'},{merge:false});
                 localStorage.setItem('lastRestoreAt',new Date().toISOString()); pendingBackupData=null; await loadAllDataFromFirestore(); progress.textContent='Ripristino completato con successo.'; renderBackupDashboard(); if(calendarInstance){calendarInstance.refetchEvents();calendarInstance.updateSize();} showToast('Ripristino completato.');
             } catch(err){startSharedRealtimeSync();progress.textContent='Ripristino interrotto: '+err.message;throw err;}
         }
