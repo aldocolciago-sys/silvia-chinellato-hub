@@ -40,23 +40,25 @@ npm run serve               # avvia il sito in locale su http://127.0.0.1:4173 (
 
 Tutti i test girano con fuso `Europe/Rome` e locale `it-IT`.
 
-## Problemi noti documentati dai test
+## Difetti trovati e corretti
 
-I test marcati `it.fails` (Vitest) o `test.fail()` (Playwright) descrivono il **comportamento corretto atteso** e oggi falliscono perché l'applicazione ha un difetto. La suite resta verde; quando un difetto viene corretto il test corrispondente diventa "inaspettatamente riuscito" e segnala di rimuovere il marcatore.
+L'ambiente di test ha individuato i difetti seguenti, ora corretti. Ognuno è coperto da test di regressione (commento `Regressione (difetto corretto)` nel codice dei test).
 
-| Area | Problema | Test |
-|---|---|---|
-| Sync iCal | Orari con `TZID` (o senza `Z`) interpretati come UTC: appuntamenti spostati di 1–2 ore | `ical-parsing`, `ical-sync` |
-| Sync iCal | Se il download di un calendario fallisce, **tutti** i suoi eventi già importati vengono proposti come "rimossi alla fonte" | `ical-sync` |
-| Sync iCal | Il badge "Errore" viene subito sostituito dal report finale, che mostra la sede come "Nessuna variazione" | `ical-sync` |
-| Sync iCal | Righe ICS ripiegate (RFC 5545) e caratteri con escape (`\,`) non gestiti | `ical-sync` |
-| Agenda | Se Firestore rifiuta il salvataggio, l'appuntamento resta comunque nello stato locale | `appointments` |
-| Agenda | Nessuna validazione: si può salvare un appuntamento che finisce prima di iniziare | `appointments` |
-| Contenuti | Errori di salvataggio di sedi/trattamenti/news/guide ignorati: compare comunque "salvato" | `content-admin` |
-| Sicurezza | Contenuti pubblici inseriti con `innerHTML` senza escape (XSS memorizzato) | `public-site` |
-| Sicurezza | `/api/ical` scarica qualunque URL, anche host interni (SSRF) e accetta metodi diversi da GET | `api-ical` |
-| Dati | Un errore in una migrazione una-tantum impedisce il caricamento di pazienti e appuntamenti | `migrations` |
-| Accessibilità | Etichette del modulo appuntamento non associate ai campi; contrasto 4.45:1 del badge data news | `accessibility` |
+| Area | Difetto | Correzione | Test |
+|---|---|---|---|
+| Sync iCal | Orari con `TZID` (o senza `Z`) letti come UTC: appuntamenti spostati di 1–2 ore | Conversione dal fuso indicato (IANA); orari senza fuso = ora locale | `ical-parsing`, `ical-sync` |
+| Sync iCal | Se il download di un calendario falliva, **tutti** i suoi eventi venivano proposti come "rimossi alla fonte" | Gli eventi delle sedi non scaricate restano invariati | `ical-sync` |
+| Sync iCal | Errore di download invisibile: la sede risultava "Nessuna variazione" | Avviso e badge "Errore di sincronizzazione" nel report | `ical-sync`, `sync-report`, E2E |
+| Sync iCal | Righe ICS ripiegate (RFC 5545), caratteri con escape (`\,`) e proprietà con parametri (`SUMMARY;LANGUAGE=it:`) non gestiti | Nuovo parser di righe/proprietà | `ical-parsing`, `ical-sync` |
+| Agenda | Con salvataggio fallito l'appuntamento restava comunque in agenda | Lo stato locale si aggiorna solo dopo la scrittura su Firestore | `appointments` |
+| Agenda | Si poteva salvare un appuntamento che finisce prima di iniziare | Validazione con messaggio | `appointments` |
+| Contenuti | Errori di salvataggio/eliminazione di sedi, trattamenti, news e guide ignorati ("salvato" comunque) | Messaggio d'errore e nessuna modifica locale | `content-admin` |
+| Sicurezza | Contenuti inseriti con `innerHTML` senza escape (XSS), link `javascript:` possibili | Escape di tutti i testi, solo link `http(s)`/`mailto`, colori e icone validati, `rel="noopener noreferrer"` | `public-site`, `safe-html` |
+| Sicurezza | `/api/ical` scaricava qualunque URL, anche host interni (SSRF), e accettava ogni metodo | Solo `http(s)` verso indirizzi pubblici (verificati via DNS e a ogni redirect, max 5), `405` per metodi diversi da GET | `api-ical`, `api-server` |
+| Dati | Un errore in una migrazione una-tantum impediva il caricamento di pazienti e appuntamenti | Ogni migrazione è isolata e ritentata al prossimo accesso | `migrations` |
+| Accessibilità | Etichette del modulo appuntamento non associate ai campi, pulsanti "chiudi" senza nome, contrasto 4.45:1 del badge data news | `for`/`aria-label`, colore più scuro | `accessibility` (E2E) |
+
+Nota: il server locale di test (`npm run serve`, E2E) imposta `ICAL_ALLOW_PRIVATE_HOSTS=1` perché i calendari di prova sono su `127.0.0.1`; **non** impostare questa variabile in produzione.
 
 ## Aggiungere un test
 

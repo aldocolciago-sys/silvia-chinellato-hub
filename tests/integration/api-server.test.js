@@ -19,6 +19,8 @@ beforeEach(() => {
 });
 
 beforeAll(async () => {
+    // I server di prova girano su 127.0.0.1: in produzione questi host sono bloccati (SSRF).
+    process.env.ICAL_ALLOW_PRIVATE_HOSTS = '1';
     upstream = http.createServer((req, res) => {
         switch (req.url) {
             case '/calendar.ics': res.writeHead(200, { 'content-type': 'text/calendar' }).end(SIMPLE_CALENDAR); break;
@@ -35,6 +37,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
+    delete process.env.ICAL_ALLOW_PRIVATE_HOSTS;
     await new Promise(r => app.close(r));
     await new Promise(r => upstream.close(r));
 });
@@ -80,6 +83,21 @@ describe('GET /api/ical (HTTP reale)', () => {
         const res = await callApi(`${closedUrl}/calendar.ics`);
         expect(res.status).toBe(500);
         expect((await res.json()).error).toBeTruthy();
+    });
+
+    it('senza ICAL_ALLOW_PRIVATE_HOSTS blocca gli host locali', async () => {
+        delete process.env.ICAL_ALLOW_PRIVATE_HOSTS;
+        try {
+            const res = await callApi(`${upstreamUrl}/calendar.ics`);
+            expect(res.status).toBe(400);
+        } finally {
+            process.env.ICAL_ALLOW_PRIVATE_HOSTS = '1';
+        }
+    });
+
+    it('rifiuta le richieste POST', async () => {
+        const res = await callApi(`${upstreamUrl}/calendar.ics`, { method: 'POST' });
+        expect(res.status).toBe(405);
     });
 
     it('risponde alle richieste preflight', async () => {

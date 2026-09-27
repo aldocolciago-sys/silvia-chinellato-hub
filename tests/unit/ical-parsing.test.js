@@ -3,8 +3,8 @@ import { loadFunctions } from '../support/app-source.js';
 import handler from '../../api/ical.js';
 import { createMockReq, createMockRes } from '../support/vercel-mock.js';
 
-const { parseIcalDateTime, normalizeGoogleCalendarUrl } = loadFunctions(
-    ['parseIcalDateTime', 'normalizeGoogleCalendarUrl'],
+const { parseIcalDateTime, normalizeGoogleCalendarUrl, unfoldIcalLines, parseIcalProperty, unescapeIcalText, zonedTimeToUtc } = loadFunctions(
+    ['parseIcalDateTime', 'normalizeGoogleCalendarUrl', 'unfoldIcalLines', 'parseIcalProperty', 'unescapeIcalText', 'zonedTimeToUtc'],
     { atob: globalThis.atob, URL: globalThis.URL }
 );
 
@@ -46,11 +46,59 @@ describe('parseIcalDateTime (client)', () => {
         expect(parseIcalDateTime('abc')).toBe('2031-05-05T05:05:05.000Z');
     });
 
-    // KNOWN BUG: un orario locale "floating" (senza Z, tipico di DTSTART;TZID=Europe/Rome:...)
+    // Regressione (difetto corretto): un orario locale "floating" (senza Z, tipico di DTSTART;TZID=Europe/Rome:...)
     // viene trattato come UTC, spostando l'appuntamento di 1-2 ore.
-    it.fails('interpreta gli orari senza "Z" come ora locale e non come UTC', () => {
+    it('interpreta gli orari senza "Z" come ora locale e non come UTC', () => {
         const iso = parseIcalDateTime('20300115T090000');
         expect(new Date(iso).getHours()).toBe(9);
+    });
+});
+
+describe('parseIcalDateTime con fuso orario (TZID)', () => {
+    it.each([
+        ['20300115T090000', 'Europe/Rome', '2030-01-15T08:00:00.000Z'], // ora solare (UTC+1)
+        ['20300715T090000', 'Europe/Rome', '2030-07-15T07:00:00.000Z'], // ora legale (UTC+2)
+        ['20300715T090000', 'America/New_York', '2030-07-15T13:00:00.000Z'],
+        ['20300715T090000', 'UTC', '2030-07-15T09:00:00.000Z']
+    ])('%s con TZID=%s → %s', (value, tzid, expected) => {
+        expect(parseIcalDateTime(value, tzid)).toBe(expected);
+    });
+
+    it('gestisce gli orari a cavallo del cambio dell’ora (ultima domenica di marzo)', () => {
+        expect(parseIcalDateTime('20300331T010000', 'Europe/Rome')).toBe('2030-03-31T00:00:00.000Z');
+        expect(parseIcalDateTime('20300331T040000', 'Europe/Rome')).toBe('2030-03-31T02:00:00.000Z');
+    });
+
+    it('la "Z" finale prevale sul TZID', () => {
+        expect(parseIcalDateTime('20300115T090000Z', 'America/New_York')).toBe('2030-01-15T09:00:00.000Z');
+    });
+
+    it('con un TZID non riconosciuto (es. nomi Windows) usa l’ora locale', () => {
+        expect(new Date(parseIcalDateTime('20300115T090000', 'W. Europe Standard Time')).getHours()).toBe(9);
+        expect(zonedTimeToUtc(2030, 0, 15, 9, 0, 'Fuso/Inesistente')).toBeNull();
+    });
+});
+
+describe('lettura delle righe iCal', () => {
+    it('ricompone le righe ripiegate con spazio o tab e normalizza i fine riga', () => {
+        expect(unfoldIcalLines('SUMMARY:Tratta\r\n mento\r\n\tlungo\rUID:1\nEND:VEVENT')).toEqual(['SUMMARY:Trattamento' + 'lungo', 'UID:1', 'END:VEVENT']);
+    });
+
+    it('separa nome, parametri e valore', () => {
+        expect(parseIcalProperty('DTSTART;TZID=Europe/Rome:20300115T090000')).toEqual({ name: 'DTSTART', params: { TZID: 'Europe/Rome' }, value: '20300115T090000' });
+        expect(parseIcalProperty('summary;LANGUAGE=it:Visita: controllo')).toEqual({ name: 'SUMMARY', params: { LANGUAGE: 'it' }, value: 'Visita: controllo' });
+    });
+
+    it('rispetta i parametri tra virgolette che contengono ":"', () => {
+        expect(parseIcalProperty('DTSTART;TZID="Europe/Rome:x":20300115T090000')).toEqual({ name: 'DTSTART', params: { TZID: 'Europe/Rome:x' }, value: '20300115T090000' });
+    });
+
+    it('restituisce null per righe senza ":"', () => {
+        expect(parseIcalProperty('riga-non-valida')).toBeNull();
+    });
+
+    it('decodifica i caratteri con escape', () => {
+        expect(unescapeIcalText('Rossi\\, Mario\\; nota\\nseconda riga\\\\fine')).toBe('Rossi, Mario; nota\nseconda riga\\fine');
     });
 });
 

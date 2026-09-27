@@ -30,7 +30,8 @@ export default defineConfig({
     webServer: {
         command: 'node tests/support/server.mjs',
         url: `${baseURL}/`,
-        env: { PORT: String(PORT) },
+        // I calendari di prova sono serviti da 127.0.0.1: in produzione /api/ical blocca gli host locali.
+        env: { PORT: String(PORT), ICAL_ALLOW_PRIVATE_HOSTS: '1' },
         reuseExistingServer: !process.env.CI,
         timeout: 20_000
     }

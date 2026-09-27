@@ -120,13 +120,15 @@ test.describe('sincronizzazione calendari poliambulatori', () => {
         await expect(page.locator('#sync-report-content')).toContainText('Giulia Bianchi');
     });
 
-    test('un calendario non valido non importa eventi', async ({ page }) => {
+    test('un calendario non valido non importa eventi e mostra l’errore', async ({ page }) => {
         await page.addInitScript(seed => { window.__FIREBASE_MOCK_SEED__ = seed; }, {
             popupUser: { email: 'silviachine@gmail.com', uid: 'uid-silviachine@gmail.com' },
             docs: seedDocs({ centers: [center({ id: 'c1', name: 'Privato', icalUrl: `${ORIGIN}/__fixtures__/not-a-calendar.ics` })] })
         });
         await loginViaUi(page, { closeReport: false });
         await expect(page.locator('#sync-report-content')).toContainText('Privato');
+        await expect(page.locator('#sync-report-content')).toContainText('Errore di sincronizzazione');
+        await expect(page.locator('#sync-report-content')).not.toContainText('Nessuna variazione');
         expect(await firestore(page).list(`${SHARED}/studio_events`)).toEqual([]);
     });
 });

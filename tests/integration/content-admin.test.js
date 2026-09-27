@@ -74,15 +74,41 @@ describe('gestione poliambulatori', () => {
         expect(app.toast()).toBe('Poliambulatorio eliminato.');
     });
 
-    // KNOWN BUG: gli errori di scrittura su Firestore vengono ignorati e compare comunque
+    // Regressione (difetto corretto): gli errori di scrittura su Firestore vengono ignorati e compare comunque
     // il messaggio di successo (vale anche per trattamenti, news e guide).
-    it.fails('segnala un errore se la sede non viene salvata', async () => {
+    it('segnala un errore se la sede non viene salvata', async () => {
         await loggedIn();
         app.setValue('new-center-name', 'X');
         app.setValue('new-center-service', 'Y');
         app.mock.failNext('setDoc', PUBLIC);
         await app.submit('center-form');
-        expect(app.toast()).not.toBe('Poliambulatorio salvato!');
+        expect(app.toast()).toBe('Errore: poliambulatorio non salvato. Controlla i permessi Firestore.');
+        expect(app.state.centers.map(c => c.name)).toEqual(['Centro Polisalute']);
+        expect(app.byId('new-center-name').value).toBe('X'); // il modulo conserva i dati per riprovare
+    });
+
+    it('non rimuove la sede dall’elenco se l’eliminazione fallisce', async () => {
+        await loggedIn();
+        app.mock.failNext('deleteDoc', PUBLIC);
+        app.window.confirmDeleteCenter('c1');
+        await app.confirm();
+        expect(app.toast()).toBe('Errore: operazione non completata.');
+        expect(app.state.centers).toHaveLength(1);
+        expect(app.isHidden('confirm-modal')).toBe(false);
+    });
+
+    it.each([
+        ['treatment-form', { 'new-treatment-title': 'T', 'new-treatment-desc': 'D' }, 'treatments_list', 'Errore: trattamento non salvato. Controlla i permessi Firestore.', 'treatments'],
+        ['news-form', { 'new-news-title': 'N', 'new-news-content': 'C' }, 'news_list', 'Errore: news non pubblicata. Controlla i permessi Firestore.', 'news'],
+        ['prep-form', { 'prep-title': 'P', 'prep-tag': 'T', 'prep-content': 'C' }, 'preparations_list', 'Errore: guida non salvata. Controlla i permessi Firestore.', 'preparations']
+    ])('%s: segnala l’errore e non aggiunge il contenuto se il salvataggio fallisce', async (form, values, collection, message, stateKey) => {
+        await loggedIn();
+        const before = app.state[stateKey].length;
+        for (const [id, value] of Object.entries(values)) app.setValue(id, value);
+        app.mock.failNext('setDoc', `${PUBLIC}/${collection}`);
+        await app.submit(form);
+        expect(app.toast()).toBe(message);
+        expect(app.state[stateKey]).toHaveLength(before);
     });
 });
 

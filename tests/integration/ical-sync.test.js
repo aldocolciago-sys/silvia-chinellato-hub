@@ -158,22 +158,40 @@ describe('sincronizzazione iCal', () => {
         expect(app.mock.list(`${SHARED}/studio_events`)).toHaveLength(0);
     });
 
-    // KNOWN BUG: il badge "Errore" viene sostituito dal report finale nello stesso tick
+    // Regressione (difetto corretto): il badge "Errore" viene sostituito dal report finale nello stesso tick
     // (quindi non è mai visibile) e il report non indica che la sede non è stata
     // sincronizzata: appare come "Nessuna variazione".
-    it.fails('il report finale segnala le sedi non sincronizzate', async () => {
+    it('il report finale segnala le sedi non sincronizzate', async () => {
         await setup({ fetchImpl: vi.fn(async () => { throw new TypeError('offline'); }) });
         expect(app.text('sync-report-content')).toMatch(/errore|non sincronizzat/i);
+        expect(app.text('sync-report-content')).not.toContain('Nessuna variazione');
+        expect(reportFromStorage().failed).toEqual(['Polisalute']);
     });
 
-    // KNOWN BUG: se il download di un calendario fallisce, tutti gli eventi già importati
+    // Regressione (difetto corretto): se il download di un calendario fallisce, tutti gli eventi già importati
     // da quella sede vengono proposti come "rimossi dal calendario originale".
-    it.fails('un errore di rete non segnala gli eventi della sede come rimossi alla fonte', async () => {
+    it('un errore di rete non segnala gli eventi della sede come rimossi alla fonte', async () => {
         await setup({
             fetchImpl: vi.fn(async () => { throw new TypeError('offline'); }),
             events: [studioEvent({ id: 'ical_c1_x', extendedProps: { centerId: 'c1' } })]
         });
         expect(reportFromStorage().deleted).toHaveLength(0);
+        expect(closeButton().disabled).toBe(false);
+        expect(app.mock.has(`${SHARED}/studio_events/ical_c1_x`)).toBe(true);
+    });
+
+    it('con più sedi, l’errore di una non blocca il rilevamento delle cancellazioni nelle altre', async () => {
+        const ok = 'https://ok.example/cal.ics';
+        await setup({
+            centers: [center({ id: 'ca', name: 'Funziona', icalUrl: ok }), center({ id: 'cb', name: 'Offline', icalUrl: 'https://down.example/cal.ics' })],
+            fetchImpl: fakeFetch(url => url === ok ? calendarWith() : null),
+            events: [
+                studioEvent({ id: 'ical_ca_gone', extendedProps: { centerId: 'ca', centerName: 'Funziona' } }),
+                studioEvent({ id: 'ical_cb_keep', extendedProps: { centerId: 'cb', centerName: 'Offline' } })
+            ]
+        });
+        expect(reportFromStorage().deleted.map(d => d.id)).toEqual(['ical_ca_gone']);
+        expect(reportFromStorage().failed).toEqual(['Offline']);
     });
 
     it('normalizza gli URL di condivisione Google prima di scaricarli', async () => {
@@ -219,21 +237,26 @@ describe('sincronizzazione iCal', () => {
         expect(app.text('sync-report-content')).toBe('Nessun report disponibile.');
     });
 
-    // KNOWN BUG: le proprietà con parametri (DTSTART;TZID=Europe/Rome:...) vengono lette come UTC.
-    it.fails('rispetta il fuso orario indicato con TZID', async () => {
+    // Regressione (difetto corretto): le proprietà con parametri (DTSTART;TZID=Europe/Rome:...) vengono lette come UTC.
+    it('rispetta il fuso orario indicato con TZID', async () => {
         await setup({ ics: vcalendar(['BEGIN:VEVENT', 'UID:tz', 'SUMMARY:Roma', 'DTSTART;TZID=Europe/Rome:20300115T090000', 'DTEND;TZID=Europe/Rome:20300115T100000', 'END:VEVENT']) });
         expect(app.mock.get(`${SHARED}/studio_events/ical_c1_tz`).start).toBe('2030-01-15T08:00:00.000Z');
     });
 
-    // KNOWN BUG: le righe "ripiegate" (RFC 5545 §3.1) non vengono ricomposte.
-    it.fails('ricompone le righe lunghe ripiegate', async () => {
+    // Regressione (difetto corretto): le righe "ripiegate" (RFC 5545 §3.1) non vengono ricomposte.
+    it('ricompone le righe lunghe ripiegate', async () => {
         await setup({ ics: vcalendar(['BEGIN:VEVENT', 'UID:fold', 'SUMMARY:Trattamento osteopatico per la sig', ' nora Maria Bianchi', 'DTSTART:20300115T090000Z', 'END:VEVENT']) });
         expect(app.mock.get(`${SHARED}/studio_events/ical_c1_fold`).title).toBe('Trattamento osteopatico per la signora Maria Bianchi');
     });
 
-    // KNOWN BUG: i caratteri con escape iCal (\\, \\; \\n) non vengono decodificati.
-    it.fails('decodifica i caratteri con escape nel titolo', async () => {
+    // Regressione (difetto corretto): i caratteri con escape iCal (\\, \\; \\n) non vengono decodificati.
+    it('decodifica i caratteri con escape nel titolo', async () => {
         await setup({ ics: calendarWith({ uid: 'esc', summary: 'Rossi\\, Mario', start: '20300115T090000Z' }) });
         expect(app.mock.get(`${SHARED}/studio_events/ical_c1_esc`).title).toBe('Rossi, Mario');
+    });
+
+    it('legge SUMMARY con parametri (es. LANGUAGE) e ignora gli allarmi annidati', async () => {
+        await setup({ ics: vcalendar(['BEGIN:VEVENT', 'UID:p', 'SUMMARY;LANGUAGE=it:Visita Anna', 'DTSTART:20300115T090000Z', 'BEGIN:VALARM', 'TRIGGER:-PT15M', 'DESCRIPTION:Promemoria', 'END:VALARM', 'END:VEVENT']) });
+        expect(app.mock.get(`${SHARED}/studio_events/ical_c1_p`).title).toBe('Visita Anna');
     });
 });

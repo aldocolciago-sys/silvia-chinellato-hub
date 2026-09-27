@@ -76,6 +76,25 @@ describe('buildSyncDecisionReport', () => {
     });
 });
 
+describe('buildSyncDecisionReport con sedi non sincronizzate', () => {
+    const failedReport = { centers: ['Centro A', 'Centro B'], failed: ['Centro B'], added: [], modified: [], deleted: [] };
+
+    it('mostra un avviso generale e un badge di errore per la sede', () => {
+        const doc = render(f.buildSyncDecisionReport(failedReport));
+        expect(doc.body.textContent).toContain('Errore di sincronizzazione: non è stato possibile scaricare il calendario di Centro B');
+        const [a, b] = doc.querySelectorAll('section');
+        expect(a.textContent).toContain('Nessuna variazione');
+        expect(b.textContent).toContain('Errore di sincronizzazione');
+        expect(b.textContent).toContain('Calendario non sincronizzato');
+        expect(b.textContent).not.toContain('Nessuna variazione');
+    });
+
+    it('è compatibile con i report salvati prima dell’introduzione del campo "failed"', () => {
+        const doc = render(f.buildSyncDecisionReport({ centers: ['X'], added: [], modified: [], deleted: [] }));
+        expect(doc.body.textContent).not.toContain('Errore di sincronizzazione');
+    });
+});
+
 describe('formatDeletionEventDate', () => {
     it('formatta una data ISO in italiano', () => {
         expect(f.formatDeletionEventDate('2030-01-15T08:00:00.000Z')).toMatch(/15 gen 2030/);

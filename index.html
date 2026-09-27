@@ -497,7 +497,7 @@
         <div class="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-sm overflow-hidden flex flex-col border border-nature-100">
             <div class="px-6 py-5 border-b border-slate-100 flex items-center justify-between bg-nature-50/50">
                 <h3 class="font-editorial text-lg font-bold text-slate-900 italic">Area Riservata</h3>
-                <button type="button" onclick="closeLoginModal()" class="text-slate-400 hover:text-slate-600 w-8 h-8 rounded-full flex items-center justify-center hover:bg-slate-200/60 transition"><i class="fa-solid fa-xmark"></i></button>
+                <button aria-label="Chiudi" type="button" onclick="closeLoginModal()" class="text-slate-400 hover:text-slate-600 w-8 h-8 rounded-full flex items-center justify-center hover:bg-slate-200/60 transition"><i class="fa-solid fa-xmark"></i></button>
             </div>
             <div class="p-6 sm:p-8 space-y-5 text-center">
                 <div class="w-16 h-16 rounded-full bg-nature-100 text-nature-700 flex items-center justify-center mx-auto text-2xl shadow-inner">
@@ -519,7 +519,7 @@
         <div class="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-md overflow-hidden flex flex-col border border-nature-100 max-h-[90vh]">
             <div class="px-5 sm:px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-nature-50/50">
                 <h3 id="studio-modal-title" class="font-editorial text-base sm:text-lg font-bold text-slate-900 italic">Nuovo Appuntamento Studio</h3>
-                <button type="button" onclick="closeStudioModal()" class="text-slate-400 hover:text-slate-600 w-8 h-8 rounded-full flex items-center justify-center"><i class="fa-solid fa-xmark"></i></button>
+                <button aria-label="Chiudi" type="button" onclick="closeStudioModal()" class="text-slate-400 hover:text-slate-600 w-8 h-8 rounded-full flex items-center justify-center"><i class="fa-solid fa-xmark"></i></button>
             </div>
             <form id="studio-event-form" class="p-5 sm:p-6 space-y-4 overflow-y-auto" onsubmit="handleStudioEventSubmit(event)">
                 <input type="hidden" id="studio-edit-event-id">
@@ -527,7 +527,7 @@
                 <div id="non-clinical-event-banner" class="hidden p-3.5 bg-sky-50 border border-sky-300 rounded-2xl text-sky-950"><div class="flex items-start gap-2.5"><i class="fa-solid fa-house mt-0.5 text-sky-700"></i><div><p class="text-xs font-bold">Evento da Calendario non Clinico</p><p class="text-[10px] mt-1">Occupa l’agenda e segnala sovrapposizioni, ma è escluso dalla gestione professionale.</p></div></div></div>
                 <div id="external-detached-banner" class="hidden p-3.5 bg-amber-50 border border-amber-300 rounded-2xl text-amber-950"><div class="flex items-start gap-2.5"><i class="fa-solid fa-thumbtack mt-0.5 text-amber-700"></i><div class="space-y-1"><p class="text-xs font-bold">Appuntamento mantenuto manualmente</p><p class="text-[11px] leading-relaxed">Questo appuntamento è stato cancellato dal calendario originale del poliambulatorio, ma è stato mantenuto nella tua agenda personale.</p><p id="external-detached-date" class="text-[10px] font-semibold text-amber-800"></p></div></div></div>
                 <div class="space-y-1">
-                    <label class="text-[11px] font-bold text-slate-600">Sede / Poliambulatorio</label>
+                    <label for="studio-center-select" class="text-[11px] font-bold text-slate-600">Sede / Poliambulatorio</label>
                     <select id="studio-center-select" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-2xl text-xs">
                         <option value="">Studio Privato (Default)</option>
                     </select>
@@ -540,7 +540,7 @@
                             <i class="fa-solid fa-user-plus"></i> Nuovo Paziente
                         </button>
                     </label>
-                    <select id="studio-patient-select" onchange="onPatientSelectChange()" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-2xl text-xs">
+                    <select id="studio-patient-select" aria-label="Associa paziente in anagrafica" onchange="onPatientSelectChange()" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-2xl text-xs">
                         <option value="">-- Seleziona Paziente --</option>
                     </select>
                     <div id="patient-match-suggestions" class="hidden mt-2 p-3 bg-water-50 border border-water-200 rounded-2xl text-xs"></div>
@@ -549,34 +549,34 @@
 
                 <div id="patient-contact-info-container" class="grid grid-cols-2 gap-3 hidden">
                     <div class="space-y-1">
-                        <label class="text-[10px] font-bold text-slate-500">Telefono Paziente</label>
+                        <label for="studio-patient-phone" class="text-[10px] font-bold text-slate-500">Telefono Paziente</label>
                         <input type="text" id="studio-patient-phone" readonly class="w-full px-3 py-2 bg-slate-100 border border-slate-200 rounded-xl text-xs text-slate-600">
                     </div>
                     <div class="space-y-1">
-                        <label class="text-[10px] font-bold text-slate-500">Email Paziente</label>
+                        <label for="studio-patient-email" class="text-[10px] font-bold text-slate-500">Email Paziente</label>
                         <input type="text" id="studio-patient-email" readonly class="w-full px-3 py-2 bg-slate-100 border border-slate-200 rounded-xl text-xs text-slate-600">
                     </div>
                 </div>
 
                 <div class="space-y-1">
-                    <label class="text-[11px] font-bold text-slate-600">Titolo / Trattamento *</label>
+                    <label for="studio-title" class="text-[11px] font-bold text-slate-600">Titolo / Trattamento *</label>
                     <input type="text" id="studio-title" required placeholder="Es. Trattamento Osteopatico" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-xs">
                 </div>
 
                 <div class="space-y-1">
-                    <label class="text-[11px] font-bold text-slate-600">Data Appuntamento *</label>
+                    <label for="studio-date" class="text-[11px] font-bold text-slate-600">Data Appuntamento *</label>
                     <input type="date" id="studio-date" required class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-xs">
                 </div>
 
                 <div class="grid grid-cols-2 gap-3">
                     <div class="space-y-1">
-                        <label class="text-[11px] font-bold text-slate-600">Ora Inizio *</label>
+                        <label for="studio-time-start" class="text-[11px] font-bold text-slate-600">Ora Inizio *</label>
                         <select id="studio-time-start" required onchange="onStartTimeChange()" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-xs">
                             <option value="">Inizio...</option>
                         </select>
                     </div>
                     <div class="space-y-1">
-                        <label class="text-[11px] font-bold text-slate-600">Ora Fine *</label>
+                        <label for="studio-time-end" class="text-[11px] font-bold text-slate-600">Ora Fine *</label>
                         <select id="studio-time-end" required class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-xs">
                             <option value="">Fine...</option>
                         </select>
@@ -594,26 +594,26 @@
 
                 <div id="studio-finance-section" class="grid grid-cols-1 sm:grid-cols-2 gap-3 bg-emerald-50/60 p-3.5 rounded-2xl border border-emerald-200">
                     <div class="space-y-1">
-                        <label class="text-[11px] font-bold text-emerald-900">Compenso (€)</label>
+                        <label for="studio-fee" class="text-[11px] font-bold text-emerald-900">Compenso (€)</label>
                         <input type="number" id="studio-fee" min="0" step="0.01" placeholder="0,00" class="w-full px-4 py-3 bg-white border border-emerald-200 rounded-2xl text-xs">
                     </div>
                     <div class="space-y-1">
-                        <label class="text-[11px] font-bold text-emerald-900">Stato pagamento</label>
+                        <label for="studio-payment-status" class="text-[11px] font-bold text-emerald-900">Stato pagamento</label>
                         <select id="studio-payment-status" class="w-full px-4 py-3 bg-white border border-emerald-200 rounded-2xl text-xs">
                             <option value="paid">Pagato</option><option value="unpaid">Da incassare</option><option value="cancelled">Annullato / non dovuto</option>
                         </select>
                     </div>
                     <div class="space-y-1 sm:col-span-2">
-                        <label class="text-[11px] font-bold text-emerald-900">Metodo di pagamento</label>
+                        <label for="studio-payment-method" class="text-[11px] font-bold text-emerald-900">Metodo di pagamento</label>
                         <select id="studio-payment-method" class="w-full px-4 py-3 bg-white border border-emerald-200 rounded-2xl text-xs">
                             <option value="cash">Contanti</option><option value="card">Carta / POS</option><option value="transfer">Bonifico</option><option value="other">Altro</option>
                         </select>
                     </div>
                 </div>
                 <div id="studio-clinical-section" class="space-y-2 bg-water-50/60 p-3.5 rounded-2xl border border-water-200">
-                    <label class="text-[11px] font-bold text-water-900"><i class="fa-solid fa-notes-medical mr-1"></i>Nota clinica della seduta</label>
+                    <label for="studio-clinical-note" class="text-[11px] font-bold text-water-900"><i class="fa-solid fa-notes-medical mr-1"></i>Nota clinica della seduta</label>
                     <textarea id="studio-clinical-note" placeholder="Valutazione, trattamento eseguito, risposta del paziente..." class="w-full px-3 py-2.5 bg-white border border-water-200 rounded-xl text-xs h-24 resize-y"></textarea>
-                    <input type="text" id="studio-clinical-outcome" placeholder="Esito / indicazioni successive" class="w-full px-3 py-2.5 bg-white border border-water-200 rounded-xl text-xs">
+                    <input type="text" id="studio-clinical-outcome" aria-label="Esito / indicazioni successive" placeholder="Esito / indicazioni successive" class="w-full px-3 py-2.5 bg-white border border-water-200 rounded-xl text-xs">
                 </div>
                 <div class="flex items-center gap-2 pt-2">
                     <button type="button" id="studio-delete-btn" onclick="confirmDeleteStudioEvent()" class="hidden px-4 py-3 bg-rose-50 hover:bg-rose-100 text-rose-600 font-semibold rounded-2xl text-xs transition">Elimina</button>
@@ -630,7 +630,7 @@
                 <h3 class="font-editorial text-base sm:text-lg font-bold text-slate-900 italic">Anagrafe & Anamnesi Pazienti</h3>
                 <div class="flex items-center gap-2">
                     <button onclick="openNewPatientFromRegistry()" class="px-3 py-2 bg-amber-600 hover:bg-amber-700 text-white font-semibold rounded-xl text-xs transition">Nuovo Paziente</button><button onclick="openMergePatientsModal()" class="px-3 py-2 bg-purple-600 hover:bg-purple-700 text-white font-semibold rounded-xl text-xs transition"><i class="fa-solid fa-code-merge mr-1"></i>Unisci duplicati</button>
-                    <button type="button" onclick="closePatientsModal()" class="text-slate-400 hover:text-slate-600 w-8 h-8 rounded-full flex items-center justify-center"><i class="fa-solid fa-xmark"></i></button>
+                    <button aria-label="Chiudi" type="button" onclick="closePatientsModal()" class="text-slate-400 hover:text-slate-600 w-8 h-8 rounded-full flex items-center justify-center"><i class="fa-solid fa-xmark"></i></button>
                 </div>
             </div>
             <div class="p-4 sm:p-6 overflow-y-auto space-y-4 flex-1">
@@ -650,7 +650,7 @@
         <div class="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-3xl overflow-hidden flex flex-col border border-amber-100 max-h-[90vh]">
             <div class="px-5 sm:px-6 py-4 border-b border-amber-100 flex items-center justify-between bg-amber-50/50">
                 <h3 id="patient-edit-modal-title" class="font-editorial text-base sm:text-lg font-bold text-slate-900 italic">Scheda Paziente</h3>
-                <button type="button" onclick="closePatientEditModal()" class="text-slate-400 hover:text-slate-600 w-8 h-8 rounded-full flex items-center justify-center"><i class="fa-solid fa-xmark"></i></button>
+                <button aria-label="Chiudi" type="button" onclick="closePatientEditModal()" class="text-slate-400 hover:text-slate-600 w-8 h-8 rounded-full flex items-center justify-center"><i class="fa-solid fa-xmark"></i></button>
             </div>
             <form id="patient-form" class="p-5 sm:p-6 space-y-4 overflow-y-auto" onsubmit="handlePatientSubmit(event)">
                 <input type="hidden" id="patient-edit-id">
@@ -703,7 +703,7 @@
                     <div class="w-8 h-8 rounded-full bg-amber-100 text-amber-800 flex items-center justify-center font-bold text-xs"><i class="fa-solid fa-calendar-days"></i></div>
                     <h3 id="patient-history-title" class="font-editorial text-base sm:text-lg font-bold text-slate-900 italic">Storico Appuntamenti Paziente</h3>
                 </div>
-                <button type="button" onclick="closePatientHistoryModal()" class="text-slate-400 hover:text-slate-600 w-8 h-8 rounded-full flex items-center justify-center"><i class="fa-solid fa-xmark"></i></button>
+                <button aria-label="Chiudi" type="button" onclick="closePatientHistoryModal()" class="text-slate-400 hover:text-slate-600 w-8 h-8 rounded-full flex items-center justify-center"><i class="fa-solid fa-xmark"></i></button>
             </div>
             <div class="p-4 sm:p-6 overflow-y-auto space-y-3 flex-1" id="patient-history-list"></div>
             <div class="px-5 sm:px-6 py-4 border-t border-slate-100 bg-slate-50 flex justify-end">
@@ -736,7 +736,7 @@
                     <div class="w-9 h-9 rounded-2xl bg-nature-100 text-nature-700 flex items-center justify-center"><i class="fa-solid fa-hand-holding-medical text-sm"></i></div>
                     <h3 class="font-editorial text-base sm:text-lg font-bold text-slate-900 italic">Gestione Trattamenti Specialistici</h3>
                 </div>
-                <button type="button" onclick="closeTreatmentsAdminModal()" class="text-slate-400 hover:text-slate-600 w-8 h-8 rounded-full flex items-center justify-center hover:bg-slate-200/60 transition"><i class="fa-solid fa-xmark"></i></button>
+                <button aria-label="Chiudi" type="button" onclick="closeTreatmentsAdminModal()" class="text-slate-400 hover:text-slate-600 w-8 h-8 rounded-full flex items-center justify-center hover:bg-slate-200/60 transition"><i class="fa-solid fa-xmark"></i></button>
             </div>
             <div class="p-4 sm:p-6 overflow-y-auto space-y-6 flex-1">
                 <form id="treatment-form" class="bg-nature-50/40 p-4 sm:p-5 rounded-3xl border border-nature-100 space-y-3" onsubmit="handleTreatmentSubmit(event)">
@@ -780,7 +780,7 @@
                     <div class="w-9 h-9 rounded-2xl bg-nature-100 text-nature-700 flex items-center justify-center"><i class="fa-solid fa-hospital text-sm"></i></div>
                     <h3 class="font-editorial text-base sm:text-lg font-bold text-slate-900 italic">Gestione Poliambulatori</h3>
                 </div>
-                <button type="button" onclick="closeCentersModal()" class="text-slate-400 hover:text-slate-600 w-8 h-8 rounded-full flex items-center justify-center hover:bg-slate-200/60 transition"><i class="fa-solid fa-xmark"></i></button>
+                <button aria-label="Chiudi" type="button" onclick="closeCentersModal()" class="text-slate-400 hover:text-slate-600 w-8 h-8 rounded-full flex items-center justify-center hover:bg-slate-200/60 transition"><i class="fa-solid fa-xmark"></i></button>
             </div>
             <div class="p-4 sm:p-6 overflow-y-auto space-y-6 flex-1">
                 <form id="center-form" class="bg-nature-50/40 p-4 sm:p-5 rounded-3xl border border-nature-100 space-y-3" onsubmit="handleCenterSubmit(event)">
@@ -855,7 +855,7 @@
         <div class="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-2xl overflow-hidden flex flex-col max-h-[90vh]">
             <div class="px-5 sm:px-6 py-4 sm:py-5 border-b border-nature-100 flex items-center justify-between bg-water-50/50">
                 <h3 class="font-editorial text-base sm:text-lg font-bold text-slate-900 italic">Gestione News & Offerte</h3>
-                <button type="button" onclick="closeNewsAdminModal()" class="text-slate-400 hover:text-slate-600 w-8 h-8 rounded-full flex items-center justify-center hover:bg-slate-200/60 transition"><i class="fa-solid fa-xmark"></i></button>
+                <button aria-label="Chiudi" type="button" onclick="closeNewsAdminModal()" class="text-slate-400 hover:text-slate-600 w-8 h-8 rounded-full flex items-center justify-center hover:bg-slate-200/60 transition"><i class="fa-solid fa-xmark"></i></button>
             </div>
             <div class="p-4 sm:p-6 overflow-y-auto space-y-6 flex-1">
                 <form id="news-form" class="bg-water-50/40 p-4 sm:p-5 rounded-3xl border border-water-100 space-y-3" onsubmit="handleNewsSubmit(event)">
@@ -887,7 +887,7 @@
         <div class="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-2xl overflow-hidden flex flex-col max-h-[90vh]">
             <div class="px-5 sm:px-6 py-4 border-b border-nature-100 flex items-center justify-between bg-nature-50/50">
                 <h3 class="font-editorial text-base sm:text-lg font-bold text-slate-900 italic">Gestione Preparazione ai Trattamenti</h3>
-                <button type="button" onclick="closePrepAdminModal()" class="text-slate-400 hover:text-slate-600 w-8 h-8 rounded-full flex items-center justify-center hover:bg-slate-200/60 transition"><i class="fa-solid fa-xmark"></i></button>
+                <button aria-label="Chiudi" type="button" onclick="closePrepAdminModal()" class="text-slate-400 hover:text-slate-600 w-8 h-8 rounded-full flex items-center justify-center hover:bg-slate-200/60 transition"><i class="fa-solid fa-xmark"></i></button>
             </div>
             <div class="p-4 sm:p-6 overflow-y-auto space-y-6 flex-1">
                 <form id="prep-form" class="bg-nature-50/40 p-4 sm:p-5 rounded-3xl border border-nature-100 space-y-3" onsubmit="handlePrepSubmit(event)">
@@ -915,7 +915,7 @@
       <div class="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-3xl overflow-hidden flex flex-col max-h-[92vh]">
         <div class="px-5 py-4 border-b border-purple-100 bg-purple-50 flex items-center justify-between">
           <div><h3 class="font-editorial text-lg font-bold italic">Unisci pazienti duplicati</h3><p class="text-[10px] text-slate-500">Confronta i dati e scegli esplicitamente cosa conservare</p></div>
-          <button onclick="closeMergePatientsModal()" class="w-10 h-10 rounded-full bg-white"><i class="fa-solid fa-xmark"></i></button>
+          <button aria-label="Chiudi" onclick="closeMergePatientsModal()" class="w-10 h-10 rounded-full bg-white"><i class="fa-solid fa-xmark"></i></button>
         </div>
         <div class="p-5 space-y-4 overflow-y-auto flex-1">
           <div id="merge-suggestions" class="space-y-2"></div>
@@ -934,7 +934,7 @@
       <div class="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-5xl overflow-hidden flex flex-col max-h-[92vh]">
         <div class="px-5 sm:px-6 py-4 border-b border-emerald-100 flex items-center justify-between bg-emerald-50/60">
           <div><h3 class="font-editorial text-lg font-bold text-slate-900 italic">Compensi e attività</h3><p class="text-[10px] text-slate-500">Riepilogo mensile per sede</p></div>
-          <button onclick="closeBusinessDashboard()" class="w-10 h-10 rounded-full bg-white"><i class="fa-solid fa-xmark"></i></button>
+          <button aria-label="Chiudi" onclick="closeBusinessDashboard()" class="w-10 h-10 rounded-full bg-white"><i class="fa-solid fa-xmark"></i></button>
         </div>
         <div class="p-4 sm:p-6 overflow-y-auto space-y-5 flex-1">
           <div class="flex flex-wrap items-end gap-3">
@@ -979,7 +979,7 @@
       <div class="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-4xl overflow-hidden flex flex-col max-h-[92vh]">
         <div class="px-5 sm:px-6 py-4 border-b border-orange-100 flex items-center justify-between bg-orange-50/60">
           <div><h3 class="font-editorial text-lg font-bold text-slate-900 italic">Pazienti da richiamare</h3><p class="text-[10px] text-slate-500">Calcolato dall'ultima seduta registrata</p></div>
-          <button onclick="closeRecallModal()" class="w-10 h-10 rounded-full bg-white"><i class="fa-solid fa-xmark"></i></button>
+          <button aria-label="Chiudi" onclick="closeRecallModal()" class="w-10 h-10 rounded-full bg-white"><i class="fa-solid fa-xmark"></i></button>
         </div>
         <div class="p-4 sm:p-6 overflow-y-auto space-y-4 flex-1">
           <div class="flex items-center gap-3"><label class="text-xs font-bold text-slate-600">Mostra inattivi da almeno</label><select id="recall-threshold" onchange="renderRecallList()" class="px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-2xl text-xs"><option value="60">60 giorni</option><option value="90">90 giorni</option><option value="120" selected>120 giorni</option><option value="180">180 giorni</option><option value="365">1 anno</option></select></div>
@@ -992,7 +992,7 @@
       <div class="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-5xl overflow-hidden flex flex-col max-h-[92vh]">
         <div class="px-5 sm:px-6 py-4 border-b border-rose-100 flex items-center justify-between bg-rose-50/60">
           <div><h3 class="font-editorial text-lg font-bold text-slate-900 italic"><i class="fa-solid fa-user-slash mr-2 text-rose-700"></i>Appuntamenti senza paziente</h3><p class="text-[10px] text-slate-500">Eventi privi di un’associazione esplicita in anagrafica</p></div>
-          <button type="button" onclick="closeUnassignedEventsModal()" class="w-10 h-10 rounded-full bg-white"><i class="fa-solid fa-xmark"></i></button>
+          <button aria-label="Chiudi" type="button" onclick="closeUnassignedEventsModal()" class="w-10 h-10 rounded-full bg-white"><i class="fa-solid fa-xmark"></i></button>
         </div>
         <div class="p-4 sm:p-6 overflow-y-auto space-y-4 flex-1">
           <div class="flex flex-col sm:flex-row gap-3 sm:items-center justify-between">
@@ -1010,7 +1010,7 @@
       <div class="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-4xl overflow-hidden flex flex-col max-h-[92vh]">
         <div class="px-5 sm:px-6 py-4 border-b border-indigo-100 flex items-center justify-between bg-indigo-50/60">
           <div><h3 class="font-editorial text-lg font-bold text-slate-900 italic"><i class="fa-solid fa-database mr-2 text-indigo-700"></i>Backup & Ripristino</h3><p class="text-[10px] text-slate-500">Copia completa dei dati del gestionale</p></div>
-          <button type="button" onclick="closeBackupModal()" class="w-10 h-10 rounded-full bg-white"><i class="fa-solid fa-xmark"></i></button>
+          <button aria-label="Chiudi" type="button" onclick="closeBackupModal()" class="w-10 h-10 rounded-full bg-white"><i class="fa-solid fa-xmark"></i></button>
         </div>
         <div class="p-4 sm:p-6 overflow-y-auto space-y-5 flex-1">
           <div id="backup-kpis" class="grid grid-cols-2 lg:grid-cols-4 gap-3"></div>
@@ -1290,16 +1290,21 @@
             }
         }
 
+        /** Esegue una migrazione una-tantum senza interrompere il caricamento dei dati se fallisce (verrà ritentata al prossimo accesso). */
+        async function runMigrationSafely(label, migration) {
+            try { await migration(); } catch (err) { console.error(`Migrazione non completata (${label}):`, err); }
+        }
+
         async function loadAllDataFromFirestore() {
             if (!db || !userId) return;
             try {
                 await loadPublicDataFromFirestore();
                 if (appState.isLoggedIn) {
-                    await migrateCurrentUserDataToSharedOnce();
+                    await runMigrationSafely('dati legacy utente', migrateCurrentUserDataToSharedOnce);
 
                     const centersSnap = await getDocs(sharedCollection('centers_list'));
                     if (!centersSnap.empty) appState.centers = centersSnap.docs.map(d => d.data());
-                    await ensureCenterFinanceDefaults();
+                    await runMigrationSafely('impostazioni finanziarie sedi', ensureCenterFinanceDefaults);
 
                     const eventsSnap = await getDocs(sharedCollection('studio_events'));
                     appState.events = eventsSnap.docs.map(d => d.data());
@@ -1312,8 +1317,8 @@
                     appState.manualRevenues = manualRevenueSnap.docs.map(d => ({ id: d.data().id || d.id, ...d.data() }));
                     const taxProfileSnap = await getDoc(sharedDocument('tax_profile','default'));
                     appState.taxProfile = taxProfileSnap.exists() ? { id:'default', ...taxProfileSnap.data() } : null;
-                    await migrateEventClinicalDataToArchiveOnce();
-                    await migrateLegacyClinicalBlocksFromPatientNotesOnce();
+                    await runMigrationSafely('archivio sedute', migrateEventClinicalDataToArchiveOnce);
+                    await runMigrationSafely('note cliniche legacy', migrateLegacyClinicalBlocksFromPatientNotesOnce);
                     startSharedRealtimeSync();
                 }
                 renderAllPublicUI();
@@ -1385,25 +1390,29 @@
                 grid.innerHTML = `<p class="text-xs text-slate-400 italic col-span-2 text-center py-6">Nessun poliambulatorio registrato.</p>`;
                 return;
             }
-            grid.innerHTML = visibleCenters.map(center => `
+            grid.innerHTML = visibleCenters.map(center => {
+                const siteUrl = safeUrl(center.siteUrl);
+                const bookingUrl = safeUrl(center.bookingUrl);
+                return `
                 <div class="bg-white/90 backdrop-blur-md p-6 sm:p-8 rounded-[2.5rem] border border-white/80 shadow-lg flex flex-col justify-between space-y-6">
                     <div class="space-y-3">
                         <div class="flex items-center justify-between">
-                            <span class="px-4 py-1.5 rounded-full text-xs font-bold bg-nature-50 text-nature-800 italic-title">${center.service}</span>
-                            <div class="w-8 h-8 rounded-xl flex items-center justify-center text-white text-xs shadow-sm" style="background-color: ${center.color || '#3f5e4e'};">
-                                <i class="fa-solid ${center.icon || 'fa-hospital'}"></i>
+                            <span class="px-4 py-1.5 rounded-full text-xs font-bold bg-nature-50 text-nature-800 italic-title">${escapeHtml(center.service)}</span>
+                            <div class="w-8 h-8 rounded-xl flex items-center justify-center text-white text-xs shadow-sm" style="background-color: ${safeColor(center.color)};">
+                                <i class="fa-solid ${safeIcon(center.icon, 'fa-hospital')}"></i>
                             </div>
                         </div>
-                        <h4 class="font-editorial text-xl sm:text-2xl font-bold text-slate-900 italic">${center.name}</h4>
-                        ${center.address ? `<p class="text-xs sm:text-sm text-slate-500 font-light flex items-center gap-2"><i class="fa-solid fa-location-dot text-nature-600"></i> ${center.address}</p>` : ''}
-                        ${center.phone ? `<p class="text-xs sm:text-sm text-slate-500 font-light flex items-center gap-2"><i class="fa-solid fa-phone text-nature-600"></i> ${center.phone}</p>` : ''}
+                        <h4 class="font-editorial text-xl sm:text-2xl font-bold text-slate-900 italic">${escapeHtml(center.name)}</h4>
+                        ${center.address ? `<p class="text-xs sm:text-sm text-slate-500 font-light flex items-center gap-2"><i class="fa-solid fa-location-dot text-nature-600"></i> ${escapeHtml(center.address)}</p>` : ''}
+                        ${center.phone ? `<p class="text-xs sm:text-sm text-slate-500 font-light flex items-center gap-2"><i class="fa-solid fa-phone text-nature-600"></i> ${escapeHtml(center.phone)}</p>` : ''}
                     </div>
                     <div class="flex flex-wrap items-center gap-3 pt-2">
-                        ${center.siteUrl ? `<a href="${center.siteUrl}" target="_blank" class="px-4 py-2 bg-water-50 hover:bg-water-100 text-water-800 font-semibold rounded-xl text-xs transition flex items-center gap-1.5 shadow-2xs"><i class="fa-solid fa-globe"></i> <span>Sito Web</span></a>` : ''}
-                        ${center.bookingUrl ? `<a href="${center.bookingUrl}" target="_blank" class="px-4 py-2 bg-nature-600 hover:bg-nature-700 text-white font-semibold rounded-xl text-xs transition flex items-center gap-1.5 shadow-md"><i class="fa-solid fa-calendar-check"></i> <span>Prenota Online</span></a>` : ''}
+                        ${siteUrl ? `<a href="${siteUrl}" target="_blank" rel="noopener noreferrer" class=""px-4 py-2 bg-water-50 hover:bg-water-100 text-water-800 font-semibold rounded-xl text-xs transition flex items-center gap-1.5 shadow-2xs"><i class="fa-solid fa-globe"></i> <span>Sito Web</span></a>` : ''}
+                        ${bookingUrl ? `<a href="${bookingUrl}" target="_blank" rel="noopener noreferrer" class=""px-4 py-2 bg-nature-600 hover:bg-nature-700 text-white font-semibold rounded-xl text-xs transition flex items-center gap-1.5 shadow-md"><i class="fa-solid fa-calendar-check"></i> <span>Prenota Online</span></a>` : ''}
                     </div>
                 </div>
-            `).join('');
+            `;
+            }).join('');
         }
 
         function renderPublicTreatments() {
@@ -1411,9 +1420,9 @@
             if (!grid) return;
             grid.innerHTML = appState.treatments.map(t => `
                 <div class="bg-white/90 backdrop-blur-md p-6 sm:p-8 rounded-[2.5rem] border border-white/80 shadow-lg space-y-4 flex flex-col items-center text-center">
-                    <div class="w-16 h-16 rounded-2xl bg-nature-50 text-nature-600 flex items-center justify-center font-bold text-2xl shadow-inner mx-auto"><i class="fa-solid ${t.icon || 'fa-spa'}"></i></div>
-                    <h4 class="font-editorial text-xl font-bold text-slate-900 italic">${t.title}</h4>
-                    <p class="text-xs sm:text-sm text-slate-500 font-light">${t.desc}</p>
+                    <div class="w-16 h-16 rounded-2xl bg-nature-50 text-nature-600 flex items-center justify-center font-bold text-2xl shadow-inner mx-auto"><i class="fa-solid ${safeIcon(t.icon, 'fa-spa')}"></i></div>
+                    <h4 class="font-editorial text-xl font-bold text-slate-900 italic">${escapeHtml(t.title)}</h4>
+                    <p class="text-xs sm:text-sm text-slate-500 font-light">${escapeHtml(t.desc)}</p>
                 </div>
             `).join('');
         }
@@ -1440,18 +1449,18 @@
                         <div class="space-y-2">
                             <div class="flex items-center justify-between">
                                 <span class="text-[10px] font-bold text-water-700 uppercase tracking-widest italic-title">Aggiornamento Studio</span>
-                                ${formattedDate ? `<span class="text-xs font-semibold text-slate-500 bg-water-50 px-2.5 py-0.5 rounded-full"><i class="fa-regular fa-calendar-days text-water-600 mr-1"></i> ${formattedDate}</span>` : ''}
+                                ${formattedDate ? `<span class="text-xs font-semibold text-slate-600 bg-water-50 px-2.5 py-0.5 rounded-full"><i class="fa-regular fa-calendar-days text-water-600 mr-1"></i> ${escapeHtml(formattedDate)}</span>` : ''}
                             </div>
-                            <h4 class="font-editorial text-xl font-bold text-slate-900 italic">${item.title}</h4>
+                            <h4 class="font-editorial text-xl font-bold text-slate-900 italic">${escapeHtml(item.title)}</h4>
                             <div class="text-xs sm:text-sm text-slate-600 font-light leading-relaxed" id="news-content-${idx}">
-                                <p class="line-clamp-2">${item.content}</p>
+                                <p class="line-clamp-2">${escapeHtml(item.content)}</p>
                             </div>
                         </div>
                         <div class="flex items-center justify-between pt-2 border-t border-slate-100">
                             <button onclick="toggleNewsExpand(${idx})" id="news-btn-${idx}" class="text-xs font-bold text-water-700 hover:text-water-900 transition flex items-center gap-1 italic-title">
                                 <span>Leggi tutto</span> <i class="fa-solid fa-chevron-down text-[10px]"></i>
                             </button>
-                            ${item.link ? `<a href="${item.link}" target="_blank" class="px-3 py-1.5 bg-water-50 hover:bg-water-100 text-water-800 rounded-xl text-xs font-semibold transition"><i class="fa-solid fa-arrow-up-right-from-square"></i> Approfondisci</a>` : ''}
+                            ${safeUrl(item.link) ? `<a href="${safeUrl(item.link)}" target="_blank" rel="noopener noreferrer" class=""px-3 py-1.5 bg-water-50 hover:bg-water-100 text-water-800 rounded-xl text-xs font-semibold transition"><i class="fa-solid fa-arrow-up-right-from-square"></i> Approfondisci</a>` : ''}
                         </div>
                     </div>
                 `;
@@ -1466,11 +1475,11 @@
 
             if (container.classList.contains('expanded')) {
                 container.classList.remove('expanded');
-                container.innerHTML = `<p class="line-clamp-2">${item.content}</p>`;
+                container.innerHTML = `<p class="line-clamp-2">${escapeHtml(item.content)}</p>`;
                 btn.innerHTML = `<span>Leggi tutto</span> <i class="fa-solid fa-chevron-down text-[10px]"></i>`;
             } else {
                 container.classList.add('expanded');
-                container.innerHTML = `<p>${item.content}</p>`;
+                container.innerHTML = `<p>${escapeHtml(item.content)}</p>`;
                 btn.innerHTML = `<span>Riduci</span> <i class="fa-solid fa-chevron-up text-[10px]"></i>`;
             }
         }
@@ -1484,9 +1493,9 @@
             }
             grid.innerHTML = appState.preparations.map(prep => `
                 <div class="bg-white/90 backdrop-blur-md p-6 sm:p-8 rounded-[2.5rem] border border-white/80 shadow-lg space-y-3">
-                    <span class="px-3 py-1 rounded-full text-[10px] font-bold bg-nature-50 text-nature-800 italic-title">${prep.tag}</span>
-                    <h4 class="font-editorial text-xl font-bold text-slate-900 italic">${prep.title}</h4>
-                    <p class="text-xs sm:text-sm text-slate-600 font-light leading-relaxed">${prep.content}</p>
+                    <span class="px-3 py-1 rounded-full text-[10px] font-bold bg-nature-50 text-nature-800 italic-title">${escapeHtml(prep.tag)}</span>
+                    <h4 class="font-editorial text-xl font-bold text-slate-900 italic">${escapeHtml(prep.title)}</h4>
+                    <p class="text-xs sm:text-sm text-slate-600 font-light leading-relaxed">${escapeHtml(prep.content)}</p>
                 </div>
             `).join('');
         }
@@ -1496,9 +1505,9 @@
             if (!legend) return;
             legend.innerHTML = appState.centers.filter(center => center.isNonClinicalCalendar !== true).map(center => `
                 <div class="inline-flex items-center gap-1.5 px-2.5 py-0.5 bg-white/90 rounded-full border border-nature-200 shadow-2xs flex-shrink-0">
-                    <span class="w-2 h-2 rounded-full flex-shrink-0" style="background-color: ${center.color || '#3f5e4e'};"></span>
-                    <i class="fa-solid ${center.icon || 'fa-hospital'} text-[10px]" style="color: ${center.color || '#3f5e4e'};"></i>
-                    <span class="font-bold text-slate-700 text-[10px] truncate max-w-[110px] italic-title">${center.name}</span>
+                    <span class="w-2 h-2 rounded-full flex-shrink-0" style="background-color: ${safeColor(center.color)};"></span>
+                    <i class="fa-solid ${safeIcon(center.icon, 'fa-hospital')} text-[10px]" style="color: ${safeColor(center.color)};"></i>
+                    <span class="font-bold text-slate-700 text-[10px] truncate max-w-[110px] italic-title">${escapeHtml(center.name)}</span>
                 </div>
             `).join('');
         }
@@ -1730,10 +1739,10 @@
             const sel = document.getElementById('studio-center-select');
             if (!sel) return;
             const selectableCenters = appState.centers.filter(c => c.isNonClinicalCalendar !== true);
-            let options = selectableCenters.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+            let options = selectableCenters.map(c => `<option value="${escapeHtml(c.id)}">${escapeHtml(c.name)}</option>`).join('');
             if (currentCenterId && !selectableCenters.some(c => String(c.id) === String(currentCenterId))) {
                 const currentCenter = appState.centers.find(c => String(c.id) === String(currentCenterId));
-                if (currentCenter) options += `<option value="${currentCenter.id}" data-non-clinical="true">${currentCenter.name} (Calendario non Clinico)</option>`;
+                if (currentCenter) options += `<option value="${escapeHtml(currentCenter.id)}" data-non-clinical="true">${escapeHtml(currentCenter.name)} (Calendario non Clinico)</option>`;
             }
             sel.innerHTML = '<option value="">Studio Privato (Default)</option>' + options;
         }
@@ -1755,6 +1764,18 @@
         }
         function escapePatientText(value) {
             return String(value || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;');
+        }
+        function escapeHtml(value) { return escapePatientText(value); }
+        /** Consente solo link http(s) e mailto, già pronti per un attributo HTML; altrimenti stringa vuota. */
+        function safeUrl(value) {
+            const url = String(value || '').trim();
+            return /^(https?:\/\/|mailto:)/i.test(url) ? escapeHtml(url) : '';
+        }
+        function safeColor(value, fallback = '#3f5e4e') {
+            return /^#[0-9a-f]{3,8}$/i.test(String(value || '').trim()) ? String(value).trim() : fallback;
+        }
+        function safeIcon(value, fallback) {
+            return /^fa-[a-z0-9-]+$/i.test(String(value || '').trim()) ? String(value).trim() : fallback;
         }
         function showPatientClinicalSummary(patientId) {
             const pat = appState.patients.find(p => String(p.id) === String(patientId));
@@ -1982,6 +2003,10 @@
 
             const start = `${date}T${startH}:00`;
             const end = `${date}T${endH}:00`;
+            if (!isExternal && startH && endH && endH <= startH) {
+                showToast("L'orario di fine deve essere successivo a quello di inizio.");
+                return;
+            }
 
             const selectedCenter = appState.centers.find(c => c.id === centerId);
             const nonClinical = selectedCenter?.isNonClinicalCalendar === true;
@@ -2013,13 +2038,21 @@
                 };
             }
 
+            if (db && userId) {
+                try {
+                    await setDoc(sharedDocument('studio_events', id), newEv);
+                } catch(e) {
+                    console.error('Errore salvataggio appuntamento:', e);
+                    showToast('Errore: salvataggio non completato.');
+                    return;
+                }
+            }
             const idx = appState.events.findIndex(ev => ev.id === id);
             if (idx >= 0) appState.events[idx] = newEv;
             else appState.events.push(newEv);
 
             if (db && userId) {
                 try {
-                    await setDoc(sharedDocument('studio_events', id), newEv);
                     await synchronizeClinicalSessionWithPatient(newEv, previousPatientId);
                 } catch(e) {
                     console.error('Errore salvataggio appuntamento o aggiornamento note paziente:', e);
@@ -2223,7 +2256,7 @@
                                     <strong class="font-editorial text-slate-900 text-sm italic">${escapePatientText(ev.title)}</strong><span class="text-[10px] text-purple-700 font-bold">Associato a: ${escapePatientText(pat.name)}</span>
                                     <span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${isPast ? 'bg-slate-200 text-slate-700' : 'bg-emerald-100 text-emerald-800'}">${isPast ? 'Passato' : 'Futuro'}</span>
                                 </div>
-                                <p class="text-slate-500"><i class="fa-regular fa-calendar text-nature-600 mr-1"></i> ${dateStr} alle ${timeStr} • <span class="font-medium text-slate-700">${ev.extendedProps?.centerName || 'Studio Privato'}</span></p>
+                                <p class="text-slate-500"><i class="fa-regular fa-calendar text-nature-600 mr-1"></i> ${dateStr} alle ${timeStr} • <span class="font-medium text-slate-700">${escapeHtml(ev.extendedProps?.centerName || 'Studio Privato')}</span></p>
                                 ${clinicalNote ? `<p class="mt-2 p-2 bg-water-50 rounded-xl text-slate-700"><strong>Nota seduta:</strong> ${escapePatientText(clinicalNote)}</p>` : ''}
                                 ${clinicalOutcome ? `<p class="text-slate-600"><strong>Esito:</strong> ${escapePatientText(clinicalOutcome)}</p>` : ''}
                                 ${Number(ev.extendedProps?.fee || 0) > 0 ? `<p class="text-emerald-700 font-bold">€ ${Number(ev.extendedProps.fee).toFixed(2)} • ${ev.extendedProps?.paymentStatus === 'unpaid' ? 'Da incassare' : 'Pagato'}</p>` : ''}
@@ -2387,7 +2420,7 @@
             const sel = document.getElementById('studio-patient-select');
             if (!sel) return;
             let sorted = [...appState.patients].sort((a,b) => a.name.localeCompare(b.name));
-            sel.innerHTML = '<option value="">-- Seleziona Paziente --</option>' + sorted.map(p => `<option value="${p.id}">${p.name}</option>`).join('');
+            sel.innerHTML = '<option value="">-- Seleziona Paziente --</option>' + sorted.map(p => `<option value="${escapeHtml(p.id)}">${escapeHtml(p.name)}</option>`).join('');
         }
 
         window.openCentersModal = function() { document.getElementById('centers-modal').classList.remove('hidden'); }
@@ -2411,13 +2444,13 @@
             const desc = document.getElementById('new-treatment-desc').value.trim();
 
             const newT = { id, title, icon, desc };
+            if (db) {
+                try { await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'treatments_list', id), newT); }
+                catch(err) { console.error('Errore salvataggio trattamento:', err); showToast('Errore: trattamento non salvato. Controlla i permessi Firestore.'); return; }
+            }
             const idx = appState.treatments.findIndex(t => t.id === id);
             if (idx >= 0) appState.treatments[idx] = newT;
             else appState.treatments.push(newT);
-
-            if (db) {
-                try { await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'treatments_list', id), newT); } catch(err){}
-            }
 
             resetTreatmentForm();
             renderTreatmentsManagementList();
@@ -2431,10 +2464,10 @@
             list.innerHTML = appState.treatments.map(t => `
                 <div class="p-3 bg-white border border-slate-200 rounded-2xl flex items-center justify-between text-xs">
                     <div class="flex items-center gap-3">
-                        <div class="w-8 h-8 rounded-xl bg-nature-50 text-nature-700 flex items-center justify-center font-bold"><i class="fa-solid ${t.icon || 'fa-spa'}"></i></div>
+                        <div class="w-8 h-8 rounded-xl bg-nature-50 text-nature-700 flex items-center justify-center font-bold"><i class="fa-solid ${safeIcon(t.icon, 'fa-spa')}"></i></div>
                         <div>
-                            <strong class="text-slate-900 font-editorial italic text-sm">${t.title}</strong>
-                            <p class="text-slate-500 text-[11px] line-clamp-1">${t.desc}</p>
+                            <strong class="text-slate-900 font-editorial italic text-sm">${escapeHtml(t.title)}</strong>
+                            <p class="text-slate-500 text-[11px] line-clamp-1">${escapeHtml(t.desc)}</p>
                         </div>
                     </div>
                     <div class="flex items-center gap-1.5">
@@ -2467,8 +2500,8 @@
 
         window.confirmDeleteTreatment = function(id) {
             showConfirmDialog("Elimina Trattamento", "Sei sicura di voler eliminare questo trattamento?", async () => {
+                if (db) await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'treatments_list', id));
                 appState.treatments = appState.treatments.filter(t => t.id !== id);
-                if (db) { try { await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'treatments_list', id)); } catch(e){} }
                 renderTreatmentsManagementList();
                 renderPublicTreatments();
                 showToast("Trattamento eliminato.");
@@ -2516,18 +2549,21 @@
             const showPublic = isNonClinicalCalendar ? false : document.getElementById('new-center-public').checked;
             const includeInFinance = isNonClinicalCalendar ? false : document.getElementById('new-center-finance').checked;
             const newC = { id, name, service, icon, color, address, phone, siteUrl, bookingUrl, icalUrl, showPublic, includeInFinance, isNonClinicalCalendar };
+            if (db && userId) {
+                try {
+                    await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'centers_list', id), newC);
+                    await setDoc(sharedDocument('centers_list', id), newC);
+                } catch(e) {
+                    console.error('Errore salvataggio poliambulatorio:', e);
+                    showToast('Errore: poliambulatorio non salvato. Controlla i permessi Firestore.');
+                    return;
+                }
+            }
             const idx = appState.centers.findIndex(c => c.id === id);
             if (idx >= 0) {
                 appState.centers[idx] = newC;
             } else {
                 appState.centers.push(newC);
-            }
-
-            if (db && userId) {
-                try {
-                    await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'centers_list', id), newC);
-                    await setDoc(sharedDocument('centers_list', id), newC);
-                } catch(e) {}
             }
 
             resetCenterForm();
@@ -2544,12 +2580,12 @@
             list.innerHTML = appState.centers.map(c => `
                 <div class="p-3 bg-white border border-slate-200 rounded-2xl flex items-center justify-between text-xs">
                     <div class="flex items-center gap-3">
-                        <div class="w-8 h-8 rounded-xl flex items-center justify-center text-white text-xs font-bold shadow-xs" style="background-color: ${c.color || '#3f5e4e'}">
-                            <i class="fa-solid ${c.icon || 'fa-hospital'}"></i>
+                        <div class="w-8 h-8 rounded-xl flex items-center justify-center text-white text-xs font-bold shadow-xs" style="background-color: ${safeColor(c.color)}">
+                            <i class="fa-solid ${safeIcon(c.icon, 'fa-hospital')}"></i>
                         </div>
                         <div>
-                            <strong class="text-slate-900 font-editorial italic text-sm">${c.name}</strong>
-                            <p class="text-slate-500 text-[11px]">${c.service} ${c.icalUrl ? '• iCal attivo' : ''} ${c.isNonClinicalCalendar ? '• 🏠 Non Clinico' : ''}</p>
+                            <strong class="text-slate-900 font-editorial italic text-sm">${escapeHtml(c.name)}</strong>
+                            <p class="text-slate-500 text-[11px]">${escapeHtml(c.service)} ${c.icalUrl ? '• iCal attivo' : ''} ${c.isNonClinicalCalendar ? '• 🏠 Non Clinico' : ''}</p>
                         </div>
                     </div>
                     <div class="flex items-center gap-1.5">
@@ -2619,13 +2655,11 @@
 
         window.confirmDeleteCenter = function(id) {
             showConfirmDialog("Elimina Poliambulatorio", "Sei sicura di voler eliminare questo poliambulatorio?", async () => {
-                appState.centers = appState.centers.filter(c => c.id !== id);
                 if (db && userId) {
-                    try {
-                        await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'centers_list', id));
-                        await deleteDoc(sharedDocument('centers_list', id));
-                    } catch(e){}
+                    await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'centers_list', id));
+                    await deleteDoc(sharedDocument('centers_list', id));
                 }
+                appState.centers = appState.centers.filter(c => c.id !== id);
                 renderCentersManagementList();
                 renderPublicCenters();
                 renderHeaderLegend();
@@ -2643,11 +2677,13 @@
             const link = document.getElementById('new-news-link').value.trim();
 
             const newN = { id, title, date, content, link };
+            if (db) {
+                try { await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'news_list', id), newN); }
+                catch(e) { console.error('Errore salvataggio news:', e); showToast('Errore: news non pubblicata. Controlla i permessi Firestore.'); return; }
+            }
             const idx = appState.news.findIndex(n => n.id === id);
             if (idx >= 0) appState.news[idx] = newN;
             else appState.news.push(newN);
-
-            if (db) { try { await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'news_list', id), newN); } catch(e){} }
             resetNewsForm();
             renderNewsManagementList();
             renderPublicNews();
@@ -2661,10 +2697,10 @@
                 <div class="p-3 bg-white border border-slate-200 rounded-2xl flex items-center justify-between text-xs">
                     <div>
                         <div class="flex items-center gap-2">
-                            ${n.date ? `<span class="text-[10px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded font-bold">${n.date}</span>` : ''}
-                            <strong class="text-slate-900">${n.title}</strong>
+                            ${n.date ? `<span class="text-[10px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded font-bold">${escapeHtml(n.date)}</span>` : ''}
+                            <strong class="text-slate-900">${escapeHtml(n.title)}</strong>
                         </div>
-                        <p class="text-slate-500 text-[11px] line-clamp-1">${n.content}</p>
+                        <p class="text-slate-500 text-[11px] line-clamp-1">${escapeHtml(n.content)}</p>
                     </div>
                     <div class="flex items-center gap-1.5">
                         <button type="button" onclick="editNews('${n.id}')" class="px-2.5 py-1 bg-nature-50 text-nature-700 rounded-lg font-semibold">Modifica</button>
@@ -2697,8 +2733,8 @@
 
         window.confirmDeleteNews = function(id) {
             showConfirmDialog("Elimina News", "Sei sicura di voler eliminare questa news?", async () => {
+                if (db) await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'news_list', id));
                 appState.news = appState.news.filter(n => n.id !== id);
-                if (db) { try { await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'news_list', id)); } catch(e){} }
                 renderNewsManagementList();
                 renderPublicNews();
                 showToast("News eliminata.");
@@ -2713,11 +2749,13 @@
             const content = document.getElementById('prep-content').value.trim();
 
             const newP = { id, title, tag, content };
+            if (db) {
+                try { await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'preparations_list', id), newP); }
+                catch(e) { console.error('Errore salvataggio guida:', e); showToast('Errore: guida non salvata. Controlla i permessi Firestore.'); return; }
+            }
             const idx = appState.preparations.findIndex(p => p.id === id);
             if (idx >= 0) appState.preparations[idx] = newP;
             else appState.preparations.push(newP);
-
-            if (db) { try { await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'preparations_list', id), newP); } catch(e){} }
             resetPrepForm();
             renderPrepManagementList();
             renderPublicPreparations();
@@ -2729,7 +2767,7 @@
             if (!list) return;
             list.innerHTML = appState.preparations.map(p => `
                 <div class="p-3 bg-white border border-slate-200 rounded-2xl flex items-center justify-between text-xs">
-                    <div><span class="px-2 py-0.5 rounded bg-nature-50 text-nature-800 text-[10px] font-bold">${p.tag}</span> <strong class="text-slate-900 ml-1">${p.title}</strong></div>
+                    <div><span class="px-2 py-0.5 rounded bg-nature-50 text-nature-800 text-[10px] font-bold">${escapeHtml(p.tag)}</span> <strong class="text-slate-900 ml-1">${escapeHtml(p.title)}</strong></div>
                     <button type="button" onclick="confirmDeletePrep('${p.id}')" class="px-2.5 py-1 bg-rose-50 text-rose-600 rounded-lg font-semibold">Elimina</button>
                 </div>
             `).join('');
@@ -2744,8 +2782,8 @@
 
         window.confirmDeletePrep = function(id) {
             showConfirmDialog("Elimina Guida", "Sei sicura di voler eliminare questa guida?", async () => {
+                if (db) await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'preparations_list', id));
                 appState.preparations = appState.preparations.filter(p => p.id !== id);
-                if (db) { try { await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'preparations_list', id)); } catch(e){} }
                 renderPrepManagementList();
                 renderPublicPreparations();
                 showToast("Guida eliminata.");
@@ -2792,7 +2830,7 @@
                         <div class="flex items-center gap-2.5">
                             <i class="fa-solid fa-spinner animate-spin text-water-600" id="sync-icon-${center.id}"></i>
                             <div>
-                                <strong class="text-slate-900 font-editorial italic text-sm">${center.name}</strong>
+                                <strong class="text-slate-900 font-editorial italic text-sm">${escapeHtml(center.name)}</strong>
                                 <p class="text-slate-500 text-[10px]" id="sync-status-${center.id}">In attesa...</p>
                             </div>
                         </div>
@@ -2808,6 +2846,8 @@
             let deletedEventsDetail = [];
 
             let activeIcalEventIds = new Set();
+            const failedCenterIds = new Set();
+            const failedCenterNames = [];
             let oldEventsMap = new Map(appState.events.filter(e => e.id.startsWith('ical_') && !e.extendedProps?.detachedFromExternal).map(ev => [ev.id, ev]));
 
             for (let center of icalCenters) {
@@ -2851,7 +2891,7 @@
                     let centerAdded = 0;
                     let centerModified = 0;
 
-                    const lines = text.split(/\r\n|\n|\r/);
+                    const lines = unfoldIcalLines(text);
                     let currentEvent = null;
 
                     for (let line of lines) {
@@ -2864,8 +2904,8 @@
                                 activeIcalEventIds.add(eventId);
 
                                 const eventTitleClean = currentEvent.summary || 'Appuntamento';
-                                const parsedStart = parseIcalDateTime(currentEvent.start);
-                                let parsedEnd = currentEvent.end ? parseIcalDateTime(currentEvent.end) : null;
+                                const parsedStart = parseIcalDateTime(currentEvent.start, currentEvent.startTzid);
+                                let parsedEnd = currentEvent.end ? parseIcalDateTime(currentEvent.end, currentEvent.endTzid) : null;
                                 
                                 if (!parsedEnd) {
                                     parsedEnd = new Date(new Date(parsedStart).getTime() + 3600000).toISOString();
@@ -2919,16 +2959,12 @@
                             }
                             currentEvent = null;
                         } else if (currentEvent) {
-                            if (line.startsWith('UID:')) currentEvent.uid = line.substring(4).trim();
-                            else if (line.startsWith('SUMMARY:')) currentEvent.summary = line.substring(8).trim();
-                            else if (line.startsWith('DTSTART')) {
-                                const parts = line.split(':');
-                                currentEvent.start = parts.slice(1).join(':').trim();
-                            }
-                            else if (line.startsWith('DTEND')) {
-                                const parts = line.split(':');
-                                currentEvent.end = parts.slice(1).join(':').trim();
-                            }
+                            const prop = parseIcalProperty(line);
+                            if (!prop) continue;
+                            if (prop.name === 'UID') currentEvent.uid = prop.value.trim();
+                            else if (prop.name === 'SUMMARY') currentEvent.summary = unescapeIcalText(prop.value).trim();
+                            else if (prop.name === 'DTSTART') { currentEvent.start = prop.value.trim(); currentEvent.startTzid = prop.params.TZID || null; }
+                            else if (prop.name === 'DTEND') { currentEvent.end = prop.value.trim(); currentEvent.endTzid = prop.params.TZID || null; }
                         }
                     }
 
@@ -2940,6 +2976,8 @@
                     if (iconEl) iconEl.className = 'fa-solid fa-circle-check text-emerald-600';
 
                 } else {
+                    failedCenterIds.add(String(center.id));
+                    failedCenterNames.push(center.name);
                     if (statusEl) statusEl.textContent = 'Errore connessione iCal';
                     if (badgeEl) {
                         badgeEl.className = 'px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-rose-100 text-rose-800';
@@ -2949,7 +2987,9 @@
                 }
             }
 
-            const removedIds = Array.from(oldEventsMap.keys()).filter(id => id.startsWith('ical_') && !activeIcalEventIds.has(id));
+            // Gli eventi delle sedi il cui calendario non è stato scaricato restano invariati:
+            // un errore di rete non significa che gli appuntamenti siano stati cancellati alla fonte.
+            const removedIds = Array.from(oldEventsMap.keys()).filter(id => id.startsWith('ical_') && !activeIcalEventIds.has(id) && !failedCenterIds.has(String(oldEventsMap.get(id)?.extendedProps?.centerId ?? '')));
             for (const remId of removedIds) {
                 const evToRem = oldEventsMap.get(remId);
                 if (!evToRem) continue;
@@ -2970,6 +3010,7 @@
             const report = {
                 syncedAt: new Date().toISOString(),
                 centers: icalCenters.map(c => c.name),
+                failed: failedCenterNames.slice(),
                 added: addedEventsDetail.map(item => ({ ...item })),
                 modified: modifiedEventsDetail.map(item => ({ ...item })),
                 deleted: deletedEventsDetail.map(item => ({ ...item }))
@@ -3009,24 +3050,28 @@
         function buildSyncDecisionReport(report) {
             const allCenters=[...new Set(report.centers||[])];
             const summary=`<div class="grid grid-cols-3 gap-2 text-center"><div class="p-3 bg-emerald-50 rounded-xl"><b>${report.added.length}</b><small class="block">Aggiunti</small></div><div class="p-3 bg-amber-50 rounded-xl"><b>${report.modified.length}</b><small class="block">Modificati</small></div><div class="p-3 bg-rose-50 rounded-xl"><b>${report.deleted.length}</b><small class="block">Rimossi alla fonte</small></div></div>`;
+            const failed=report.failed||[];
+            const failureWarning=failed.length?`<div class="p-3 bg-rose-50 border border-rose-300 rounded-xl text-xs text-rose-900"><b>Errore di sincronizzazione:</b> non è stato possibile scaricare il calendario di ${failed.map(escapeReport).join(', ')}. Gli appuntamenti già importati da ${failed.length>1?'queste sedi':'questa sede'} non sono stati modificati.</div>`:'';
             const warning=pendingDeletionCount(report)?`<div class="p-3 bg-rose-50 border border-rose-200 rounded-xl text-xs text-rose-900"><b>Scelta obbligatoria:</b> decidi cosa fare per ${pendingDeletionCount(report)} appuntamenti rimossi dal calendario originale. La finestra non può essere chiusa prima.</div>`:'';
             const centers=allCenters.map(name=>{
                 const a=report.added.filter(x=>x.center===name);
                 const m=report.modified.filter(x=>x.center===name);
                 const d=report.deleted.filter(x=>x.center===name);
                 const total=a.length+m.length+d.length;
+                const centerFailed=failed.includes(name);
+                const badge=centerFailed?'<span class="px-2.5 py-1 rounded-full text-[10px] font-bold bg-rose-100 text-rose-800">Errore di sincronizzazione</span>':`<span class="px-2.5 py-1 rounded-full text-[10px] font-bold ${total?'bg-purple-100 text-purple-800':'bg-emerald-100 text-emerald-800'}">${total?total+' variazioni':'Nessuna variazione'}</span>`;
                 return `<section class="border border-slate-200 rounded-2xl p-3 sm:p-4 bg-white">
                     <div class="flex items-center justify-between gap-2 pb-2 border-b border-slate-100">
                         <h4 class="font-editorial font-bold italic text-base text-slate-900">${escapeReport(name)}</h4>
-                        <span class="px-2.5 py-1 rounded-full text-[10px] font-bold ${total?'bg-purple-100 text-purple-800':'bg-emerald-100 text-emerald-800'}">${total?total+' variazioni':'Nessuna variazione'}</span>
+                        ${badge}
                     </div>
                     ${buildChangeSection('Aggiunti',a,'bg-emerald-50')}
                     ${buildChangeSection('Modificati',m,'bg-amber-50')}
                     ${buildDeletedSection(d)}
-                    ${!total?'<p class="text-xs text-slate-400 mt-3"><i class="fa-solid fa-circle-check text-emerald-600 mr-1"></i>Nessun appuntamento aggiunto, modificato o rimosso.</p>':''}
+                    ${centerFailed?'<p class="text-xs text-rose-700 mt-3"><i class="fa-solid fa-triangle-exclamation mr-1"></i>Calendario non sincronizzato: impossibile scaricarlo. Riprova più tardi o verifica il link iCal.</p>':(!total?'<p class="text-xs text-slate-400 mt-3"><i class="fa-solid fa-circle-check text-emerald-600 mr-1"></i>Nessun appuntamento aggiunto, modificato o rimosso.</p>':'')}
                 </section>`;
             }).join('');
-            return `<div class="space-y-4">${warning}${summary}<div class="space-y-3">${centers}</div></div>`;
+            return `<div class="space-y-4">${failureWarning}${warning}${summary}<div class="space-y-3">${centers}</div></div>`;
         }
         function updateSyncCloseState(report) {
             const button=document.querySelector('#sync-modal-footer button');
@@ -3098,19 +3143,70 @@
             }
         }
 
-        function parseIcalDateTime(str) {
+        /** Ricompone le righe ripiegate (RFC 5545 §3.1): una riga che inizia con spazio o tab continua la precedente. */
+        function unfoldIcalLines(text) {
+            return String(text || '').replace(/\r\n|\r/g, '\n').replace(/\n[ \t]/g, '').split('\n');
+        }
+        /** Scompone una riga iCal in nome, parametri (es. TZID) e valore, rispettando i parametri tra virgolette. */
+        function parseIcalProperty(line) {
+            let inQuotes = false;
+            let colon = -1;
+            for (let i = 0; i < line.length; i++) {
+                const ch = line[i];
+                if (ch === '"') inQuotes = !inQuotes;
+                else if (ch === ':' && !inQuotes) { colon = i; break; }
+            }
+            if (colon < 0) return null;
+            const [name, ...paramParts] = line.slice(0, colon).split(';');
+            const params = {};
+            for (const part of paramParts) {
+                const eq = part.indexOf('=');
+                if (eq > 0) params[part.slice(0, eq).toUpperCase()] = part.slice(eq + 1).replace(/^"|"$/g, '');
+            }
+            return { name: name.toUpperCase(), params, value: line.slice(colon + 1) };
+        }
+        /** Decodifica i caratteri con escape dei valori di testo iCal (\\ \; \, \n). */
+        function unescapeIcalText(value) {
+            return String(value || '').replace(/\\([\\;,nN])/g, (m, ch) => (ch === 'n' || ch === 'N') ? '\n' : ch);
+        }
+        /** Converte un orario "da parete" in un fuso IANA (es. Europe/Rome) nell'istante UTC corrispondente. */
+        function zonedTimeToUtc(year, month, day, hour, minute, timeZone) {
+            try {
+                const formatter = new Intl.DateTimeFormat('en-US', { timeZone, hourCycle: 'h23', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit' });
+                const offsetAt = (ts) => {
+                    const parts = formatter.formatToParts(new Date(ts));
+                    const get = (type) => Number(parts.find(p => p.type === type).value);
+                    return Date.UTC(get('year'), get('month') - 1, get('day'), get('hour'), get('minute'), get('second')) - ts;
+                };
+                const wallClock = Date.UTC(year, month, day, hour, minute);
+                let ts = wallClock - offsetAt(wallClock);
+                ts = wallClock - offsetAt(ts);
+                return new Date(ts);
+            } catch (e) {
+                return null;
+            }
+        }
+        function parseIcalDateTime(str, tzid = null) {
             if (!str) return new Date().toISOString();
             try {
-                let clean = str.replace(/[^0-9T]/g, '');
-                let year = parseInt(clean.substring(0, 4), 10);
-                let month = parseInt(clean.substring(4, 6), 10) - 1;
-                let day = parseInt(clean.substring(6, 8), 10);
-                let hour = 9, minute = 0;
-                if (clean.length >= 13 && clean.charAt(8) === 'T') {
-                    hour = parseInt(clean.substring(9, 11), 10);
-                    minute = parseInt(clean.substring(11, 13), 10);
+                const raw = String(str).trim();
+                const clean = raw.replace(/[^0-9T]/g, '');
+                const year = parseInt(clean.substring(0, 4), 10);
+                const month = parseInt(clean.substring(4, 6), 10) - 1;
+                const day = parseInt(clean.substring(6, 8), 10);
+                if (!(clean.length >= 13 && clean.charAt(8) === 'T')) {
+                    // Evento di un'intera giornata (VALUE=DATE): convenzionalmente alle 09:00 UTC.
+                    return new Date(Date.UTC(year, month, day, 9, 0)).toISOString();
                 }
-                return new Date(Date.UTC(year, month, day, hour, minute)).toISOString();
+                const hour = parseInt(clean.substring(9, 11), 10);
+                const minute = parseInt(clean.substring(11, 13), 10);
+                if (/Z$/i.test(raw)) return new Date(Date.UTC(year, month, day, hour, minute)).toISOString();
+                if (tzid) {
+                    const zoned = zonedTimeToUtc(year, month, day, hour, minute, tzid);
+                    if (zoned && !Number.isNaN(zoned.getTime())) return zoned.toISOString();
+                }
+                // Orario "floating" (o fuso non riconosciuto): ora locale del dispositivo.
+                return new Date(year, month, day, hour, minute).toISOString();
             } catch(e) {
                 return new Date().toISOString();
             }
@@ -3416,7 +3512,7 @@
             if (isNonClinicalEvent(eventData)) { box.classList.add('hidden'); createBtn.classList.add('hidden'); return; }
             const candidates=appState.patients.map(p=>({p,score:patientMatchScore(eventData.title,p.name)})).filter(x=>x.score>=0.35).sort((a,b)=>b.score-a.score).slice(0,5);
             box.classList.remove('hidden'); createBtn.classList.remove('hidden');
-            box.innerHTML=candidates.length?`<p class="font-bold text-water-900 mb-2">Possibili corrispondenze</p>${candidates.map(x=>`<button type="button" onclick="selectSuggestedPatient('${x.p.id}')" class="w-full flex justify-between p-2 mb-1 bg-white rounded-xl border"><span>${x.p.name}</span><span class="font-bold">${Math.round(x.score*100)}%</span></button>`).join('')}`:'<p>Nessuna corrispondenza affidabile. Puoi creare un nuovo paziente dai dati dell’evento.</p>';
+            box.innerHTML=candidates.length?`<p class="font-bold text-water-900 mb-2">Possibili corrispondenze</p>${candidates.map(x=>`<button type="button" onclick="selectSuggestedPatient('${x.p.id}')" class="w-full flex justify-between p-2 mb-1 bg-white rounded-xl border"><span>${escapeHtml(x.p.name)}</span><span class="font-bold">${Math.round(x.score*100)}%</span></button>`).join('')}`:'<p>Nessuna corrispondenza affidabile. Puoi creare un nuovo paziente dai dati dell’evento.</p>';
         }
         window.selectSuggestedPatient = function(id) { document.getElementById('studio-patient-select').value=id; onPatientSelectChange(); document.getElementById('patient-match-suggestions').classList.add('hidden'); }
         window.createPatientFromImportedEvent = function() {
@@ -3439,12 +3535,12 @@
             return pairs.sort((x,y)=>y.score-x.score).slice(0,8);
         }
         window.openMergePatientsModal = function() {
-            const options=[...appState.patients].sort((a,b)=>a.name.localeCompare(b.name)).map(p=>`<option value="${p.id}">${p.name}</option>`).join('');
+            const options=[...appState.patients].sort((a,b)=>a.name.localeCompare(b.name)).map(p=>`<option value="${escapeHtml(p.id)}">${escapeHtml(p.name)}</option>`).join('');
             document.getElementById('merge-keep-patient').innerHTML='<option value="">-- scegli la scheda da mantenere --</option>'+options;
             document.getElementById('merge-remove-patient').innerHTML='<option value="">-- scegli il duplicato da incorporare --</option>'+options;
             const pairs=suggestedDuplicatePairs();
             document.getElementById('merge-suggestions').innerHTML = pairs.length
-              ? `<div class="font-bold text-xs text-purple-900">Possibili duplicati trovati</div>${pairs.map(x=>`<button type="button" onclick="selectMergePair('${x.a.id}','${x.b.id}')" class="w-full p-3 border border-purple-200 bg-purple-50 rounded-2xl flex justify-between text-left"><span><strong>${x.a.name}</strong> ↔ <strong>${x.b.name}</strong></span><span class="font-bold">${Math.round(x.score*100)}%</span></button>`).join('')}`
+              ? `<div class="font-bold text-xs text-purple-900">Possibili duplicati trovati</div>${pairs.map(x=>`<button type="button" onclick="selectMergePair('${x.a.id}','${x.b.id}')" class="w-full p-3 border border-purple-200 bg-purple-50 rounded-2xl flex justify-between text-left"><span><strong>${escapeHtml(x.a.name)}</strong> ↔ <strong>${escapeHtml(x.b.name)}</strong></span><span class="font-bold">${Math.round(x.score*100)}%</span></button>`).join('')}`
               : '<div class="p-3 bg-slate-50 rounded-2xl text-xs text-slate-500">Nessun duplicato evidente. Puoi comunque scegliere manualmente due schede.</div>';
             renderMergeComparison();
             document.getElementById('merge-patients-modal').classList.remove('hidden');
@@ -3469,7 +3565,7 @@
             if(!keep||!rem||keep.id===rem.id){box.innerHTML='<div class="p-3 bg-purple-50 text-purple-800 rounded-2xl">Clicca su una possibile corrispondenza oppure seleziona manualmente la scheda da mantenere e il duplicato da incorporare.</div>';summary.innerHTML='';return;}
             box.innerHTML=[mergeChoiceRow('phone','Telefono',keep,rem),mergeChoiceRow('email','Email',keep,rem),mergeChoiceRow('notes','Note',keep,rem,true),mergeChoiceRow('currentIssues','Problemi attuali',keep,rem,true),mergeChoiceRow('goals','Obiettivi terapeutici',keep,rem,true),mergeChoiceRow('allergies','Allergie',keep,rem,true),mergeChoiceRow('medications','Farmaci',keep,rem,true)].join('');
             const eventCount=appState.events.filter(ev=>ev.extendedProps?.patientId===rem.id).length;
-            summary.innerHTML=`<strong>Risultato:</strong> resterà la scheda <strong>${keep.name}</strong>. La scheda <strong>${rem.name}</strong> verrà eliminata. ${eventCount} appuntamenti saranno riassegnati. I tag saranno uniti senza duplicati. Per ogni dato diverso usa le scelte sopra; nulla viene sovrascritto senza una scelta visibile.`;
+            summary.innerHTML=`<strong>Risultato:</strong> resterà la scheda <strong>${escapeHtml(keep.name)}</strong>. La scheda <strong>${escapeHtml(rem.name)}</strong> verrà eliminata. ${eventCount} appuntamenti saranno riassegnati. I tag saranno uniti senza duplicati. Per ogni dato diverso usa le scelte sopra; nulla viene sovrascritto senza una scelta visibile.`;
         }
         function selectedMergeValue(field,keep,rem) {
             const choice=document.querySelector(`input[name="merge-${field}"]:checked`)?.value || 'keep';

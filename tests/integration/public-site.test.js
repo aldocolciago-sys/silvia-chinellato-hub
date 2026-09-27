@@ -94,10 +94,21 @@ describe('sito pubblico', () => {
         for (const a of anchors) expect(app.byId(a.getAttribute('href').slice(1)), a.getAttribute('href')).not.toBeNull();
     });
 
-    // KNOWN ISSUE: i contenuti pubblici sono inseriti con innerHTML senza escape (XSS memorizzato
+    // Regressione (difetto corretto): i contenuti pubblici sono inseriti con innerHTML senza escape (XSS memorizzato
     // se un contenuto amministrativo o un dato Firestore contiene HTML).
-    it.fails('esegue l’escape dell’HTML nei contenuti pubblici', async () => {
+    it('esegue l’escape dell’HTML nei contenuti pubblici', async () => {
         app = await bootApp({ docs: seedDocs({ news: [{ id: 'x', title: '<img src=x onerror=alert(1)>', content: 'c', date: '' }] }) });
         expect(app.$$('#public-news-grid img').length).toBe(0);
+    });
+
+    it('non crea link con URL pericolosi e neutralizza colori/icone malevoli', async () => {
+        app = await bootApp({ docs: seedDocs({ publicCenters: [center({ id: 'x', name: '<b>Nome</b>', siteUrl: 'javascript:alert(1)', bookingUrl: 'https://ok.example', color: 'red;background:url(x)', icon: 'fa-x" onmouseover="alert(1)' })] }) });
+        const card = app.$('#public-centers-grid > div');
+        expect(card.querySelector('h4').textContent).toBe('<b>Nome</b>');
+        expect(card.querySelectorAll('a').length).toBe(1);
+        expect(card.querySelector('a').getAttribute('href')).toBe('https://ok.example');
+        expect(card.querySelector('a').getAttribute('rel')).toBe('noopener noreferrer');
+        expect(card.innerHTML).not.toContain('onmouseover');
+        expect(card.innerHTML).toContain('background-color: #3f5e4e');
     });
 });

@@ -89,9 +89,9 @@ describe('migrazioni dati una-tantum', () => {
         expect(app.isHidden('private-view')).toBe(false);
     });
 
-    // KNOWN BUG: un errore in una migrazione interrompe tutto loadAllDataFromFirestore:
+    // Regressione (difetto corretto): un errore in una migrazione interrompe tutto loadAllDataFromFirestore:
     // pazienti/appuntamenti non vengono caricati e la sincronizzazione realtime non parte.
-    it.fails('carica comunque i dati condivisi se una migrazione fallisce', async () => {
+    it('carica comunque i dati condivisi se una migrazione fallisce', async () => {
         app = await bootApp({ docs: seedDocs({ skipMigrations: false, centers: [center()], patients: [patient({ id: 'p1' })] }) });
         app.mock.failNext('getDocs', `${LEGACY}/centers_list`);
         await app.login();

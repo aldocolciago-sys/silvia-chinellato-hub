@@ -7,6 +7,7 @@
  *  - /__fixtures__/dynamic/<chiave>.ics → calendari modificabili via PUT (un calendario per test).
  *
  * Uso: node tests/support/server.mjs  (PORT=4173 di default)
+ * Avviato direttamente, consente a /api/ical di raggiungere host locali (ICAL_ALLOW_PRIVATE_HOSTS=1).
  */
 import http from 'node:http';
 import { readFile, stat } from 'node:fs/promises';
@@ -103,6 +104,8 @@ export function createServer() {
 }
 
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
+    // Server locale di sviluppo/test: i calendari di prova sono su 127.0.0.1, che in produzione è bloccato.
+    process.env.ICAL_ALLOW_PRIVATE_HOSTS ??= '1';
     createServer().listen(PORT, HOST, () => {
         console.log(`Silvia Chinellato Hub in ascolto su http://${HOST}:${PORT}`);
     });

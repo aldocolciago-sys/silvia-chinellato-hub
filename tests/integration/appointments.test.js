@@ -131,24 +131,31 @@ describe('agenda: creazione appuntamenti', () => {
         expect(app.mock.list(`${SHARED}/studio_events`)).toHaveLength(0);
     });
 
-    // KNOWN BUG: se Firestore rifiuta la scrittura lo stato locale viene comunque modificato,
+    // Regressione (difetto corretto): se Firestore rifiuta la scrittura lo stato locale viene comunque modificato,
     // quindi l'agenda mostra un appuntamento che non esiste sul database.
-    it.fails('non modifica lo stato locale se il salvataggio fallisce', async () => {
+    it('non modifica lo stato locale se il salvataggio fallisce', async () => {
         await loggedIn();
         app.window.openStudioModal();
         fillAppointment({ title: 'Prova' });
         app.mock.failNext('setDoc', `${SHARED}/studio_events`);
         await app.submit('studio-event-form');
         expect(app.state.events).toHaveLength(0);
+        expect(app.calendar.renderedEvents).toHaveLength(0);
+        expect(app.isHidden('calendar-conflict-banner')).toBe(true);
     });
 
-    // KNOWN BUG: nessuna validazione impedisce un orario di fine precedente all'inizio.
-    it.fails('rifiuta un appuntamento che termina prima di iniziare', async () => {
+    // Regressione (difetto corretto): nessuna validazione impedisce un orario di fine precedente all'inizio.
+    it('rifiuta un appuntamento che termina prima di iniziare', async () => {
         await loggedIn();
         app.window.openStudioModal();
         fillAppointment({ title: 'Invertito', start: '10:00', end: '09:00' });
         await app.submit('studio-event-form');
         expect(app.mock.list(`${SHARED}/studio_events`)).toHaveLength(0);
+        expect(app.toast()).toBe("L'orario di fine deve essere successivo a quello di inizio.");
+        expect(app.isHidden('studio-modal')).toBe(false);
+        app.setValue('studio-time-end', '10:00');
+        await app.submit('studio-event-form');
+        expect(app.mock.list(`${SHARED}/studio_events`)).toHaveLength(0); // durata zero non ammessa
     });
 });
 

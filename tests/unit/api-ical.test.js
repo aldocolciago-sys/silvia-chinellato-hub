@@ -1,4 +1,9 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+
+// Risoluzione DNS simulata: di default ogni host è pubblico; i test possono cambiarla.
+const dnsLookup = vi.hoisted(() => vi.fn());
+vi.mock('node:dns/promises', () => ({ lookup: dnsLookup, default: { lookup: dnsLookup } }));
+
 import handler from '../../api/ical.js';
 import { createMockReq, createMockRes } from '../support/vercel-mock.js';
 import { SIMPLE_CALENDAR, HTML_LOGIN_PAGE, vcalendar, vevent } from '../fixtures/ical.js';
@@ -20,6 +25,9 @@ describe('api/ical – proxy serverless per calendari iCal', () => {
     beforeEach(() => {
         fetchMock = vi.fn();
         vi.stubGlobal('fetch', fetchMock);
+        dnsLookup.mockReset();
+        dnsLookup.mockResolvedValue([{ address: '93.184.216.34', family: 4 }]);
+        delete process.env.ICAL_ALLOW_PRIVATE_HOSTS;
         vi.spyOn(console, 'log').mockImplementation(() => {});
         vi.spyOn(console, 'error').mockImplementation(() => {});
     });
@@ -62,13 +70,13 @@ describe('api/ical – proxy serverless per calendari iCal', () => {
             expect(res.body).toEqual({ icsContent: SIMPLE_CALENDAR });
         });
 
-        it('passa redirect "follow", un AbortSignal e l’header Accept adeguato', async () => {
+        it('gestisce i redirect manualmente, con un AbortSignal e l’header Accept adeguato', async () => {
             fetchMock.mockResolvedValue(textResponse(SIMPLE_CALENDAR));
             await callHandler({ url: 'https://example.com/cal.ics' });
             expect(fetchMock).toHaveBeenCalledTimes(1);
             const [url, init] = fetchMock.mock.calls[0];
             expect(url).toBe('https://example.com/cal.ics');
-            expect(init.redirect).toBe('follow');
+            expect(init.redirect).toBe('manual');
             expect(init.signal).toBeInstanceOf(AbortSignal);
             expect(init.headers.Accept).toContain('text/calendar');
         });
@@ -179,8 +187,11 @@ describe('api/ical – proxy serverless per calendari iCal', () => {
                 .toBe('https://calendar.google.com/calendar/ical/abc123@group.calendar.google.com/public/basic.ics');
         });
 
-        it('lascia invariata una stringa che non è un URL valido', async () => {
-            expect(await resolvedTarget('non-un-url calendar.google.com')).toBe('non-un-url calendar.google.com');
+        it('rifiuta con 400 una stringa che non è un URL valido', async () => {
+            const res = await callHandler({ url: 'non-un-url calendar.google.com' });
+            expect(res.statusCode).toBe(400);
+            expect(res.body).toEqual({ error: 'URL iCal non valido' });
+            expect(fetchMock).not.toHaveBeenCalled();
         });
 
         it('include l’URL normalizzato nella risposta di errore HTTP', async () => {
@@ -190,21 +201,111 @@ describe('api/ical – proxy serverless per calendari iCal', () => {
         });
     });
 
-    describe('sicurezza (problemi noti)', () => {
-        // KNOWN ISSUE: il proxy scarica qualunque URL, inclusi host interni/metadata cloud (SSRF).
-        // Quando verrà introdotta una allow-list, rimuovere `.fails`.
-        it.fails('rifiuta URL verso indirizzi interni o link-local (SSRF)', async () => {
+    describe('redirect', () => {
+        const redirect = (location, status = 302) => new Response(null, { status, headers: { location } });
+
+        it('segue i redirect (anche relativi) verso host pubblici', async () => {
+            fetchMock
+                .mockResolvedValueOnce(redirect('https://cdn.example.net/cal.ics', 301))
+                .mockResolvedValueOnce(redirect('/finale.ics', 307))
+                .mockResolvedValueOnce(textResponse(SIMPLE_CALENDAR));
+            const res = await callHandler({ url: 'https://example.com/cal.ics' });
+            expect(res.statusCode).toBe(200);
+            expect(fetchMock.mock.calls.map(c => c[0])).toEqual(['https://example.com/cal.ics', 'https://cdn.example.net/cal.ics', 'https://cdn.example.net/finale.ics']);
+        });
+
+        it('blocca un redirect verso un indirizzo interno', async () => {
+            fetchMock.mockResolvedValueOnce(redirect('http://169.254.169.254/latest/meta-data/'));
+            const res = await callHandler({ url: 'https://example.com/cal.ics' });
+            expect(res.statusCode).toBe(400);
+            expect(res.body.error).toMatch(/indirizzo pubblico/);
+            expect(fetchMock).toHaveBeenCalledTimes(1);
+        });
+
+        it('interrompe dopo 5 redirect', async () => {
+            fetchMock.mockImplementation(async () => redirect('https://example.com/loop'));
+            const res = await callHandler({ url: 'https://example.com/cal.ics' });
+            expect(res.statusCode).toBe(400);
+            expect(res.body.error).toMatch(/Troppi redirect/);
+            expect(fetchMock).toHaveBeenCalledTimes(6);
+        });
+
+        it('una risposta 3xx senza Location viene trattata come errore HTTP', async () => {
+            fetchMock.mockResolvedValue(new Response(null, { status: 304 }));
+            const res = await callHandler({ url: 'https://example.com/cal.ics' });
+            expect(res.statusCode).toBe(304);
+        });
+    });
+
+    describe('sicurezza', () => {
+        it.each([
+            'http://169.254.169.254/latest/meta-data/',
+            'http://127.0.0.1:8080/admin',
+            'http://10.0.0.5/cal.ics',
+            'http://172.20.1.1/cal.ics',
+            'http://192.168.1.1/cal.ics',
+            'http://100.64.0.1/cal.ics',
+            'http://0.0.0.0/cal.ics',
+            'http://[::1]/cal.ics',
+            'http://[fd00::1]/cal.ics',
+            'http://[fe80::1]/cal.ics',
+            'http://[::ffff:127.0.0.1]/cal.ics'
+        ])('rifiuta l’indirizzo interno %s (SSRF)', async (url) => {
             fetchMock.mockResolvedValue(textResponse(SIMPLE_CALENDAR));
-            const res = await callHandler({ url: 'http://169.254.169.254/latest/meta-data/' });
+            const res = await callHandler({ url });
             expect(res.statusCode).toBe(400);
             expect(fetchMock).not.toHaveBeenCalled();
         });
 
-        // KNOWN ISSUE: sono accettati anche metodi diversi da GET/OPTIONS.
-        it.fails('rifiuta metodi HTTP diversi da GET e OPTIONS con 405', async () => {
+        it('rifiuta un nome host che risolve verso un indirizzo privato', async () => {
+            dnsLookup.mockResolvedValue([{ address: '93.184.216.34', family: 4 }, { address: '10.1.2.3', family: 4 }]);
             fetchMock.mockResolvedValue(textResponse(SIMPLE_CALENDAR));
-            const res = await callHandler({ url: 'https://example.com/cal.ics' }, { method: 'POST' });
+            const res = await callHandler({ url: 'https://intranet.example.com/cal.ics' });
+            expect(res.statusCode).toBe(400);
+            expect(dnsLookup).toHaveBeenCalledWith('intranet.example.com', { all: true, verbatim: true });
+            expect(fetchMock).not.toHaveBeenCalled();
+        });
+
+        it('rifiuta un host IPv6 privato risolto via DNS', async () => {
+            dnsLookup.mockResolvedValue([{ address: '::1', family: 6 }]);
+            const res = await callHandler({ url: 'https://localhost6.example/cal.ics' });
+            expect(res.statusCode).toBe(400);
+        });
+
+        it('accetta indirizzi IP pubblici espliciti', async () => {
+            fetchMock.mockResolvedValue(textResponse(SIMPLE_CALENDAR));
+            const res = await callHandler({ url: 'https://8.8.8.8/cal.ics' });
+            expect(res.statusCode).toBe(200);
+            expect(dnsLookup).not.toHaveBeenCalled();
+        });
+
+        it.each(['file:///etc/passwd', 'ftp://example.com/cal.ics', 'javascript:alert(1)'])('rifiuta il protocollo di %s', async (url) => {
+            const res = await callHandler({ url });
+            expect(res.statusCode).toBe(400);
+            expect(res.body.error).toMatch(/http o https|non valido/);
+            expect(fetchMock).not.toHaveBeenCalled();
+        });
+
+        it('restituisce 500 se il nome host non esiste', async () => {
+            dnsLookup.mockRejectedValue(Object.assign(new Error('getaddrinfo ENOTFOUND nessuno.invalid'), { code: 'ENOTFOUND' }));
+            const res = await callHandler({ url: 'https://nessuno.invalid/cal.ics' });
+            expect(res.statusCode).toBe(500);
+            expect(res.body.error).toMatch(/ENOTFOUND/);
+        });
+
+        it('consente host locali solo con ICAL_ALLOW_PRIVATE_HOSTS=1 (ambiente di test)', async () => {
+            process.env.ICAL_ALLOW_PRIVATE_HOSTS = '1';
+            fetchMock.mockResolvedValue(textResponse(SIMPLE_CALENDAR));
+            const res = await callHandler({ url: 'http://127.0.0.1:4173/cal.ics' });
+            expect(res.statusCode).toBe(200);
+        });
+
+        it.each(['POST', 'PUT', 'DELETE', 'PATCH'])('rifiuta il metodo %s con 405', async (method) => {
+            fetchMock.mockResolvedValue(textResponse(SIMPLE_CALENDAR));
+            const res = await callHandler({ url: 'https://example.com/cal.ics' }, { method });
             expect(res.statusCode).toBe(405);
+            expect(res.headers.allow).toBe('GET, OPTIONS');
+            expect(fetchMock).not.toHaveBeenCalled();
         });
     });
 });
