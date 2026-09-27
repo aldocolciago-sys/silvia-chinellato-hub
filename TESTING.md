@@ -33,6 +33,10 @@ npm run serve               # avvia il sito in locale su http://127.0.0.1:4173 (
 
 Ogni sede ha il compenso per seduta per trattamento (`rateIdrocolonterapia`, `rateOsteopatia`); lo studio privato ha le sue tariffe in `shared/data/settings/finance`. Le sedi "non cliniche" possono essere **turni retribuiti a ore** (`isShiftCalendar`, `hourlyRate`): compenso = durata × tariffa, inclusi nei compensi e nel simulatore fiscale. La logica è in `defaultFeeForEvent` (`index.html`). Test: `tests/unit/rates.test.js`, `tests/integration/rates-shifts.test.js`, `tests/e2e/rates-shifts.spec.js`.
 
+## Settimana tipo e tempi di spostamento
+
+Da "Settimana tipo" (header su desktop, menu "Altro" su mobile) si impostano le fasce abituali di ogni sede e il tempo minimo per spostarsi tra due sedi (predefinito 45 minuti, 0 = disattivato), salvati in `shared/data/settings/agenda`. Le fasce compaiono come sfondo nella vista settimana/giorno; il modulo appuntamento avvisa (senza bloccare) se l'orario cade nella fascia di un'altra sede; due appuntamenti consecutivi in sedi diverse troppo vicini sono segnalati in arancione (⏱). I calendari personali non contano. Logica in `findTightTransfers`, `templateBackgroundEvents`, `templateMismatch` (`index.html`). Test: `tests/unit/weekly-template.test.js`, `tests/integration/weekly-template.test.js`, `tests/e2e/weekly-template.spec.js`.
+
 ## Messaggi WhatsApp ai pazienti
 
 Dall'anagrafica pazienti il pulsante **WhatsApp** apre un menu di messaggi precompilati (richiesta notizie, nuovo appuntamento, recensione Google, ringraziamento, promemoria), in versione Osteopatia e Idrocolonterapia. I testi sono in `WHATSAPP_TEMPLATES` in `index.html`; il link recensioni si imposta dall'app ed è salvato in `shared/data/settings/messaging`. Test: `tests/unit/whatsapp.test.js`, `tests/integration/patient-messages.test.js`, `tests/e2e/patient-messages.spec.js`.
