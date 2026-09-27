@@ -1,0 +1,9 @@
+# File di sviluppo/test da non pubblicare sul sito
+tests/
+coverage/
+playwright-report/
+test-results/
+playwright.config.js
+vitest.config.js
+TESTING.md
+.github/
