@@ -204,6 +204,22 @@ describe('agenda: calendari non clinici ed eventi esterni', () => {
     });
 });
 
+describe('agenda: aggiornamenti in tempo reale con il modulo aperto', () => {
+    // Regressione (difetto corretto): un aggiornamento in tempo reale (es. salvataggio di una scheda paziente)
+    // ricostruiva gli elenchi e riportava sede e paziente del modulo aperto ai valori predefiniti.
+    it('non azzera sede e paziente scelti', async () => {
+        await loggedIn();
+        app.window.openStudioModal();
+        app.setValue('studio-center-select', 'c1');
+        app.setValue('studio-patient-select', 'pat_1');
+        app.mock.seed({ [`${SHARED}/patients_list/pat_2`]: patient({ id: 'pat_2', name: 'Nuova Paziente' }) });
+        await app.flush();
+        expect([...app.byId('studio-patient-select').options].map(o => o.textContent)).toContain('Nuova Paziente');
+        expect(app.byId('studio-center-select').value).toBe('c1');
+        expect(app.byId('studio-patient-select').value).toBe('pat_1');
+    });
+});
+
 describe('agenda: calendario e conflitti', () => {
     const overlapping = [
         studioEvent({ id: 'e1', title: 'Primo', start: '2030-01-15T09:00:00', end: '2030-01-15T10:00:00' }),

@@ -573,7 +573,12 @@
 
                 <div class="space-y-1">
                     <label for="studio-title" class="text-[11px] font-bold text-slate-600">Titolo / Trattamento *</label>
-                    <input type="text" id="studio-title" required placeholder="Es. Trattamento Osteopatico" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-xs">
+                    <input type="text" id="studio-title" required placeholder="Es. Trattamento Osteopatico" oninput="updateStudioAssessmentWarning()" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-xs">
+                </div>
+
+                <div id="studio-assessment-warning" role="status" class="hidden p-3 rounded-2xl border text-xs flex flex-col sm:flex-row sm:items-center gap-2 justify-between">
+                    <span id="studio-assessment-text" class="font-semibold"></span>
+                    <button type="button" id="studio-assessment-open" onclick="editSelectedPatientFromAppointment()" class="flex-shrink-0 px-3 py-2 bg-white border border-rose-300 text-rose-800 rounded-xl text-[11px] font-bold">Apri valutazione</button>
                 </div>
 
                 <div class="space-y-1">
@@ -697,6 +702,13 @@
                     <textarea id="patient-notes" placeholder="Anamnesi, patologie, interventi e informazioni generali..." class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-xs h-28 resize-y"></textarea>
                     <p class="text-[10px] text-slate-500">Le note delle singole visite sono archiviate separatamente nel pannello sottostante.</p>
                 </div>
+                <section id="patient-assessments-panel" class="space-y-2 p-4 bg-rose-50/40 border border-rose-200 rounded-2xl">
+                    <div>
+                        <h4 class="font-editorial font-bold italic text-base text-rose-900"><i class="fa-solid fa-clipboard-check mr-1"></i>Valutazione pre-trattamento</h4>
+                        <p class="text-[10px] text-slate-600">Controindicazioni e segni d'allarme da verificare prima del trattamento. Nel modulo appuntamento compare un avviso se la valutazione manca o ha voci da verificare.</p>
+                    </div>
+                    <div id="patient-assessments-container" class="space-y-2"></div>
+                </section>
                 <section id="patient-clinical-archive-panel" class="hidden space-y-3 p-4 bg-water-50/60 border border-water-200 rounded-2xl">
                     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                         <div><h4 class="font-editorial font-bold italic text-base text-water-900"><i class="fa-solid fa-notes-medical mr-1"></i>Archivio Clinico</h4><p class="text-[10px] text-slate-500">Sedute ordinate dalla più recente.</p></div>
@@ -1910,6 +1922,7 @@
             }
             if (!(Number(document.getElementById('studio-fee').value) > 0)) suggestStudioFee();
             updateStudioTemplateHint();
+            updateStudioAssessmentWarning();
 
             document.getElementById('studio-modal').classList.remove('hidden');
         }
@@ -1954,6 +1967,7 @@
             setAppointmentClinicalSectionsVisibility(center?.isNonClinicalCalendar === true, isShiftCenter(center));
             suggestStudioFee();
             updateStudioTemplateHint();
+            updateStudioAssessmentWarning();
         };
 
         window.closeStudioModal = function() {
@@ -1986,6 +2000,7 @@
         function populateCenterDropdown(currentCenterId = null) {
             const sel = document.getElementById('studio-center-select');
             if (!sel) return;
+            const previous = sel.value;
             const selectableCenters = appState.centers.filter(c => c.isNonClinicalCalendar !== true || isShiftCenter(c));
             let options = selectableCenters.map(c => `<option value="${escapeHtml(c.id)}">${escapeHtml(c.name)}${isShiftCenter(c) ? ' (Turni)' : ''}</option>`).join('');
             if (currentCenterId && !selectableCenters.some(c => String(c.id) === String(currentCenterId))) {
@@ -1993,6 +2008,8 @@
                 if (currentCenter) options += `<option value="${escapeHtml(currentCenter.id)}" data-non-clinical="true">${escapeHtml(currentCenter.name)} (Calendario non Clinico)</option>`;
             }
             sel.innerHTML = '<option value="">Studio Privato (Default)</option>' + options;
+            // un aggiornamento in tempo reale non deve azzerare la sede scelta nel modulo aperto
+            if (currentCenterId === null && previous && [...sel.options].some(o => o.value === previous)) sel.value = previous;
         }
 
         window.onPatientSelectChange = function() {
@@ -2003,6 +2020,7 @@
                 document.getElementById('patient-contact-info-container').classList.add('hidden');
                 document.getElementById('studio-patient-phone').value = '';
                 document.getElementById('studio-patient-email').value = '';
+                updateStudioAssessmentWarning();
                 return;
             }
             const pat = appState.patients.find(p => String(p.id) === String(selId));
@@ -2010,6 +2028,7 @@
             if (!isExternal) document.getElementById('studio-title').value = `Visita / Trattamento - ${pat.name}`;
             showPatientClinicalSummary(pat.id);
             suggestStudioFee();
+            updateStudioAssessmentWarning();
         }
         function escapePatientText(value) {
             return String(value || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;');
@@ -2372,12 +2391,175 @@
             returnToAppointmentAfterPatient = false;
             window.openPatientEditModal();
         }
+        // ---- Valutazione pre-trattamento (controindicazioni / segni d'allarme) ----
+        const ASSESSMENT_CHECKLISTS = {
+            idrocolonterapia: {
+                label: 'Idrocolonterapia',
+                title: 'Controindicazioni',
+                items: [
+                    { id: 'gravidanza', label: 'Gravidanza o sospetta gravidanza' },
+                    { id: 'mici', label: 'Malattie infiammatorie intestinali in fase acuta (Crohn, rettocolite ulcerosa)' },
+                    { id: 'diverticolite', label: 'Diverticolite in corso' },
+                    { id: 'emorroidi', label: 'Emorroidi o ragadi anali importanti / sanguinanti' },
+                    { id: 'chirurgia', label: 'Interventi chirurgici addominali o intestinali recenti (ultimi 6 mesi)' },
+                    { id: 'ernia', label: 'Ernia addominale o inguinale' },
+                    { id: 'cuore_reni', label: 'Insufficienza cardiaca o renale' },
+                    { id: 'ipertensione', label: 'Ipertensione non controllata' },
+                    { id: 'tumori', label: 'Tumori del colon-retto (in atto o recenti)' },
+                    { id: 'anemia', label: 'Anemia grave' },
+                    { id: 'sanguinamento', label: 'Sanguinamento rettale non diagnosticato' }
+                ]
+            },
+            osteopatia: {
+                label: 'Osteopatia',
+                title: "Segni d'allarme",
+                items: [
+                    { id: 'trauma', label: 'Trauma o caduta recente' },
+                    { id: 'febbre', label: 'Febbre o infezione in corso' },
+                    { id: 'osteoporosi', label: 'Osteoporosi importante' },
+                    { id: 'anticoagulanti', label: 'Terapia anticoagulante' },
+                    { id: 'gravidanza', label: 'Gravidanza' },
+                    { id: 'peso', label: 'Perdita di peso inspiegata' },
+                    { id: 'dolore_notturno', label: 'Dolore notturno che peggiora o non cambia con la posizione' },
+                    { id: 'neurologici', label: 'Formicolii, perdita di forza o disturbi della sensibilità agli arti' },
+                    { id: 'tumore', label: 'Storia di tumore' }
+                ]
+            }
+        };
+        /** Stato della valutazione: missing (mai compilata), incomplete (voci senza risposta), flagged (almeno un "sì"), ok. */
+        function assessmentStatus(patient, treatment) {
+            const checklist = ASSESSMENT_CHECKLISTS[treatment];
+            const assessment = patient?.assessments?.[treatment];
+            if (!checklist) return { status: 'ok', flagged: [], missing: [], date: null };
+            if (!assessment || typeof assessment !== 'object') return { status: 'missing', flagged: [], missing: checklist.items.map(i => i.label), date: null };
+            const answers = assessment.items || {};
+            const flagged = checklist.items.filter(item => answers[item.id]?.answer === 'yes').map(item => item.label);
+            const missing = checklist.items.filter(item => !['yes', 'no'].includes(answers[item.id]?.answer)).map(item => item.label);
+            const status = flagged.length ? 'flagged' : (missing.length ? 'incomplete' : 'ok');
+            return { status, flagged, missing, date: assessment.date || null, verified: assessment.verified === true };
+        }
+        function assessmentStatusLabel(result) {
+            if (result.status === 'missing') return 'Da compilare';
+            if (result.status === 'incomplete') return `Incompleta (${result.missing.length} voci)`;
+            if (result.status === 'flagged') return `${result.flagged.length} da verificare`;
+            return 'Nessuna controindicazione';
+        }
+        function formatShortDate(value) {
+            const d = new Date(`${value}T12:00:00`);
+            return value && !Number.isNaN(d.getTime()) ? d.toLocaleDateString('it-IT', { day: 'numeric', month: 'short', year: 'numeric' }) : '';
+        }
+        function renderPatientAssessmentsForm(patient) {
+            const container = document.getElementById('patient-assessments-container');
+            if (!container) return;
+            container.innerHTML = Object.entries(ASSESSMENT_CHECKLISTS).map(([key, checklist]) => {
+                const saved = patient?.assessments?.[key] || {};
+                const result = assessmentStatus(patient, key);
+                const badgeClass = result.status === 'ok' ? 'bg-emerald-100 text-emerald-800' : (result.status === 'flagged' ? 'bg-rose-100 text-rose-800' : 'bg-amber-100 text-amber-900');
+                const rows = checklist.items.map(item => {
+                    const answer = saved.items?.[item.id]?.answer || '';
+                    const note = saved.items?.[item.id]?.note || '';
+                    const name = `assess-${key}-${item.id}`;
+                    return `<div data-assessment-item="${item.id}" class="p-2.5 bg-white border border-slate-200 rounded-xl space-y-1.5">
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                            <span id="${name}-label" class="text-[11px] text-slate-800">${escapeHtml(item.label)}</span>
+                            <div role="radiogroup" aria-labelledby="${name}-label" class="flex gap-1.5 flex-shrink-0">
+                                <label class="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-slate-200 text-[11px] font-semibold cursor-pointer has-[:checked]:bg-emerald-100 has-[:checked]:border-emerald-400"><input type="radio" name="${name}" value="no" ${answer === 'no' ? 'checked' : ''}>No</label>
+                                <label class="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-slate-200 text-[11px] font-semibold cursor-pointer has-[:checked]:bg-rose-100 has-[:checked]:border-rose-400"><input type="radio" name="${name}" value="yes" ${answer === 'yes' ? 'checked' : ''}>Sì</label>
+                            </div>
+                        </div>
+                        <input type="text" id="${name}-note" value="${escapeHtml(note)}" aria-label="Nota: ${escapeHtml(item.label)}" placeholder="Nota (facoltativa)" class="w-full px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-[11px]">
+                    </div>`;
+                }).join('');
+                return `<details id="assessment-${key}" data-assessment="${key}" class="bg-white/70 border border-rose-100 rounded-2xl">
+                    <summary class="px-3 py-2.5 cursor-pointer flex items-center justify-between gap-2 text-xs font-bold text-slate-800">
+                        <span>${escapeHtml(checklist.label)} – ${escapeHtml(checklist.title)}</span>
+                        <span id="assessment-${key}-badge" class="px-2 py-0.5 rounded-full text-[10px] ${badgeClass}">${escapeHtml(assessmentStatusLabel(result))}</span>
+                    </summary>
+                    <div class="p-3 pt-0 space-y-2">
+                        <div class="flex justify-end"><button type="button" onclick="markAssessmentAllNo('${key}')" class="px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-[10px] font-bold">Segna tutte "No"</button></div>
+                        ${rows}
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                            <div class="space-y-1"><label for="assess-${key}-date" class="block text-[10px] font-bold text-slate-600">Data della valutazione</label><input type="date" id="assess-${key}-date" value="${escapeHtml(saved.date || '')}" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs"></div>
+                            <label class="flex items-center gap-2 text-[11px] font-semibold text-slate-700 sm:pt-5"><input type="checkbox" id="assess-${key}-verified" ${saved.verified ? 'checked' : ''}>Verificato da Silvia</label>
+                        </div>
+                        <div class="space-y-1"><label for="assess-${key}-notes" class="block text-[10px] font-bold text-slate-600">Note sulla valutazione</label><textarea id="assess-${key}-notes" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs h-16">${escapeHtml(saved.notes || '')}</textarea></div>
+                    </div>
+                </details>`;
+            }).join('');
+        }
+        window.markAssessmentAllNo = function(key) {
+            const checklist = ASSESSMENT_CHECKLISTS[key];
+            if (!checklist) return;
+            checklist.items.forEach(item => {
+                const radio = document.querySelector(`input[name="assess-${key}-${item.id}"][value="no"]`);
+                if (radio) radio.checked = true;
+            });
+            const dateInput = document.getElementById(`assess-${key}-date`);
+            if (dateInput && !dateInput.value) dateInput.value = localDayKey(new Date());
+        };
+        /** Legge le valutazioni dal modulo; null per un trattamento senza alcun dato inserito. */
+        function readPatientAssessmentsForm() {
+            const result = {};
+            for (const [key, checklist] of Object.entries(ASSESSMENT_CHECKLISTS)) {
+                const items = {};
+                let touched = false;
+                for (const item of checklist.items) {
+                    const answer = document.querySelector(`input[name="assess-${key}-${item.id}"]:checked`)?.value || null;
+                    const note = document.getElementById(`assess-${key}-${item.id}-note`)?.value.trim() || '';
+                    if (answer || note) touched = true;
+                    items[item.id] = { answer, note };
+                }
+                const date = document.getElementById(`assess-${key}-date`)?.value || '';
+                const verified = document.getElementById(`assess-${key}-verified`)?.checked === true;
+                const notes = document.getElementById(`assess-${key}-notes`)?.value.trim() || '';
+                if (date || verified || notes) touched = true;
+                result[key] = touched ? { date: date || localDayKey(new Date()), verified, notes, items } : null;
+            }
+            return result;
+        }
+        /** Trattamento dell'appuntamento nel modulo (titolo, sede) o, in mancanza, quello abituale del paziente. */
+        function studioDraftTreatment(patient) {
+            const draft = studioFormDraftEvent();
+            const center = getEventCenter(draft);
+            for (const text of [draft.title, center?.service, center?.name]) {
+                const found = detectTreatmentInText(text);
+                if (found) return found;
+            }
+            return suggestPatientTreatment(patient).treatment;
+        }
+        window.updateStudioAssessmentWarning = function() {
+            const box = document.getElementById('studio-assessment-warning');
+            if (!box) return;
+            const patient = appState.patients.find(p => String(p.id) === String(document.getElementById('studio-patient-select').value));
+            const centerId = document.getElementById('studio-center-select').value;
+            if (!patient || isNonClinicalCenterId(centerId)) { box.classList.add('hidden'); return; }
+            const treatment = studioDraftTreatment(patient);
+            const result = assessmentStatus(patient, treatment);
+            const label = ASSESSMENT_CHECKLISTS[treatment].label;
+            let text;
+            if (result.status === 'missing') text = `⚠️ Valutazione pre-trattamento per ${label} mancante: verificare le controindicazioni prima della seduta.`;
+            else if (result.status === 'incomplete') text = `⚠️ Valutazione per ${label} incompleta: ${result.missing.length} voci senza risposta.`;
+            else if (result.status === 'flagged') text = `⚠️ Controindicazioni da verificare (${label}): ${result.flagged.join('; ')}.`;
+            else text = `✓ Valutazione per ${label}${result.date ? ' del ' + formatShortDate(result.date) : ''}: nessuna controindicazione segnalata.`;
+            const ok = result.status === 'ok';
+            box.classList.remove('hidden');
+            box.classList.toggle('bg-rose-50', !ok);
+            box.classList.toggle('border-rose-300', !ok);
+            box.classList.toggle('text-rose-900', !ok);
+            box.classList.toggle('bg-emerald-50', ok);
+            box.classList.toggle('border-emerald-200', ok);
+            box.classList.toggle('text-emerald-900', ok);
+            document.getElementById('studio-assessment-text').textContent = text;
+            document.getElementById('studio-assessment-open').classList.toggle('hidden', ok);
+        };
+
         window.openPatientEditModal = function(pat = null) {
             const form = document.getElementById('patient-form');
             form.reset();
             document.getElementById('patient-edit-id').value = '';
             document.getElementById('patient-edit-modal-title').textContent = 'Nuovo Paziente';
             renderPatientClinicalArchive(null);
+            renderPatientAssessmentsForm(pat);
             if (pat) {
                 document.getElementById('patient-edit-modal-title').textContent = 'Modifica Paziente';
                 document.getElementById('patient-edit-id').value = pat.id;
@@ -2421,6 +2603,7 @@
                 medications: document.getElementById('patient-medications').value.trim(),
                 tags: document.getElementById('patient-tags').value.split(',').map(x => x.trim()).filter(Boolean),
                 recallDays: Number(document.getElementById('patient-recall-days').value || 120),
+                assessments: readPatientAssessmentsForm(),
                 updatedAt: new Date().toISOString()
             };
             try {
@@ -2439,12 +2622,14 @@
                     }
                     patientSelect.value = id;
                     onPatientSelectChange();
+                    updateStudioAssessmentWarning();
                     document.getElementById('patient-edit-modal').classList.add('hidden');
                     returnToAppointmentAfterPatient = false;
                     showToast('Paziente creato e associato. Ora salva l’appuntamento.');
                 } else if (patientCreationContext === 'appointment-edit') {
                     document.getElementById('studio-patient-select').value = id;
                     showPatientClinicalSummary(id);
+                    updateStudioAssessmentWarning();
                     document.getElementById('patient-edit-modal').classList.add('hidden');
                     returnToAppointmentAfterPatient = false;
                     showToast('Scheda paziente aggiornata.');
@@ -2677,7 +2862,10 @@
             const sel = document.getElementById('studio-patient-select');
             if (!sel) return;
             let sorted = [...appState.patients].sort((a,b) => a.name.localeCompare(b.name));
+            const previous = sel.value;
             sel.innerHTML = '<option value="">-- Seleziona Paziente --</option>' + sorted.map(p => `<option value="${escapeHtml(p.id)}">${escapeHtml(p.name)}</option>`).join('');
+            // un aggiornamento in tempo reale non deve azzerare la scelta nel modulo aperto
+            if (previous && sorted.some(p => String(p.id) === previous)) sel.value = previous;
         }
 
         window.openCentersModal = function() { document.getElementById('centers-modal').classList.remove('hidden'); }
