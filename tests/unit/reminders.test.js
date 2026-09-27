@@ -13,7 +13,7 @@ const patients = [
 
 function fns(events) {
     const appState = { centers, patients, events };
-    return loadFunctions(['tomorrowAppointments', 'reminderSentLabel', 'localDayKey', 'isNonClinicalEvent', 'getEventCenter', 'normalizeWhatsAppNumber', 'appointmentContext'], { appState });
+    return loadFunctions(['tomorrowAppointments', 'todayUpcomingAppointments', 'dayAppointments', 'reminderSentLabel', 'localDayKey', 'isNonClinicalEvent', 'getEventCenter', 'normalizeWhatsAppNumber', 'appointmentContext'], { appState });
 }
 const ev = (id, start, extendedProps = {}, extra = {}) => ({ id, title: id, start, end: start, extendedProps, ...extra });
 
@@ -44,6 +44,19 @@ describe('tomorrowAppointments', () => {
     it('riporta quando il promemoria è già stato inviato', () => {
         const items = fns([ev('a', '2030-03-05T09:00:00', { patientId: 'p1', reminderSentAt: '2030-03-04T18:32:00' })]).tomorrowAppointments(new Date(2030, 2, 4, 19, 0));
         expect(items[0].sentAt).toBe('2030-03-04T18:32:00');
+    });
+});
+
+describe('todayUpcomingAppointments', () => {
+    it('prende gli appuntamenti di oggi non ancora iniziati', () => {
+        const events = [
+            ev('passato', '2030-03-04T09:00:00', { patientId: 'p1' }),
+            ev('adesso', '2030-03-04T12:00:00', { patientId: 'p1' }),
+            ev('pomeriggio', '2030-03-04T15:00:00', { patientId: 'p1' }),
+            ev('domani', '2030-03-05T09:00:00', { patientId: 'p1' }),
+            ev('turno', '2030-03-04T16:00:00', { centerId: 'sport' })
+        ];
+        expect(fns(events).todayUpcomingAppointments(new Date(2030, 2, 4, 12, 0)).map(i => i.event.id)).toEqual(['adesso', 'pomeriggio']);
     });
 });
 

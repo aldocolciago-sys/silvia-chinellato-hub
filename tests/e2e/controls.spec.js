@@ -44,7 +44,7 @@ const ENTRY_POINTS = [
     { name: 'Ultime novità', modal: 'sync-report-modal', desktop: { role: 'Ultime novità' }, mobile: { more: 'Ultime novità' } },
     { name: 'Sincronizza calendari', modal: 'sync-report-modal', desktop: { role: 'Sincronizza Calendari' }, mobile: { nav: 'Sincronizza' } },
     { name: 'Settimana tipo', modal: 'agenda-settings-modal', desktop: { title: 'Settimana tipo e spostamenti' }, mobile: { more: 'Settimana tipo' } },
-    { name: 'Promemoria di domani', modal: 'reminders-modal', desktop: { title: 'Promemoria di domani' }, mobile: { more: 'Promemoria' } }
+    { name: 'Promemoria', modal: 'reminders-modal', desktop: { title: 'Promemoria di oggi e domani' }, mobile: { more: 'Promemoria' } }
 ];
 
 async function openEntry(page, entry) {
@@ -138,7 +138,7 @@ test.describe('raggiungibilità di tutte le funzioni', () => {
         test.skip(isMobile(page), 'Su mobile le funzioni sono nella barra inferiore');
         await loginViaUi(page);
         const header = page.locator('#private-view > header');
-        for (const title of ['Gestisci Poliambulatori', 'Settimana tipo e spostamenti', 'Gestisci Trattamenti', 'Pazienti', 'Gestisci News', 'Gestisci Preparazione', 'Dashboard compensi', 'Promemoria di domani', 'Pazienti da richiamare', 'Appuntamenti senza paziente', 'Backup & Ripristino', 'Esci']) {
+        for (const title of ['Gestisci Poliambulatori', 'Settimana tipo e spostamenti', 'Gestisci Trattamenti', 'Pazienti', 'Gestisci News', 'Gestisci Preparazione', 'Dashboard compensi', 'Promemoria di oggi e domani', 'Pazienti da richiamare', 'Appuntamenti senza paziente', 'Backup & Ripristino', 'Esci']) {
             await expect(header.getByTitle(title, { exact: true }), title).toBeVisible();
         }
         for (const name of ['Studio', 'Ultime novità', 'Sincronizza Calendari']) {

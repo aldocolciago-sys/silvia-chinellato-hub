@@ -438,7 +438,7 @@
                 <button onclick="openBusinessDashboard()" class="w-7 h-7 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 rounded-xl transition flex items-center justify-center border border-emerald-200 shadow-xs" title="Dashboard compensi">
                     <i class="fa-solid fa-chart-line text-[10px]"></i>
                 </button>
-                <button onclick="openRemindersModal()" class="w-7 h-7 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 rounded-xl transition flex items-center justify-center border border-emerald-200 shadow-xs" title="Promemoria di domani">
+                <button onclick="openRemindersModal()" class="w-7 h-7 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 rounded-xl transition flex items-center justify-center border border-emerald-200 shadow-xs" title="Promemoria di oggi e domani">
                     <i class="fa-solid fa-bell text-[10px]"></i>
                 </button>
                 <button onclick="openRecallModal()" class="w-7 h-7 bg-orange-50 hover:bg-orange-100 text-orange-800 rounded-xl transition flex items-center justify-center border border-orange-200 shadow-xs" title="Pazienti da richiamare">
@@ -1107,15 +1107,15 @@
                 <div class="flex items-center gap-3 min-w-0">
                     <div class="w-9 h-9 rounded-2xl bg-emerald-100 text-emerald-800 flex items-center justify-center flex-shrink-0"><i class="fa-solid fa-bell text-sm"></i></div>
                     <div class="min-w-0">
-                        <h3 class="font-editorial text-base sm:text-lg font-bold text-slate-900 italic">Promemoria di domani</h3>
-                        <p class="text-[11px] text-slate-600"><span id="reminders-date" class="capitalize"></span> <span id="reminders-summary" class="block sm:inline"></span></p>
+                        <h3 class="font-editorial text-base sm:text-lg font-bold text-slate-900 italic">Promemoria di oggi e domani</h3>
+                        <p id="reminders-summary" class="text-[11px] text-slate-600"></p>
                     </div>
                 </div>
                 <button aria-label="Chiudi" type="button" onclick="closeRemindersModal()" class="text-slate-400 hover:text-slate-600 w-8 h-8 rounded-full flex items-center justify-center hover:bg-slate-200/60 transition flex-shrink-0"><i class="fa-solid fa-xmark"></i></button>
             </div>
             <div class="p-4 sm:p-6 overflow-y-auto space-y-2 flex-1">
                 <p class="text-[11px] text-slate-600">Per ogni appuntamento si apre il messaggio "Promemoria appuntamento" già compilato con data, ora e sede: puoi modificarlo prima di inviarlo.</p>
-                <div id="reminders-list" class="space-y-2"></div>
+                <div id="reminders-list" class="space-y-4"></div>
             </div>
         </div>
     </div>
@@ -4061,7 +4061,7 @@
                     Object.assign(reminderEvent, updatedEvent);
                 }
                 renderPatientsList(document.getElementById('patient-search-input')?.value.toLowerCase().trim() || '');
-                if (!document.getElementById('reminders-modal')?.classList.contains('hidden')) renderTomorrowReminders();
+                if (!document.getElementById('reminders-modal')?.classList.contains('hidden')) renderReminders();
                 closePatientMessageModal();
                 showToast(reminderEvent ? 'WhatsApp aperto: promemoria registrato.' : 'WhatsApp aperto: contatto registrato.');
             } catch (err) {
@@ -4085,11 +4085,11 @@
                 showToast('Errore: link non salvato.');
             }
         };
-        // ---- Promemoria di domani ----
-        /** Appuntamenti clinici del giorno dopo (ora locale), esclusi non clinici, turni e annullati. */
-        function tomorrowAppointments(now = new Date()) {
-            const tomorrow = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
-            const key = localDayKey(tomorrow);
+        // ---- Promemoria di oggi e domani ----
+        /** Appuntamenti clinici del giorno `now + dayOffset` (ora locale), esclusi non clinici, turni e annullati. */
+        function dayAppointments(now = new Date(), dayOffset = 0) {
+            const day = new Date(now.getFullYear(), now.getMonth(), now.getDate() + dayOffset);
+            const key = localDayKey(day);
             return (appState.events || [])
                 .filter(ev => !ev.allDay && !isNonClinicalEvent(ev) && ev.extendedProps?.paymentStatus !== 'cancelled')
                 .map(ev => ({ ev, start: new Date(ev.start) }))
@@ -4100,57 +4100,69 @@
                     return { event: ev, start, patient, hasPhone: Boolean(patient && normalizeWhatsAppNumber(patient.phone)), sentAt: ev.extendedProps?.reminderSentAt || null };
                 });
         }
+        function tomorrowAppointments(now = new Date()) {
+            return dayAppointments(now, 1);
+        }
+        /** Appuntamenti di oggi non ancora iniziati. */
+        function todayUpcomingAppointments(now = new Date()) {
+            return dayAppointments(now, 0).filter(item => item.start >= now);
+        }
         function reminderSentLabel(sentAt, now = new Date()) {
             const d = new Date(sentAt);
             if (!sentAt || Number.isNaN(d.getTime())) return '';
             const time = d.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' });
             return localDayKey(d) === localDayKey(now) ? `✓ inviato alle ${time}` : `✓ inviato il ${d.toLocaleDateString('it-IT', { day: 'numeric', month: 'short' })} alle ${time}`;
         }
-        window.renderTomorrowReminders = function() {
+        function reminderRowHtml({ event, start, patient, hasPhone, sentAt }, now) {
+            const time = `${String(start.getHours()).padStart(2, '0')}:${String(start.getMinutes()).padStart(2, '0')}`;
+            const place = appointmentContext(event)?.place || 'lo studio';
+            const name = patient?.name || event.title || 'Appuntamento';
+            let status = '';
+            let action = '';
+            if (!patient) {
+                status = '<span class="px-2 py-0.5 rounded-full bg-rose-100 text-rose-800 text-[10px] font-bold">Nessun paziente associato</span>';
+                action = `<button type="button" onclick="openReminderEvent('${escapeHtml(event.id)}')" class="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-xl text-xs font-bold">Associa paziente</button>`;
+            } else if (!hasPhone) {
+                status = '<span class="px-2 py-0.5 rounded-full bg-rose-100 text-rose-800 text-[10px] font-bold">Telefono mancante</span>';
+                action = `<button type="button" onclick="openReminderPatient('${escapeHtml(patient.id)}')" class="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-xl text-xs font-bold">Aggiungi telefono</button>`;
+            } else {
+                if (sentAt) status = `<span class="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-bold">${escapeHtml(reminderSentLabel(sentAt, now))}</span>`;
+                action = `<button type="button" onclick="sendTomorrowReminder('${escapeHtml(event.id)}')" aria-label="${sentAt ? 'Invia di nuovo il promemoria' : 'Promemoria WhatsApp'} a ${escapeHtml(name)} (${time})" class="inline-flex items-center gap-1.5 px-3 py-2 ${sentAt ? 'bg-white border border-emerald-300 text-emerald-800 hover:bg-emerald-50' : 'bg-emerald-700 hover:bg-emerald-800 text-white'} rounded-xl text-xs font-bold"><i class="fa-brands fa-whatsapp"></i>${sentAt ? 'Invia di nuovo' : 'WhatsApp'}</button>`;
+            }
+            return `<div data-reminder-id="${escapeHtml(event.id)}" class="p-3 sm:p-4 bg-white border ${!patient || !hasPhone ? 'border-rose-200' : 'border-slate-200'} rounded-2xl flex flex-col sm:flex-row sm:items-center gap-3">
+                <div class="flex items-center gap-3 min-w-0 flex-1">
+                    <span class="w-14 flex-shrink-0 text-center font-bold text-sm text-slate-900">${time}</span>
+                    <div class="min-w-0">
+                        <strong class="block text-sm text-slate-900 truncate">${escapeHtml(name)}</strong>
+                        <span class="block text-[11px] text-slate-600 truncate">${escapeHtml(event.title || '')} • ${escapeHtml(place)}</span>
+                        ${status ? `<div class="mt-1">${status}</div>` : ''}
+                    </div>
+                </div>
+                <div class="flex sm:justify-end">${action}</div>
+            </div>`;
+        }
+        window.renderReminders = function() {
             const now = new Date();
             const tomorrow = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
-            const items = tomorrowAppointments(now);
-            const pending = items.filter(item => item.hasPhone && !item.sentAt).length;
-            document.getElementById('reminders-date').textContent = tomorrow.toLocaleDateString('it-IT', { weekday: 'long', day: 'numeric', month: 'long' });
-            document.getElementById('reminders-summary').textContent = items.length
-                ? `${items.length} appuntament${items.length === 1 ? 'o' : 'i'} • ${pending} promemoria da inviare`
-                : '';
-            const list = document.getElementById('reminders-list');
-            if (!items.length) {
-                list.innerHTML = '<p class="p-4 text-xs text-slate-600 bg-slate-50 border border-dashed border-slate-200 rounded-2xl text-center">Nessun appuntamento con pazienti per domani.</p>';
-                return;
-            }
-            list.innerHTML = items.map(({ event, start, patient, hasPhone, sentAt }) => {
-                const time = `${String(start.getHours()).padStart(2, '0')}:${String(start.getMinutes()).padStart(2, '0')}`;
-                const place = appointmentContext(event)?.place || 'lo studio';
-                const name = patient?.name || event.title || 'Appuntamento';
-                let status = '';
-                let action = '';
-                if (!patient) {
-                    status = '<span class="px-2 py-0.5 rounded-full bg-rose-100 text-rose-800 text-[10px] font-bold">Nessun paziente associato</span>';
-                    action = `<button type="button" onclick="openReminderEvent('${escapeHtml(event.id)}')" class="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-xl text-xs font-bold">Associa paziente</button>`;
-                } else if (!hasPhone) {
-                    status = '<span class="px-2 py-0.5 rounded-full bg-rose-100 text-rose-800 text-[10px] font-bold">Telefono mancante</span>';
-                    action = `<button type="button" onclick="openReminderPatient('${escapeHtml(patient.id)}')" class="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-xl text-xs font-bold">Aggiungi telefono</button>`;
-                } else {
-                    if (sentAt) status = `<span class="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-bold">${escapeHtml(reminderSentLabel(sentAt, now))}</span>`;
-                    action = `<button type="button" onclick="sendTomorrowReminder('${escapeHtml(event.id)}')" aria-label="${sentAt ? 'Invia di nuovo il promemoria' : 'Promemoria WhatsApp'} a ${escapeHtml(name)}" class="inline-flex items-center gap-1.5 px-3 py-2 ${sentAt ? 'bg-white border border-emerald-300 text-emerald-800 hover:bg-emerald-50' : 'bg-emerald-700 hover:bg-emerald-800 text-white'} rounded-xl text-xs font-bold"><i class="fa-brands fa-whatsapp"></i>${sentAt ? 'Invia di nuovo' : 'WhatsApp'}</button>`;
-                }
-                return `<div data-reminder-id="${escapeHtml(event.id)}" class="p-3 sm:p-4 bg-white border ${patient && !hasPhone || !patient ? 'border-rose-200' : 'border-slate-200'} rounded-2xl flex flex-col sm:flex-row sm:items-center gap-3">
-                    <div class="flex items-center gap-3 min-w-0 flex-1">
-                        <span class="w-14 flex-shrink-0 text-center font-bold text-sm text-slate-900">${time}</span>
-                        <div class="min-w-0">
-                            <strong class="block text-sm text-slate-900 truncate">${escapeHtml(name)}</strong>
-                            <span class="block text-[11px] text-slate-600 truncate">${escapeHtml(event.title || '')} • ${escapeHtml(place)}</span>
-                            ${status ? `<div class="mt-1">${status}</div>` : ''}
-                        </div>
-                    </div>
-                    <div class="flex sm:justify-end">${action}</div>
-                </div>`;
-            }).join('');
+            const sections = [
+                { id: 'today', label: 'Oggi', date: now, items: todayUpcomingAppointments(now), empty: 'Nessun altro appuntamento con pazienti oggi.' },
+                { id: 'tomorrow', label: 'Domani', date: tomorrow, items: tomorrowAppointments(now), empty: 'Nessun appuntamento con pazienti domani.' }
+            ];
+            const all = sections.flatMap(section => section.items);
+            const pending = all.filter(item => item.hasPhone && !item.sentAt).length;
+            document.getElementById('reminders-summary').textContent = all.length
+                ? `${all.length} appuntament${all.length === 1 ? 'o' : 'i'} • ${pending} promemoria da inviare`
+                : 'Nessun appuntamento da ricordare';
+            document.getElementById('reminders-list').innerHTML = sections.map(section => `
+                <section data-reminder-section="${section.id}" class="space-y-2">
+                    <h4 class="text-xs font-bold text-slate-800 uppercase tracking-wide">${section.label} <span class="normal-case font-semibold text-slate-600">– ${escapeHtml(section.date.toLocaleDateString('it-IT', { weekday: 'long', day: 'numeric', month: 'long' }))}</span></h4>
+                    ${section.items.length
+                        ? section.items.map(item => reminderRowHtml(item, now)).join('')
+                        : `<p class="p-3 text-xs text-slate-600 bg-slate-50 border border-dashed border-slate-200 rounded-2xl text-center">${section.empty}</p>`}
+                </section>`).join('');
         };
         window.openRemindersModal = function() {
-            renderTomorrowReminders();
+            renderReminders();
             document.getElementById('reminders-modal').classList.remove('hidden');
             updateModalState();
         };
