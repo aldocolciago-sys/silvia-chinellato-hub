@@ -576,6 +576,16 @@
                     <input type="text" id="studio-title" required placeholder="Es. Trattamento Osteopatico" oninput="updateStudioAssessmentWarning()" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-xs">
                 </div>
 
+                <div id="studio-treatment-section" class="space-y-1">
+                    <label for="studio-treatment" class="text-[11px] font-bold text-slate-600">Trattamento</label>
+                    <select id="studio-treatment" onchange="onStudioTreatmentChange()" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-2xl text-xs">
+                        <option value="">Da indicare</option>
+                        <option value="osteopatia">Osteopatia</option>
+                        <option value="idrocolonterapia">Idrocolonterapia</option>
+                    </select>
+                    <p id="studio-treatment-hint" class="text-[10px] text-slate-500"></p>
+                </div>
+
                 <div id="studio-assessment-warning" role="status" class="hidden p-3 rounded-2xl border text-xs flex flex-col sm:flex-row sm:items-center gap-2 justify-between">
                     <span id="studio-assessment-text" class="font-semibold"></span>
                     <button type="button" id="studio-assessment-open" onclick="editSelectedPatientFromAppointment()" class="flex-shrink-0 px-3 py-2 bg-white border border-rose-300 text-rose-800 rounded-xl text-[11px] font-bold">Apri valutazione</button>
@@ -1791,6 +1801,7 @@
         }
         /** Trattamento dell'appuntamento: dal titolo, poi dal servizio e dal nome della sede. */
         function eventTreatment(eventData, center = getEventCenter(eventData)) {
+            if (MESSAGE_TREATMENT_LABELS[eventData?.extendedProps?.treatment]) return eventData.extendedProps.treatment;
             for (const text of [eventData?.title, center?.service, eventData?.extendedProps?.centerName, center?.name]) {
                 const found = detectTreatmentInText(text);
                 if (found) return found;
@@ -1822,6 +1833,7 @@
             document.getElementById('studio-patient-section')?.classList.toggle('hidden', nonClinical);
             document.getElementById('studio-finance-section')?.classList.toggle('hidden', nonClinical && !shift);
             document.getElementById('studio-clinical-section')?.classList.toggle('hidden', nonClinical);
+            document.getElementById('studio-treatment-section')?.classList.toggle('hidden', nonClinical);
             if (nonClinical) {
                 document.getElementById('studio-patient-select').value = '';
                 document.getElementById('patient-contact-info-container').classList.add('hidden');
@@ -1862,6 +1874,8 @@
             document.getElementById('studio-fee').value = '';
             document.getElementById('studio-fee').dataset.auto = '';
             document.getElementById('studio-fee-hint').classList.add('hidden');
+            document.getElementById('studio-treatment').value = '';
+            document.getElementById('studio-treatment').dataset.manual = '';
             document.getElementById('studio-payment-status').value = 'paid';
             document.getElementById('studio-payment-method').value = 'cash';
             document.getElementById('studio-clinical-note').value = '';
@@ -1891,6 +1905,10 @@
                     document.getElementById('studio-center-select').value = editEv.extendedProps.centerId;
                 }
                 document.getElementById('studio-fee').value = editEv.extendedProps?.fee ?? '';
+                if (MESSAGE_TREATMENT_LABELS[editEv.extendedProps?.treatment]) {
+                    document.getElementById('studio-treatment').value = editEv.extendedProps.treatment;
+                    document.getElementById('studio-treatment').dataset.manual = '1';
+                }
                 document.getElementById('studio-payment-status').value = editEv.extendedProps?.paymentStatus || 'paid';
                 document.getElementById('studio-payment-method').value = editEv.extendedProps?.paymentMethod || 'cash';
                 document.getElementById('studio-clinical-note').value = editEv.extendedProps?.clinicalNote || '';
@@ -1936,11 +1954,12 @@
                 title: document.getElementById('studio-title').value,
                 start: date && startH ? `${date}T${startH}:00` : null,
                 end: date && endH ? `${date}T${endH}:00` : null,
-                extendedProps: { centerId: document.getElementById('studio-center-select').value || null }
+                extendedProps: { centerId: document.getElementById('studio-center-select').value || null, treatment: document.getElementById('studio-treatment').value || null }
             };
         }
         /** Compila il compenso con la tariffa della sede, senza mai sovrascrivere un valore inserito a mano. */
         window.suggestStudioFee = function() {
+            refreshStudioTreatment();
             const feeInput = document.getElementById('studio-fee');
             const hint = document.getElementById('studio-fee-hint');
             if (!feeInput) return;
@@ -2268,6 +2287,7 @@
             const paymentMethod = document.getElementById('studio-payment-method').value;
             const clinicalNote = document.getElementById('studio-clinical-note').value.trim();
             const clinicalOutcome = document.getElementById('studio-clinical-outcome').value.trim();
+            const treatment = document.getElementById('studio-treatment').value || null;
 
             const start = `${date}T${startH}:00`;
             const end = `${date}T${endH}:00`;
@@ -2296,7 +2316,7 @@
                     ...existingEv,
                     extendedProps: {
                         ...existingEv.extendedProps,
-                        patientId: nonClinical ? null : (patientId || null), fee: finalFee, paymentStatus: finalPaymentStatus, paymentMethod: finalPaymentMethod, clinicalNote: nonClinical ? '' : clinicalNote, clinicalOutcome: nonClinical ? '' : clinicalOutcome, isNonClinical: nonClinical
+                        patientId: nonClinical ? null : (patientId || null), fee: finalFee, paymentStatus: finalPaymentStatus, paymentMethod: finalPaymentMethod, clinicalNote: nonClinical ? '' : clinicalNote, clinicalOutcome: nonClinical ? '' : clinicalOutcome, isNonClinical: nonClinical, treatment: nonClinical ? null : treatment
                     }
                 };
             } else {
@@ -2308,7 +2328,7 @@
                     backgroundColor: centerColor,
                     borderColor: centerColor,
                     textColor: '#ffffff',
-                    extendedProps: { centerId: centerId || null, centerName: centerName, patientId: nonClinical ? null : (patientId || null), fee: finalFee, paymentStatus: finalPaymentStatus, paymentMethod: finalPaymentMethod, clinicalNote: nonClinical ? '' : clinicalNote, clinicalOutcome: nonClinical ? '' : clinicalOutcome, isNonClinical: nonClinical } 
+                    extendedProps: { centerId: centerId || null, centerName: centerName, patientId: nonClinical ? null : (patientId || null), fee: finalFee, paymentStatus: finalPaymentStatus, paymentMethod: finalPaymentMethod, clinicalNote: nonClinical ? '' : clinicalNote, clinicalOutcome: nonClinical ? '' : clinicalOutcome, isNonClinical: nonClinical, treatment: nonClinical ? null : treatment } 
                 };
             }
 
@@ -2517,31 +2537,65 @@
             }
             return result;
         }
-        /** Trattamento dell'appuntamento nel modulo (titolo, sede) o, in mancanza, quello abituale del paziente. */
-        function studioDraftTreatment(patient) {
+        /** Trattamento proposto per l'appuntamento: titolo, sede, poi quello abituale del paziente; '' se non si capisce. */
+        function autoStudioTreatment(patient) {
             const draft = studioFormDraftEvent();
             const center = getEventCenter(draft);
             for (const text of [draft.title, center?.service, center?.name]) {
                 const found = detectTreatmentInText(text);
-                if (found) return found;
+                if (found) return { treatment: found, reason: 'appointment' };
             }
-            return suggestPatientTreatment(patient).treatment;
+            if (patient) {
+                const suggestion = suggestPatientTreatment(patient);
+                if (suggestion.reason) return { treatment: suggestion.treatment, reason: 'patient' };
+            }
+            return { treatment: '', reason: null };
+        }
+        /** Aggiorna la scelta automatica del trattamento, senza toccare una scelta fatta a mano. */
+        window.refreshStudioTreatment = function() {
+            const select = document.getElementById('studio-treatment');
+            const hint = document.getElementById('studio-treatment-hint');
+            if (!select) return;
+            if (select.dataset.manual === '1') { hint.textContent = ''; return; }
+            const patient = appState.patients.find(p => String(p.id) === String(document.getElementById('studio-patient-select').value));
+            const auto = autoStudioTreatment(patient);
+            select.value = auto.treatment;
+            hint.textContent = auto.reason === 'appointment' ? 'Scelto in automatico dal titolo o dalla sede: puoi cambiarlo.'
+                : auto.reason === 'patient' ? 'Scelto in automatico in base agli appuntamenti del paziente: puoi cambiarlo.'
+                : 'Indica il trattamento: servirà per la valutazione, il compenso e i promemoria.';
+        };
+        window.onStudioTreatmentChange = function() {
+            const select = document.getElementById('studio-treatment');
+            select.dataset.manual = select.value ? '1' : '';
+            suggestStudioFee();
+            updateStudioAssessmentWarning();
+        };
+        function assessmentProblemText(label, result) {
+            if (result.status === 'missing') return `Valutazione pre-trattamento per ${label} mancante: verificare le controindicazioni prima della seduta.`;
+            if (result.status === 'incomplete') return `Valutazione per ${label} incompleta: ${result.missing.length} voci senza risposta.`;
+            return `Controindicazioni da verificare (${label}): ${result.flagged.join('; ')}.`;
         }
         window.updateStudioAssessmentWarning = function() {
             const box = document.getElementById('studio-assessment-warning');
             if (!box) return;
+            refreshStudioTreatment();
             const patient = appState.patients.find(p => String(p.id) === String(document.getElementById('studio-patient-select').value));
             const centerId = document.getElementById('studio-center-select').value;
             if (!patient || isNonClinicalCenterId(centerId)) { box.classList.add('hidden'); return; }
-            const treatment = studioDraftTreatment(patient);
-            const result = assessmentStatus(patient, treatment);
-            const label = ASSESSMENT_CHECKLISTS[treatment].label;
+            const treatment = document.getElementById('studio-treatment').value;
+            // trattamento non indicato: si controllano entrambe le valutazioni
+            const treatments = ASSESSMENT_CHECKLISTS[treatment] ? [treatment] : Object.keys(ASSESSMENT_CHECKLISTS);
+            const results = treatments.map(key => ({ key, label: ASSESSMENT_CHECKLISTS[key].label, result: assessmentStatus(patient, key) }));
+            const problems = results.filter(item => item.result.status !== 'ok');
             let text;
-            if (result.status === 'missing') text = `⚠️ Valutazione pre-trattamento per ${label} mancante: verificare le controindicazioni prima della seduta.`;
-            else if (result.status === 'incomplete') text = `⚠️ Valutazione per ${label} incompleta: ${result.missing.length} voci senza risposta.`;
-            else if (result.status === 'flagged') text = `⚠️ Controindicazioni da verificare (${label}): ${result.flagged.join('; ')}.`;
-            else text = `✓ Valutazione per ${label}${result.date ? ' del ' + formatShortDate(result.date) : ''}: nessuna controindicazione segnalata.`;
-            const ok = result.status === 'ok';
+            if (!problems.length) {
+                text = results.length === 1
+                    ? `✓ Valutazione per ${results[0].label}${results[0].result.date ? ' del ' + formatShortDate(results[0].result.date) : ''}: nessuna controindicazione segnalata.`
+                    : '✓ Valutazioni per Idrocolonterapia e Osteopatia: nessuna controindicazione segnalata.';
+            } else {
+                text = `⚠️ ${treatments.length > 1 ? 'Trattamento non indicato. ' : ''}${problems.map(item => assessmentProblemText(item.label, item.result)).join(' ')}`;
+            }
+            const ok = problems.length === 0;
             box.classList.remove('hidden');
             box.classList.toggle('bg-rose-50', !ok);
             box.classList.toggle('border-rose-300', !ok);
@@ -4076,6 +4130,7 @@
             for (const item of [status.lastVisit, status.nextAppointment]) {
                 if (!item) continue;
                 const ev = item.event;
+                if (MESSAGE_TREATMENT_LABELS[ev.extendedProps?.treatment]) return { treatment: ev.extendedProps.treatment, date: item.date, reason: 'appointment' };
                 const center = getEventCenter(ev);
                 for (const text of [ev.title, ev.extendedProps?.centerName, center?.service]) {
                     const found = detectTreatmentInText(text);
@@ -4116,6 +4171,7 @@
         }
         /** Trattamento di un singolo appuntamento (titolo, sede), altrimenti quello suggerito per il paziente. */
         function eventMessageTreatment(ev, patient) {
+            if (MESSAGE_TREATMENT_LABELS[ev?.extendedProps?.treatment]) return ev.extendedProps.treatment;
             const center = getEventCenter(ev);
             for (const text of [ev?.title, ev?.extendedProps?.centerName, center?.service]) {
                 const found = detectTreatmentInText(text);

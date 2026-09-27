@@ -6,6 +6,7 @@ let app;
 afterEach(() => app?.close());
 
 const IDRO_IDS = ['gravidanza', 'mici', 'diverticolite', 'emorroidi', 'chirurgia', 'ernia', 'cuore_reni', 'ipertensione', 'tumori', 'anemia', 'sanguinamento'];
+const OSTEO_IDS = ['trauma', 'febbre', 'osteoporosi', 'anticoagulanti', 'gravidanza', 'peso', 'dolore_notturno', 'neurologici', 'tumore'];
 const allNo = (ids) => Object.fromEntries(ids.map(id => [id, { answer: 'no', note: '' }]));
 
 async function loggedIn(patients) {
@@ -122,5 +123,94 @@ describe('avviso nel modulo appuntamento', () => {
         await app.submit('patient-form');
         expect(app.isHidden('studio-modal')).toBe(false);
         expect(app.text('studio-assessment-text')).toMatch(/^✓ Valutazione per Idrocolonterapia del /);
+    });
+});
+
+describe('scelta del trattamento nel modulo appuntamento', () => {
+    const bothOk = () => patient({ id: 'p1', name: 'Mario Rossi', phone: '333 1234567', assessments: {
+        idrocolonterapia: { date: '2030-03-01', items: allNo(IDRO_IDS) },
+        osteopatia: { date: '2030-03-02', items: { ...allNo(OSTEO_IDS), anticoagulanti: { answer: 'yes', note: '' } } }
+    } });
+    function openStudio(patientId = 'p1') {
+        app.window.openStudioModal();
+        app.setValue('studio-patient-select', patientId);
+        app.window.onPatientSelectChange();
+    }
+
+    it('se il trattamento non si capisce lo chiede e controlla entrambe le valutazioni', async () => {
+        await loggedIn();
+        openStudio();
+        expect(app.byId('studio-treatment').value).toBe('');
+        expect(app.text('studio-treatment-hint')).toBe('Indica il trattamento: servirà per la valutazione, il compenso e i promemoria.');
+        expect(app.text('studio-assessment-text')).toBe('⚠️ Trattamento non indicato. Valutazione pre-trattamento per Idrocolonterapia mancante: verificare le controindicazioni prima della seduta. Valutazione pre-trattamento per Osteopatia mancante: verificare le controindicazioni prima della seduta.');
+    });
+
+    it('con entrambe le schede compilate l\'avviso segue il trattamento scelto', async () => {
+        await loggedIn([bothOk()]);
+        openStudio();
+        expect(app.text('studio-assessment-text')).toBe('⚠️ Trattamento non indicato. Controindicazioni da verificare (Osteopatia): Terapia anticoagulante.');
+        app.setValue('studio-treatment', 'idrocolonterapia');
+        app.window.onStudioTreatmentChange();
+        expect(app.text('studio-assessment-text')).toBe('✓ Valutazione per Idrocolonterapia del 1 mar 2030: nessuna controindicazione segnalata.');
+        app.setValue('studio-treatment', 'osteopatia');
+        app.window.onStudioTreatmentChange();
+        expect(app.text('studio-assessment-text')).toBe('⚠️ Controindicazioni da verificare (Osteopatia): Terapia anticoagulante.');
+    });
+
+    it('la scelta a mano non viene cambiata da titolo o sede', async () => {
+        await loggedIn();
+        openStudio();
+        app.setValue('studio-treatment', 'idrocolonterapia');
+        app.window.onStudioTreatmentChange();
+        app.setValue('studio-title', 'Trattamento osteopatico');
+        app.window.updateStudioAssessmentWarning();
+        expect(app.byId('studio-treatment').value).toBe('idrocolonterapia');
+        app.setValue('studio-center-select', 'cms');
+        app.window.onStudioCenterChange();
+        expect(app.byId('studio-treatment').value).toBe('idrocolonterapia');
+    });
+
+    it('la sede propone il trattamento in automatico', async () => {
+        await loggedIn();
+        openStudio();
+        app.setValue('studio-center-select', 'cms');
+        app.window.onStudioCenterChange();
+        expect(app.byId('studio-treatment').value).toBe('idrocolonterapia');
+        expect(app.text('studio-treatment-hint')).toBe('Scelto in automatico dal titolo o dalla sede: puoi cambiarlo.');
+    });
+
+    it('il trattamento viene salvato, ricaricato e usato per il paziente e il promemoria', async () => {
+        await loggedIn([bothOk()]);
+        openStudio();
+        app.setValue('studio-treatment', 'idrocolonterapia');
+        app.window.onStudioTreatmentChange();
+        app.setValue('studio-date', '2030-03-05');
+        app.setValue('studio-time-start', '10:00');
+        app.window.onStartTimeChange();
+        await app.submit('studio-event-form');
+        const saved = app.mock.list(`${SHARED}/studio_events`)[0];
+        expect(saved.extendedProps.treatment).toBe('idrocolonterapia');
+
+        app.window.openStudioModal(app.state.events.find(e => e.id === saved.id));
+        expect(app.byId('studio-treatment').value).toBe('idrocolonterapia');
+        app.window.closeStudioModal();
+
+        // nuovo appuntamento: il trattamento abituale del paziente viene dall'appuntamento salvato
+        openStudio();
+        expect(app.byId('studio-treatment').value).toBe('idrocolonterapia');
+        expect(app.text('studio-treatment-hint')).toBe('Scelto in automatico in base agli appuntamenti del paziente: puoi cambiarlo.');
+        app.window.closeStudioModal();
+
+        app.window.openPatientsModal();
+        app.window.openPatientMessageModal('p1', { eventId: saved.id });
+        expect(app.byId('message-treatment-idrocolonterapia').getAttribute('aria-pressed')).toBe('true');
+    });
+
+    it('i calendari non clinici non mostrano la scelta del trattamento', async () => {
+        await loggedIn();
+        app.window.openStudioModal({ id: 'dentista', title: 'Dentista', start: '2030-03-05T09:00:00', end: '2030-03-05T10:00:00', extendedProps: { centerId: 'casa' } });
+        expect(app.byId('studio-center-select').value).toBe('casa');
+        expect(app.isHidden('studio-treatment-section')).toBe(true);
+        expect(app.isHidden('studio-assessment-warning')).toBe(true);
     });
 });

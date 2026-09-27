@@ -43,6 +43,11 @@ test('valutazione pre-trattamento: avviso nel modulo e compilazione della scheda
     await expect(page.locator('#studio-modal')).toBeVisible();
     await expect(warning).toContainText('Controindicazioni da verificare (Idrocolonterapia): Ernia addominale o inguinale.');
     await expect(page.locator('#studio-center-select')).toHaveValue('cms');
+    await expect(page.locator('#studio-treatment')).toHaveValue('idrocolonterapia');
+
+    // cambiando il trattamento l'avviso segue la valutazione corrispondente
+    await page.locator('#studio-treatment').selectOption('osteopatia');
+    await expect(warning).toContainText('Valutazione pre-trattamento per Osteopatia mancante');
 
     const saved = await firestore(page).get(`${SHARED}/patients_list/p1`);
     expect(saved.assessments.idrocolonterapia).toMatchObject({ verified: true });
