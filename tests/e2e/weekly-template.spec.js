@@ -6,6 +6,7 @@ const weekday = new Date(`${today}T12:00:00`).getDay();
 
 test.use({
     firebaseSeed: {
+        popupUser: { email: 'silviachine@gmail.com', uid: 'uid-silviachine@gmail.com' },
         docs: seedDocs({
             centers: [center({ id: 'cms', name: 'CMS - Carate Brianza', service: 'Idrocolonterapia', color: '#4a8fa8' })],
             events: [
@@ -55,7 +56,7 @@ test('imposta la settimana tipo, vede le fasce e l\'avviso nel modulo', async ({
     await expect(page.locator('#calendar-transfer-banner')).toBeHidden(); // 20 minuti bastano con soglia 15
 
     if (!isMobile(page)) {
-        await page.locator('#calendar').getByRole('button', { name: 'Settimana' }).click();
+        await page.locator('#calendar').getByRole('button', { name: 'Settimana', exact: true }).click();
         await expect(page.locator('#calendar .fc-bg-event').first()).toBeVisible();
     }
 

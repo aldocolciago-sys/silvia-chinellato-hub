@@ -107,7 +107,7 @@ test.describe('agenda', () => {
     test('cambia vista del calendario su desktop', async ({ page }) => {
         test.skip(isMobile(page), 'Su mobile la vista è fissa su agenda settimanale');
         await loginViaUi(page);
-        await page.getByRole('button', { name: 'Settimana' }).click();
+        await page.locator('#calendar').getByRole('button', { name: 'Settimana', exact: true }).click();
         await expect(page.locator('.fc-timeGridWeek-view')).toBeVisible();
         await page.getByRole('button', { name: 'Giorno' }).click();
         await expect(page.locator('.fc-timeGridDay-view')).toBeVisible();
