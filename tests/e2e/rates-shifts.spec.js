@@ -58,7 +58,7 @@ test('imposta tariffe e turni, poi il compenso si compila da solo', async ({ pag
     await page.locator('#studio-title').fill('Marco Colombo');
     await page.locator('#studio-date').fill(today);
     await page.getByRole('button', { name: 'Salva Appuntamento' }).click();
-    await expect(page.locator('#toast-message')).toHaveText('Appuntamento salvato con successo!');
+    await expect(page.locator('#studio-modal')).toBeHidden();
 
     // turno: 8-13 × 25 €/h = 125 €
     await openNewAppointment(page);
@@ -70,10 +70,10 @@ test('imposta tariffe e turni, poi il compenso si compila da solo', async ({ pag
     await page.locator('#studio-time-end').selectOption('13:00');
     await expect(page.locator('#studio-fee')).toHaveValue('125');
     await page.getByRole('button', { name: 'Salva Appuntamento' }).click();
-    await expect(page.locator('#toast-message')).toHaveText('Appuntamento salvato con successo!');
+    await expect(page.locator('#studio-modal')).toBeHidden();
 
-    const events = await firestore(page).list(`${SHARED}/studio_events`);
-    expect(events.map(e => e.extendedProps.fee).sort((a, b) => a - b)).toEqual([40, 125]);
+    // attende il salvataggio effettivo (il messaggio di conferma del primo salvataggio può essere ancora visibile)
+    await expect.poll(async () => (await firestore(page).list(`${SHARED}/studio_events`)).map(e => e.extendedProps.fee).sort((a, b) => a - b)).toEqual([40, 125]);
 
     // dashboard compensi con i turni
     if (isMobile(page)) {
