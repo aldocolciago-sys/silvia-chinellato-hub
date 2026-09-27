@@ -4,7 +4,7 @@ import { loadFunctions } from '../support/app-source.js';
 function financeFns(centers = []) {
     const appState = { centers, events: [], patients: [] };
     return { appState, ...loadFunctions(
-        ['normalizeManualRevenue', 'normalizeTaxProfile', 'financeEuro', 'isFinancialClinicalEvent', 'isNonClinicalEvent', 'getEventCenter', 'isShiftEvent', 'isShiftCenter'],
+        ['normalizeManualRevenue', 'normalizeTaxProfile', 'parseDayMonth', 'financeEuro', 'isFinancialClinicalEvent', 'isNonClinicalEvent', 'getEventCenter', 'isShiftEvent', 'isShiftCenter'],
         { appState }
     ) };
 }
@@ -31,8 +31,18 @@ describe('normalizeTaxProfile', () => {
     it('applica i valori predefiniti del regime forfettario', () => {
         expect(normalizeTaxProfile()).toEqual({
             id: 'default', previousYearRevenue: 0, profitabilityCoefficient: 78,
-            substituteTaxRate: 15, inpsRate: 26.07, advanceRate: 100, updatedAt: null
+            substituteTaxRate: 15, inpsRate: 26.07, advanceRate: 100, pensionFund: 'gestione_separata', customDeadlines: [], updatedAt: null
         });
+    });
+    it('tiene solo le scadenze personalizzate valide (al massimo 3)', () => {
+        const p = normalizeTaxProfile({ pensionFund: 'custom', customDeadlines: [
+            { label: ' Saldo ENPAPI ', day: '30/09', percent: '100' },
+            { label: 'Data errata', day: '31/02', percent: 50 },
+            { label: 'Senza percentuale', day: '10/10', percent: 0 },
+            { label: 'A', day: '1/3', percent: 10 }, { label: 'B', day: '2/3', percent: 10 }, { label: 'C', day: '3/3', percent: 10 }
+        ] });
+        expect(p.pensionFund).toBe('custom');
+        expect(p.customDeadlines).toEqual([{ label: 'Saldo ENPAPI', day: '30/09', percent: 100 }, { label: 'A', day: '1/3', percent: 10 }, { label: 'B', day: '2/3', percent: 10 }]);
     });
     it('converte stringhe numeriche', () => {
         const p = normalizeTaxProfile({ previousYearRevenue: '25000', profitabilityCoefficient: '67', substituteTaxRate: '5', inpsRate: '24', advanceRate: '0', updatedAt: 'x' });

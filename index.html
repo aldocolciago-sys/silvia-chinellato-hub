@@ -469,6 +469,14 @@
             <button onclick="scrollToTightTransfer()" class="px-3 py-1 bg-orange-700 text-white rounded-lg font-semibold hover:bg-orange-800 transition">Verifica</button>
         </div>
 
+        <div id="tax-deadline-banner" class="hidden bg-sky-50 border-b border-sky-200 px-4 py-2 flex items-center justify-between gap-3 text-xs text-sky-950 flex-shrink-0 z-20 shadow-xs">
+            <span id="tax-deadline-banner-text" class="font-bold"></span>
+            <div class="flex items-center gap-2 flex-shrink-0">
+                <button onclick="openTaxSchedule()" class="px-3 py-1 bg-sky-700 text-white rounded-lg font-semibold hover:bg-sky-800 transition">Dettagli</button>
+                <button onclick="dismissTaxDeadlineBanner()" aria-label="Nascondi promemoria scadenza" class="w-8 h-8 rounded-lg hover:bg-sky-100"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+        </div>
+
         <div class="bg-white/70 border-b border-nature-100 px-3 py-1 flex items-center gap-2 text-xs flex-shrink-0 overflow-x-auto no-scrollbar" id="header-centers-legend"></div>
 
         <main class="flex-1 bg-white/40 backdrop-blur-sm p-1.5 sm:p-3 overflow-hidden flex flex-col">
@@ -1059,10 +1067,27 @@
               <div><label class="block text-[10px] font-bold text-slate-500 mb-1">IMPOSTA SOSTITUTIVA (%)</label><select id="tax-substitute-rate" onchange="renderTaxSimulator()" class="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs"><option value="15">15% ordinaria</option><option value="5">5% nuova attività</option></select></div>
               <div><label class="block text-[10px] font-bold text-slate-500 mb-1">ALIQUOTA PREVIDENZIALE (%)</label><input type="number" min="0" max="100" step="0.01" id="tax-inps-rate" value="26.07" required oninput="renderTaxSimulator()" class="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs"></div>
               <div><label class="block text-[10px] font-bold text-slate-500 mb-1">ACCONTO IMPOSTA INDICATIVO (%)</label><input type="number" min="0" max="200" step="1" id="tax-advance-rate" value="100" required oninput="renderTaxSimulator()" class="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs"></div>
+              <div class="sm:col-span-2 lg:col-span-5 space-y-2 pt-2 border-t border-violet-100">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 items-end">
+                  <div><label for="tax-pension-fund" class="block text-[10px] font-bold text-slate-500 mb-1">CASSA PREVIDENZIALE (PER LO SCADENZIARIO)</label><select id="tax-pension-fund" onchange="onPensionFundChange()" class="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs"><option value="gestione_separata">INPS Gestione separata (scadenze come l'imposta)</option><option value="custom">ENPAPI / altra cassa (date personalizzate)</option></select></div>
+                  <p class="text-[10px] text-slate-600">Con la Gestione separata saldo e acconti dei contributi seguono le scadenze dell'imposta (30 giugno e 30 novembre, acconti 40% + 40%).</p>
+                </div>
+                <div id="tax-custom-deadlines" class="hidden space-y-2 p-3 bg-violet-50/60 border border-violet-100 rounded-xl">
+                  <p class="text-[10px] text-violet-900">Inserisci le scadenze indicate dalla cassa o dal commercialista: data (gg/mm) e percentuale dei contributi dell'anno precedente da versare.</p>
+                  <div class="grid grid-cols-[1fr_5.5rem_5rem] gap-2 text-[10px] font-bold text-slate-500"><span>Descrizione</span><span>Data (gg/mm)</span><span>% contributi</span></div>
+                  <div class="grid grid-cols-[1fr_5.5rem_5rem] gap-2"><input type="text" id="tax-custom-0-label" aria-label="Descrizione scadenza 1" placeholder="Es. Saldo contributi ENPAPI" class="px-3 py-2 bg-white border border-slate-200 rounded-lg text-xs"><input type="text" id="tax-custom-0-day" aria-label="Data scadenza 1 (gg/mm)" placeholder="gg/mm" maxlength="5" class="px-3 py-2 bg-white border border-slate-200 rounded-lg text-xs"><input type="number" min="0" max="100" step="0.01" id="tax-custom-0-percent" aria-label="Percentuale scadenza 1" class="px-3 py-2 bg-white border border-slate-200 rounded-lg text-xs"></div>
+                  <div class="grid grid-cols-[1fr_5.5rem_5rem] gap-2"><input type="text" id="tax-custom-1-label" aria-label="Descrizione scadenza 2" class="px-3 py-2 bg-white border border-slate-200 rounded-lg text-xs"><input type="text" id="tax-custom-1-day" aria-label="Data scadenza 2 (gg/mm)" placeholder="gg/mm" maxlength="5" class="px-3 py-2 bg-white border border-slate-200 rounded-lg text-xs"><input type="number" min="0" max="100" step="0.01" id="tax-custom-1-percent" aria-label="Percentuale scadenza 2" class="px-3 py-2 bg-white border border-slate-200 rounded-lg text-xs"></div>
+                  <div class="grid grid-cols-[1fr_5.5rem_5rem] gap-2"><input type="text" id="tax-custom-2-label" aria-label="Descrizione scadenza 3" class="px-3 py-2 bg-white border border-slate-200 rounded-lg text-xs"><input type="text" id="tax-custom-2-day" aria-label="Data scadenza 3 (gg/mm)" placeholder="gg/mm" maxlength="5" class="px-3 py-2 bg-white border border-slate-200 rounded-lg text-xs"><input type="number" min="0" max="100" step="0.01" id="tax-custom-2-percent" aria-label="Percentuale scadenza 3" class="px-3 py-2 bg-white border border-slate-200 rounded-lg text-xs"></div>
+                </div>
+              </div>
               <div class="sm:col-span-2 lg:col-span-5 flex justify-end"><button type="submit" class="px-4 py-2.5 bg-violet-700 hover:bg-violet-800 text-white font-bold rounded-xl text-xs"><i class="fa-solid fa-floppy-disk mr-1"></i>Salva profilo fiscale</button></div>
             </form>
             <div id="tax-simulator-kpis" class="grid grid-cols-2 lg:grid-cols-5 gap-3"></div>
             <div id="tax-simulator-detail" class="p-4 bg-white border border-violet-200 rounded-2xl text-xs space-y-2"></div>
+          </section>
+          <section id="tax-schedule-section" class="space-y-3 p-4 bg-sky-50/70 border border-sky-200 rounded-3xl">
+            <div><h4 id="tax-schedule-title" class="font-editorial text-lg font-bold italic text-sky-950"><i class="fa-solid fa-calendar-check mr-1"></i>Scadenze fiscali</h4><p class="text-[10px] text-sky-800">Importi stimati con il metodo storico a partire dal fatturato registrato: da verificare sempre con il commercialista. Il versamento di giugno si può rinviare al 30 luglio con la maggiorazione dello 0,40%.</p></div>
+            <div id="tax-schedule" class="space-y-2"></div>
           </section>
           <section class="space-y-3 p-4 bg-amber-50/70 border border-amber-200 rounded-3xl"><div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2"><div><h4 class="font-editorial text-lg font-bold italic text-amber-950"><i class="fa-solid fa-triangle-exclamation mr-1"></i>Appuntamenti clinici senza tariffa</h4><p class="text-[10px] text-amber-800">Appuntamenti dell'anno selezionato con compenso assente o pari a zero.</p></div><div class="flex items-center gap-2 flex-wrap"><span id="business-missing-fee-count" class="px-3 py-1.5 rounded-full bg-white border border-amber-200 text-xs font-bold text-amber-900"></span><button type="button" id="fill-missing-fees-btn" onclick="fillMissingFees()" class="hidden px-3 py-1.5 rounded-full bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold">Compila con le tariffe</button></div></div><div id="business-missing-fee-list" class="space-y-2"></div></section>
         </div>
@@ -1272,6 +1297,7 @@
             populateCenterDropdown();
             if (calendarInstance) calendarInstance.refetchEvents();
             checkCalendarConflicts();
+            updateTaxDeadlineBanner();
         }
 
         async function migrateCurrentUserDataToSharedOnce() {
@@ -1350,6 +1376,7 @@
             sharedUnsubscribers.push(onSnapshot(sharedDocument('tax_profile','default'), snapshot => {
                 appState.taxProfile = snapshot.exists() ? { id:'default', ...snapshot.data() } : null;
                 populateTaxProfileForm();
+                updateTaxDeadlineBanner();
                 if (!document.getElementById('business-dashboard-modal')?.classList.contains('hidden')) renderBusinessDashboard();
             }, err => console.error('Errore sincronizzazione profilo fiscale:', err)));
         }
@@ -1547,6 +1574,7 @@
             renderPatientsList();
             populatePatientDropdown();
             populateCenterDropdown();
+            updateTaxDeadlineBanner();
             setTimeout(() => {
                 initCalendar();
                 checkCalendarConflicts();
@@ -3828,8 +3856,184 @@
             },'Sì, elimina');
         };
 
+        // ---- Scadenziario fiscale (stime, metodo storico) ----
+        const TAX_ADVANCE_MIN = 51.65;
+        const TAX_ADVANCE_SINGLE_MAX = 257.52;
+        const TAX_REMINDER_DAYS = 15;
+        function parseDayMonth(value) {
+            const match = /^(\d{1,2})\/(\d{1,2})$/.exec(String(value || '').trim());
+            if (!match) return null;
+            const day = Number(match[1]), month = Number(match[2]);
+            if (month < 1 || month > 12 || day < 1 || day > new Date(2024, month, 0).getDate()) return null;
+            return { day, month };
+        }
+        /** Valori del profilo fiscale dal modulo, se presente, altrimenti dal profilo salvato. */
+        function readTaxProfileForm() {
+            const saved = appState.taxProfile || {};
+            const value = (id, fallback) => { const el = document.getElementById(id); return el ? el.value : fallback; };
+            const customDeadlines = [0, 1, 2].map(i => ({
+                label: value(`tax-custom-${i}-label`, saved.customDeadlines?.[i]?.label),
+                day: value(`tax-custom-${i}-day`, saved.customDeadlines?.[i]?.day),
+                percent: value(`tax-custom-${i}-percent`, saved.customDeadlines?.[i]?.percent)
+            }));
+            return {
+                previousYearRevenue: value('tax-previous-revenue', saved.previousYearRevenue),
+                profitabilityCoefficient: value('tax-profitability', saved.profitabilityCoefficient),
+                substituteTaxRate: value('tax-substitute-rate', saved.substituteTaxRate),
+                inpsRate: value('tax-inps-rate', saved.inpsRate),
+                advanceRate: value('tax-advance-rate', saved.advanceRate),
+                pensionFund: value('tax-pension-fund', saved.pensionFund),
+                customDeadlines
+            };
+        }
+        window.onPensionFundChange = function(rerender = true) {
+            document.getElementById('tax-custom-deadlines').classList.toggle('hidden', document.getElementById('tax-pension-fund').value !== 'custom');
+            if (rerender) renderTaxSimulator();
+        };
+        /** Contributi e imposta sostitutiva stimati per un anno di fatturato (come nel simulatore). */
+        function estimateTaxLiability(revenue, profile) {
+            const grossTaxable = Number(revenue || 0) * profile.profitabilityCoefficient / 100;
+            const contributions = grossTaxable * profile.inpsRate / 100;
+            const substituteTax = Math.max(0, grossTaxable - contributions) * profile.substituteTaxRate / 100;
+            return { contributions: roundEuro(contributions), substituteTax: roundEuro(substituteTax) };
+        }
+        /** Acconti dell'imposta (metodo storico, soggetti non ISA): 40% + 60%, unico a novembre sotto 257,52 €, nessuno sotto 51,65 €. */
+        function taxAdvancePlan(tax) {
+            const amount = Number(tax || 0);
+            if (amount <= TAX_ADVANCE_MIN) return { first: 0, second: 0 };
+            if (amount <= TAX_ADVANCE_SINGLE_MAX) return { first: 0, second: roundEuro(amount) };
+            return { first: roundEuro(amount * 0.4), second: roundEuro(amount * 0.6) };
+        }
+        /** Le scadenze che cadono di sabato o domenica slittano al lunedì. */
+        function businessDayOnOrAfter(year, month, day) {
+            const date = new Date(year, month - 1, day);
+            while (date.getDay() === 0 || date.getDay() === 6) date.setDate(date.getDate() + 1);
+            return localDayKey(date);
+        }
+        /** Fatturato registrato (appuntamenti + entrate manuali) per anno; undefined se non ci sono dati. */
+        function recordedRevenueForYear(year) {
+            const key = String(year);
+            const events = appState.events.filter(isFinancialClinicalEvent).filter(ev => String(ev.start || '').slice(0, 4) === key).reduce((sum, ev) => sum + Number(ev.extendedProps?.fee || 0), 0);
+            const manual = (appState.manualRevenues || []).map(normalizeManualRevenue).filter(item => item.date.slice(0, 4) === key && item.amount > 0).reduce((sum, item) => sum + item.amount, 0);
+            const total = roundEuro(events + manual);
+            return total > 0 ? total : undefined;
+        }
+        /** Fatturato degli anni che servono allo scadenziario dell'anno `year`: year-1 (saldo/acconti) e year-2 (acconti già versati). */
+        function revenueByYearForSchedule(year, profile) {
+            const map = {};
+            for (const y of [year - 2, year - 1]) map[y] = recordedRevenueForYear(y);
+            if (map[year - 1] === undefined && profile.previousYearRevenue > 0) map[year - 1] = profile.previousYearRevenue;
+            return map;
+        }
+        /**
+         * Versamenti dell'anno `year`: saldo dell'anno precedente e acconti dell'anno in corso.
+         * Restituisce { items: [{ date, label, kind, amount }], advancesKnown, missingRevenue }.
+         */
+        function buildTaxSchedule(year, profile, revenueByYear) {
+            const prev = year - 1;
+            if (revenueByYear[prev] === undefined) return { items: [], advancesKnown: false, missingRevenue: prev };
+            const current = estimateTaxLiability(revenueByYear[prev], profile);
+            const older = revenueByYear[year - 2] !== undefined ? estimateTaxLiability(revenueByYear[year - 2], profile) : null;
+            const items = [];
+            const june = businessDayOnOrAfter(year, 6, 30);
+            const november = businessDayOnOrAfter(year, 11, 30);
+            const paidTaxAdvances = older ? taxAdvancePlan(older.substituteTax) : { first: 0, second: 0 };
+            const taxAdvances = taxAdvancePlan(current.substituteTax);
+            items.push({ date: june, kind: 'tax', label: `Saldo imposta sostitutiva ${prev}`, amount: roundEuro(Math.max(0, current.substituteTax - paidTaxAdvances.first - paidTaxAdvances.second)) });
+            items.push({ date: june, kind: 'tax', label: `1° acconto imposta sostitutiva ${year} (40%)`, amount: taxAdvances.first });
+            items.push({ date: november, kind: 'tax', label: taxAdvances.first ? `2° acconto imposta sostitutiva ${year} (60%)` : `Acconto unico imposta sostitutiva ${year}`, amount: taxAdvances.second });
+            if (profile.pensionFund === 'custom') {
+                for (const deadline of profile.customDeadlines || []) {
+                    const parsed = parseDayMonth(deadline.day);
+                    if (!parsed) continue;
+                    items.push({ date: businessDayOnOrAfter(year, parsed.month, parsed.day), kind: 'contributions', label: deadline.label || 'Contributi cassa previdenziale', amount: roundEuro(current.contributions * deadline.percent / 100) });
+                }
+            } else {
+                const paidContributionAdvances = older ? roundEuro(older.contributions * 0.8) : 0;
+                items.push({ date: june, kind: 'contributions', label: `Saldo contributi Gestione separata ${prev}`, amount: roundEuro(Math.max(0, current.contributions - paidContributionAdvances)) });
+                items.push({ date: june, kind: 'contributions', label: `1° acconto contributi ${year} (40%)`, amount: roundEuro(current.contributions * 0.4) });
+                items.push({ date: november, kind: 'contributions', label: `2° acconto contributi ${year} (40%)`, amount: roundEuro(current.contributions * 0.4) });
+            }
+            return {
+                items: items.filter(item => item.amount > 0).sort((a, b) => a.date.localeCompare(b.date)),
+                advancesKnown: older !== null,
+                missingRevenue: null
+            };
+        }
+        /** Scadenze raggruppate per data, con il totale di ogni giorno. */
+        function groupTaxSchedule(items) {
+            const groups = [];
+            for (const item of items) {
+                let group = groups.find(g => g.date === item.date);
+                if (!group) { group = { date: item.date, items: [], total: 0 }; groups.push(group); }
+                group.items.push(item);
+                group.total = roundEuro(group.total + item.amount);
+            }
+            return groups;
+        }
+        function formatLongDate(key) {
+            return new Date(`${key}T12:00:00`).toLocaleDateString('it-IT', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+        }
+        function renderTaxSchedule(year, profile) {
+            const box = document.getElementById('tax-schedule');
+            if (!box) return;
+            document.getElementById('tax-schedule-title').innerHTML = `<i class="fa-solid fa-calendar-check mr-1"></i>Scadenze fiscali ${year}`;
+            const schedule = buildTaxSchedule(year, profile, revenueByYearForSchedule(year, profile));
+            if (schedule.missingRevenue) {
+                box.innerHTML = `<p class="p-3 bg-white border border-dashed border-sky-200 rounded-2xl text-xs text-slate-600">Nessun fatturato registrato per il ${schedule.missingRevenue}: inseriscilo nel profilo fiscale ("Fatturato anno precedente") o come entrata manuale per stimare le scadenze.</p>`;
+                return;
+            }
+            const groups = groupTaxSchedule(schedule.items);
+            const today = localDayKey(new Date());
+            box.innerHTML = (groups.length ? groups.map(group => `<div data-tax-deadline="${group.date}" class="p-3 sm:p-4 bg-white border ${group.date < today ? 'border-slate-200 opacity-70' : 'border-sky-200'} rounded-2xl">
+                    <div class="flex items-center justify-between gap-3"><strong class="text-sm text-sky-950 capitalize">${escapeHtml(formatLongDate(group.date))}${group.date < today ? ' <span class="text-[10px] font-semibold text-slate-500 normal-case">(passata)</span>' : ''}</strong><strong class="text-sm text-sky-950">${financeEuro(group.total)}</strong></div>
+                    <div class="mt-2 space-y-1">${group.items.map(item => `<div class="flex justify-between gap-3 text-xs text-slate-700"><span>${escapeHtml(item.label)}</span><span>${financeEuro(item.amount)}</span></div>`).join('')}</div>
+                </div>`).join('') : '<p class="p-3 bg-white border border-dashed border-sky-200 rounded-2xl text-xs text-slate-600">Nessun versamento stimato per quest\'anno.</p>')
+                + (schedule.advancesKnown ? '' : `<p class="text-[10px] text-sky-900">Senza fatturato registrato per il ${year - 2} non si conoscono gli acconti già versati: i saldi sono stimati per intero.</p>`)
+                + (profile.pensionFund === 'custom' && !(profile.customDeadlines || []).length ? '<p class="text-[10px] text-amber-900">Aggiungi nel profilo fiscale le scadenze della tua cassa previdenziale per vederle qui.</p>' : '');
+        }
+        /** Prossima scadenza entro `days` giorni (compreso oggi), con il totale stimato. */
+        function upcomingTaxDeadline(now = new Date(), days = TAX_REMINDER_DAYS) {
+            if (!appState.taxProfile) return null;
+            const profile = normalizeTaxProfile(appState.taxProfile);
+            const year = now.getFullYear();
+            const today = localDayKey(now);
+            const limit = localDayKey(new Date(now.getFullYear(), now.getMonth(), now.getDate() + days));
+            const groups = groupTaxSchedule(buildTaxSchedule(year, profile, revenueByYearForSchedule(year, profile)).items);
+            const next = groups.find(g => g.date >= today && g.date <= limit);
+            if (!next) return null;
+            const daysLeft = Math.round((new Date(`${next.date}T12:00:00`) - new Date(`${today}T12:00:00`)) / 86400000);
+            return { ...next, daysLeft };
+        }
+        function dismissedTaxBannerKey(date) { return `taxDeadlineDismissed:${date}`; }
+        window.updateTaxDeadlineBanner = function() {
+            const banner = document.getElementById('tax-deadline-banner');
+            if (!banner) return;
+            const next = appState.isLoggedIn ? upcomingTaxDeadline() : null;
+            let dismissed = false;
+            try { dismissed = Boolean(next && sessionStorage.getItem(dismissedTaxBannerKey(next.date))); } catch (err) { dismissed = false; }
+            if (!next || dismissed) { banner.classList.add('hidden'); return; }
+            const when = next.daysLeft === 0 ? 'oggi' : next.daysLeft === 1 ? 'domani' : `tra ${next.daysLeft} giorni`;
+            document.getElementById('tax-deadline-banner-text').textContent = `📅 Scadenza fiscale ${when} (${new Date(`${next.date}T12:00:00`).toLocaleDateString('it-IT', { day: 'numeric', month: 'long' })}): circa ${financeEuro(next.total)} da versare (stima da verificare con il commercialista).`;
+            banner.classList.remove('hidden');
+        };
+        window.dismissTaxDeadlineBanner = function() {
+            const next = upcomingTaxDeadline();
+            try { if (next) sessionStorage.setItem(dismissedTaxBannerKey(next.date), '1'); } catch (err) { /* archiviazione non disponibile */ }
+            document.getElementById('tax-deadline-banner').classList.add('hidden');
+        };
+        window.openTaxSchedule = function() {
+            document.getElementById('business-month').value = '';
+            openBusinessDashboard();
+            document.getElementById('tax-schedule-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        };
+
         function normalizeTaxProfile(profile = {}) {
-            return { id:'default', previousYearRevenue:Number(profile.previousYearRevenue||0), profitabilityCoefficient:Number(profile.profitabilityCoefficient||78), substituteTaxRate:Number(profile.substituteTaxRate||15), inpsRate:Number(profile.inpsRate||26.07), advanceRate:Number(profile.advanceRate??100), updatedAt:profile.updatedAt||null };
+            const customDeadlines = (Array.isArray(profile.customDeadlines) ? profile.customDeadlines : [])
+                .map(item => ({ label: String(item?.label || '').trim(), day: String(item?.day || '').trim(), percent: Number(item?.percent || 0) }))
+                .filter(item => parseDayMonth(item.day) && item.percent > 0)
+                .slice(0, 3);
+            return { id:'default', previousYearRevenue:Number(profile.previousYearRevenue||0), profitabilityCoefficient:Number(profile.profitabilityCoefficient||78), substituteTaxRate:Number(profile.substituteTaxRate||15), inpsRate:Number(profile.inpsRate||26.07), advanceRate:Number(profile.advanceRate??100), pensionFund: profile.pensionFund === 'custom' ? 'custom' : 'gestione_separata', customDeadlines, updatedAt:profile.updatedAt||null };
         }
         window.populateTaxProfileForm = function() {
             const form=document.getElementById('tax-profile-form');if(!form)return;
@@ -3839,15 +4043,20 @@
             document.getElementById('tax-substitute-rate').value=String(p.substituteTaxRate);
             document.getElementById('tax-inps-rate').value=p.inpsRate;
             document.getElementById('tax-advance-rate').value=p.advanceRate;
+            document.getElementById('tax-pension-fund').value=p.pensionFund;
+            for(let i=0;i<3;i++){const item=p.customDeadlines[i]||{};document.getElementById(`tax-custom-${i}-label`).value=item.label||'';document.getElementById(`tax-custom-${i}-day`).value=item.day||'';document.getElementById(`tax-custom-${i}-percent`).value=item.percent||'';}
+            onPensionFundChange(false);
             const status=document.getElementById('tax-profile-status');
             status.textContent=p.updatedAt?'Profilo salvato':'Profilo da salvare';
         };
         window.handleTaxProfileSubmit = async function(event) {
             event.preventDefault();
             if(!db||!appState.isLoggedIn||!isAuthorizedFirebaseUser()){showToast('Accesso autorizzato necessario.');return;}
-            const profile=normalizeTaxProfile({previousYearRevenue:document.getElementById('tax-previous-revenue').value,profitabilityCoefficient:document.getElementById('tax-profitability').value,substituteTaxRate:document.getElementById('tax-substitute-rate').value,inpsRate:document.getElementById('tax-inps-rate').value,advanceRate:document.getElementById('tax-advance-rate').value,updatedAt:new Date().toISOString()});
+            const invalidDay=[0,1,2].find(i=>{const day=document.getElementById(`tax-custom-${i}-day`).value.trim();return day&&!parseDayMonth(day);});
+            if(document.getElementById('tax-pension-fund').value==='custom'&&invalidDay!==undefined){showToast(`Scadenza ${invalidDay+1}: scrivi la data come gg/mm (es. 30/09).`);return;}
+            const profile=normalizeTaxProfile({...readTaxProfileForm(),updatedAt:new Date().toISOString()});
             if(profile.profitabilityCoefficient<0||profile.profitabilityCoefficient>100||profile.substituteTaxRate<0||profile.substituteTaxRate>100||profile.inpsRate<0||profile.inpsRate>100){showToast('Controlla le aliquote inserite.');return;}
-            try{await setDoc(sharedDocument('tax_profile','default'),profile,{merge:false});appState.taxProfile=profile;populateTaxProfileForm();renderBusinessDashboard();showToast('Profilo fiscale salvato.');}catch(err){console.error('Errore salvataggio profilo fiscale:',err);showToast('Errore: profilo fiscale non salvato.');}
+            try{await setDoc(sharedDocument('tax_profile','default'),profile,{merge:false});appState.taxProfile=profile;populateTaxProfileForm();renderBusinessDashboard();updateTaxDeadlineBanner();showToast('Profilo fiscale salvato.');}catch(err){console.error('Errore salvataggio profilo fiscale:',err);showToast('Errore: profilo fiscale non salvato.');}
         };
         window.renderTaxSimulator = function(fatturatoOverride = null) {
             const target=document.getElementById('tax-simulator-kpis');if(!target)return;
@@ -3856,7 +4065,7 @@
             const eventRevenue=financialEvents.reduce((sum,ev)=>sum+Number(ev.extendedProps?.fee||0),0);
             const manualRevenue=(appState.manualRevenues||[]).map(normalizeManualRevenue).filter(item=>item.date.slice(0,4)===year&&item.amount>0).reduce((sum,item)=>sum+item.amount,0);
             const revenue=fatturatoOverride===null?eventRevenue+manualRevenue:Number(fatturatoOverride||0);
-            const p=normalizeTaxProfile({previousYearRevenue:document.getElementById('tax-previous-revenue')?.value??appState.taxProfile?.previousYearRevenue,profitabilityCoefficient:document.getElementById('tax-profitability')?.value??appState.taxProfile?.profitabilityCoefficient,substituteTaxRate:document.getElementById('tax-substitute-rate')?.value??appState.taxProfile?.substituteTaxRate,inpsRate:document.getElementById('tax-inps-rate')?.value??appState.taxProfile?.inpsRate,advanceRate:document.getElementById('tax-advance-rate')?.value??appState.taxProfile?.advanceRate});
+            const p=normalizeTaxProfile(readTaxProfileForm());
             const grossTaxable=revenue*p.profitabilityCoefficient/100;
             const contributions=grossTaxable*p.inpsRate/100;
             const substituteBase=Math.max(0,grossTaxable-contributions);
@@ -3870,6 +4079,7 @@
             target.innerHTML=[['Fatturato '+year,financeEuro(revenue),'fa-euro-sign'],['Contributi '+year,financeEuro(contributions),'fa-shield-heart'],['Imposta '+year,financeEuro(substituteTax),'fa-landmark'],['Acconto imposta '+nextYear,financeEuro(indicativeAdvance),'fa-forward'],['Totale da accantonare',financeEuro(nextYearCashNeed),'fa-piggy-bank']].map(k=>`<div class="p-3 bg-white border border-violet-200 rounded-2xl"><i class="fa-solid ${k[2]} text-violet-700"></i><p class="text-[10px] uppercase text-slate-500 mt-1">${k[0]}</p><strong class="text-base">${k[1]}</strong></div>`).join('');
             const tone=reserveRate<=25?'emerald':reserveRate<=35?'amber':'rose';
             document.getElementById('tax-simulator-detail').innerHTML=`<div class="grid grid-cols-1 lg:grid-cols-2 gap-3"><section class="p-4 bg-violet-50 border border-violet-200 rounded-2xl"><p class="text-[10px] uppercase font-bold text-violet-700">Debito stimato ${year}</p><div class="mt-2 space-y-2"><div class="flex justify-between gap-3"><span>Contributi previdenziali ${year}</span><b>${financeEuro(contributions)}</b></div><div class="flex justify-between gap-3"><span>Imposta sostitutiva ${year}</span><b>${financeEuro(substituteTax)}</b></div><div class="flex justify-between gap-3 pt-2 border-t border-violet-200 text-violet-950"><strong>Totale competenza ${year}</strong><strong>${financeEuro(currentLiability)}</strong></div></div></section><section class="p-4 bg-sky-50 border border-sky-200 rounded-2xl"><p class="text-[10px] uppercase font-bold text-sky-700">Anticipo sull'anno ${nextYear}</p><div class="mt-2 space-y-2"><div class="flex justify-between gap-3"><span>Acconto imposta ${nextYear}</span><b>${financeEuro(indicativeAdvance)}</b></div><p class="text-[10px] text-sky-800">Calcolato applicando il ${p.advanceRate.toFixed(0)}% all'imposta stimata ${year}.</p></div></section></div><div class="mt-3 p-4 bg-white border border-violet-200 rounded-2xl"><div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2"><div><strong class="text-violet-950">Totale prudenziale da accantonare</strong><p class="text-[10px] text-slate-500">Debito stimato ${year} più acconto imposta ${nextYear}.</p></div><div class="text-right"><strong class="block text-lg text-violet-950">${financeEuro(nextYearCashNeed)}</strong><span class="inline-block mt-1 px-3 py-1 rounded-full bg-${tone}-100 text-${tone}-800 font-bold">${reserveRate.toFixed(1).replace('.',',')}% del fatturato</span></div></div><div class="grid grid-cols-1 sm:grid-cols-3 gap-2 pt-3 mt-3 border-t border-violet-100"><p><b>Reddito forfettario:</b> ${financeEuro(grossTaxable)}</p><p><b>Base imposta dopo contributi:</b> ${financeEuro(substituteBase)}</p><p><b>Confronto anno precedente:</b> ${priorDelta>=0?'+':''}${financeEuro(priorDelta)}</p></div></div>`;
+            renderTaxSchedule(Number(year), p);
         };
 
         let financeReturnContext = null;
