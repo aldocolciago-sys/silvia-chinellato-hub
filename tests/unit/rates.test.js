@@ -6,7 +6,8 @@ function rateFns(state = {}) {
     return loadFunctions(
         ['defaultFeeForEvent', 'eventTreatment', 'ratesForCenter', 'eventDurationHours', 'roundEuro', 'isShiftCenter', 'isShiftEvent',
             'isNonClinicalEvent', 'getEventCenter', 'detectTreatmentInText', 'normalizePersonName'],
-        { appState }
+        { appState },
+        { consts: ['MESSAGE_TREATMENT_LABELS'] }
     );
 }
 
@@ -43,6 +44,13 @@ describe('defaultFeeForEvent', () => {
         expect(defaultFeeForEvent(ev('misto', 'Osteopatia - Anna'))).toBe(55);
         expect(defaultFeeForEvent(ev('misto', 'Idrocolonterapia - Anna'))).toBe(40);
         expect(defaultFeeForEvent(ev('misto', 'Anna Rossi'))).toBe(0); // trattamento ambiguo e tariffe diverse
+    });
+
+    it('il trattamento scelto nel modulo prevale sul titolo', () => {
+        const { defaultFeeForEvent } = rateFns({ centers });
+        const withTreatment = (title, treatment) => ({ ...ev('misto', title), extendedProps: { centerId: 'misto', treatment } });
+        expect(defaultFeeForEvent(withTreatment('Anna Rossi', 'osteopatia'))).toBe(55);
+        expect(defaultFeeForEvent(withTreatment('Osteopatia - Anna', 'idrocolonterapia'))).toBe(40);
     });
 
     it('usa l’unica tariffa della sede se il trattamento non si capisce', () => {
