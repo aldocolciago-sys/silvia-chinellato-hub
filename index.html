@@ -420,6 +420,9 @@
                 <button onclick="openCentersModal()" class="w-7 h-7 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl transition flex items-center justify-center border border-slate-200 shadow-xs" title="Gestisci Poliambulatori">
                     <i class="fa-solid fa-hospital text-[10px]"></i>
                 </button>
+                <button onclick="openAgendaSettingsModal()" class="w-7 h-7 bg-orange-50 hover:bg-orange-100 text-orange-800 rounded-xl transition flex items-center justify-center border border-orange-200 shadow-xs" title="Settimana tipo e spostamenti">
+                    <i class="fa-solid fa-calendar-week text-[10px]"></i>
+                </button>
                 <button onclick="openTreatmentsAdminModal()" class="w-7 h-7 bg-nature-50 hover:bg-nature-100 text-nature-800 rounded-xl transition flex items-center justify-center border border-slate-200 shadow-xs" title="Gestisci Trattamenti">
                     <i class="fa-solid fa-hand-holding-medical text-[10px]"></i>
                 </button>
@@ -458,6 +461,11 @@
             <button onclick="scrollToConflict()" class="px-3 py-1 bg-rose-600 text-white rounded-lg font-semibold hover:bg-rose-700 transition">Verifica</button>
         </div>
 
+        <div id="calendar-transfer-banner" class="hidden bg-orange-50 border-b border-orange-200 px-4 py-2 flex items-center justify-between gap-3 text-xs text-orange-900 flex-shrink-0 z-20 shadow-xs">
+            <span id="transfer-banner-text" class="font-bold">⏱ Spostamenti stretti tra sedi diverse.</span>
+            <button onclick="scrollToTightTransfer()" class="px-3 py-1 bg-orange-700 text-white rounded-lg font-semibold hover:bg-orange-800 transition">Verifica</button>
+        </div>
+
         <div class="bg-white/70 border-b border-nature-100 px-3 py-1 flex items-center gap-2 text-xs flex-shrink-0 overflow-x-auto no-scrollbar" id="header-centers-legend"></div>
 
         <main class="flex-1 bg-white/40 backdrop-blur-sm p-1.5 sm:p-3 overflow-hidden flex flex-col">
@@ -481,6 +489,7 @@
             </div>
             <div class="mobile-menu-grid">
                 <button type="button" onclick="mobileOpenAdmin(openCentersModal)"><i class="fa-solid fa-hospital"></i>Poliambulatori</button>
+                <button type="button" onclick="mobileOpenAdmin(openAgendaSettingsModal)"><i class="fa-solid fa-calendar-week"></i>Settimana tipo</button>
                 <button type="button" onclick="mobileOpenAdmin(openTreatmentsAdminModal)"><i class="fa-solid fa-hand-holding-medical"></i>Trattamenti</button>
                 <button type="button" onclick="mobileOpenAdmin(openNewsAdminModal)"><i class="fa-solid fa-bullhorn"></i>News e offerte</button>
                 <button type="button" onclick="mobileOpenAdmin(openPrepAdminModal)"><i class="fa-solid fa-book-medical"></i>Preparazione</button>
@@ -565,7 +574,7 @@
 
                 <div class="space-y-1">
                     <label for="studio-date" class="text-[11px] font-bold text-slate-600">Data Appuntamento *</label>
-                    <input type="date" id="studio-date" required class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-xs">
+                    <input type="date" id="studio-date" required onchange="updateStudioTemplateHint()" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-xs">
                 </div>
 
                 <div class="grid grid-cols-2 gap-3">
@@ -577,11 +586,13 @@
                     </div>
                     <div class="space-y-1">
                         <label for="studio-time-end" class="text-[11px] font-bold text-slate-600">Ora Fine *</label>
-                        <select id="studio-time-end" required onchange="suggestStudioFee()" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-xs">
+                        <select id="studio-time-end" required onchange="suggestStudioFee(); updateStudioTemplateHint()" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-xs">
                             <option value="">Fine...</option>
                         </select>
                     </div>
                 </div>
+
+                <p id="studio-template-hint" role="status" class="hidden text-[11px] font-semibold text-amber-900 bg-amber-50 border border-amber-200 rounded-2xl px-3.5 py-2.5"></p>
 
                 <div id="live-patient-notes-container" class="space-y-2 hidden bg-amber-50/60 p-3.5 rounded-2xl border border-amber-200">
                     <div class="flex items-center justify-between gap-2">
@@ -726,6 +737,38 @@
             <div id="sync-modal-footer" class="px-6 py-4 border-t border-slate-100 bg-white flex justify-end hidden">
                 <button type="button" onclick="closeSyncReportModal()" class="px-6 py-2.5 bg-water-700 hover:bg-water-800 text-white font-semibold rounded-2xl text-xs transition">Ho capito</button>
             </div>
+        </div>
+    </div>
+
+    <!-- AGENDA SETTINGS MODAL (SETTIMANA TIPO) -->
+    <div id="agenda-settings-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-md hidden z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-2xl overflow-hidden flex flex-col max-h-[90vh]">
+            <div class="px-5 sm:px-6 py-4 sm:py-5 border-b border-orange-100 flex items-center justify-between bg-orange-50/50">
+                <div class="flex items-center gap-3">
+                    <div class="w-9 h-9 rounded-2xl bg-orange-100 text-orange-800 flex items-center justify-center"><i class="fa-solid fa-calendar-week text-sm"></i></div>
+                    <h3 class="font-editorial text-base sm:text-lg font-bold text-slate-900 italic">Settimana tipo e spostamenti</h3>
+                </div>
+                <button aria-label="Chiudi" type="button" onclick="closeAgendaSettingsModal()" class="text-slate-400 hover:text-slate-600 w-8 h-8 rounded-full flex items-center justify-center hover:bg-slate-200/60 transition"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <form id="agenda-settings-form" onsubmit="saveAgendaSettings(event)" class="p-4 sm:p-6 overflow-y-auto space-y-5 flex-1">
+                <section class="space-y-3">
+                    <div>
+                        <h4 class="font-editorial font-bold text-sm text-slate-900 italic">Settimana tipo</h4>
+                        <p class="text-[11px] text-slate-600">Le fasce compaiono come sfondo colorato nella vista settimana e giorno. Se prendi un appuntamento in una fascia di un'altra sede, il modulo te lo segnala.</p>
+                    </div>
+                    <div id="weekly-template-list" class="space-y-2"></div>
+                    <button type="button" onclick="addTemplateSlot()" class="w-full sm:w-auto px-4 py-2.5 bg-orange-50 hover:bg-orange-100 text-orange-900 border border-orange-200 rounded-2xl text-xs font-semibold"><i class="fa-solid fa-plus mr-1"></i>Aggiungi fascia</button>
+                </section>
+                <section class="space-y-2 p-4 bg-slate-50 rounded-3xl border border-slate-200">
+                    <label for="agenda-travel-minutes" class="block font-editorial font-bold text-sm text-slate-900 italic">Tempo minimo per spostarti tra due sedi (minuti)</label>
+                    <input type="number" id="agenda-travel-minutes" min="0" max="240" step="5" class="w-full sm:w-40 px-4 py-2.5 bg-white border border-slate-200 rounded-2xl text-xs">
+                    <p class="text-[11px] text-slate-600">Due appuntamenti consecutivi in sedi diverse con meno tempo in mezzo vengono segnalati in arancione (⏱). Metti 0 per disattivare l'avviso. I calendari personali non contano.</p>
+                </section>
+                <div class="flex justify-end gap-2">
+                    <button type="button" onclick="closeAgendaSettingsModal()" class="px-4 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-2xl text-xs">Annulla</button>
+                    <button type="submit" class="px-5 py-3 bg-nature-600 hover:bg-nature-700 text-white font-semibold rounded-2xl text-xs">Salva settimana tipo</button>
+                </div>
+            </form>
         </div>
     </div>
 
@@ -1161,7 +1204,8 @@
             manualRevenues: [],
             taxProfile: null,
             messagingSettings: null,
-            financeSettings: null
+            financeSettings: null,
+            agendaSettings: null
         };
 
         let db = null;
@@ -1248,6 +1292,11 @@
                 appState.financeSettings = snapshot.exists() ? snapshot.data() : null;
                 populatePrivateRatesForm();
             }, err => console.error('Errore sincronizzazione tariffe:', err)));
+            sharedUnsubscribers.push(onSnapshot(sharedDocument('settings','agenda'), snapshot => {
+                appState.agendaSettings = snapshot.exists() ? snapshot.data() : null;
+                if (calendarInstance) calendarInstance.refetchEvents();
+                checkCalendarConflicts();
+            }, err => console.error('Errore sincronizzazione settimana tipo:', err)));
             sharedUnsubscribers.push(onSnapshot(sharedDocument('settings','messaging'), snapshot => {
                 appState.messagingSettings = snapshot.exists() ? snapshot.data() : null;
                 if (!document.getElementById('patient-message-modal')?.classList.contains('hidden')) renderMessageTypeList();
@@ -1398,6 +1447,8 @@
                     const financeSnap = await getDoc(sharedDocument('settings','finance'));
                     appState.financeSettings = financeSnap.exists() ? financeSnap.data() : null;
                     populatePrivateRatesForm();
+                    const agendaSnap = await getDoc(sharedDocument('settings','agenda'));
+                    appState.agendaSettings = agendaSnap.exists() ? agendaSnap.data() : null;
                     await runMigrationSafely('archivio sedute', migrateEventClinicalDataToArchiveOnce);
                     await runMigrationSafely('note cliniche legacy', migrateLegacyClinicalBlocksFromPatientNotesOnce);
                     startSharedRealtimeSync();
@@ -1674,6 +1725,7 @@
                 endSel.value = startVal;
             }
             if (typeof suggestStudioFee === 'function') suggestStudioFee();
+            if (typeof updateStudioTemplateHint === 'function') updateStudioTemplateHint();
         }
 
         function getEventCenter(eventData) {
@@ -1833,6 +1885,7 @@
                 if (!nonClinical && editEv.id && editEv.id.startsWith('ical_') && !editEv.extendedProps?.patientId) showPatientMatchSuggestions(editEv);
             }
             if (!(Number(document.getElementById('studio-fee').value) > 0)) suggestStudioFee();
+            updateStudioTemplateHint();
 
             document.getElementById('studio-modal').classList.remove('hidden');
         }
@@ -1876,6 +1929,7 @@
             const center = appState.centers.find(c => String(c.id) === String(centerId));
             setAppointmentClinicalSectionsVisibility(center?.isNonClinicalCalendar === true, isShiftCenter(center));
             suggestStudioFee();
+            updateStudioTemplateHint();
         };
 
         window.closeStudioModal = function() {
@@ -4199,7 +4253,8 @@
                 treatments: structuredClone(appState.treatments || []), news: structuredClone(appState.news || []),
                 preparations: structuredClone(appState.preparations || []), manualRevenues: structuredClone(appState.manualRevenues || []), taxProfile: appState.taxProfile ? structuredClone(appState.taxProfile) : null,
                 messagingSettings: appState.messagingSettings ? structuredClone(appState.messagingSettings) : null,
-                financeSettings: appState.financeSettings ? structuredClone(appState.financeSettings) : null
+                financeSettings: appState.financeSettings ? structuredClone(appState.financeSettings) : null,
+                agendaSettings: appState.agendaSettings ? structuredClone(appState.agendaSettings) : null
             };
             return { schema: BACKUP_SCHEMA, schemaVersion: BACKUP_SCHEMA_VERSION, appBuild: 'v31', createdAt, exportedBy: appState.currentUserEmail || null, counts: backupCounts(data), data };
         }
@@ -4225,6 +4280,8 @@
             if (payload.data.taxProfile !== null && typeof payload.data.taxProfile !== 'object') throw new Error('Sezione taxProfile non valida.');
             if (typeof payload.data.messagingSettings === 'undefined') payload.data.messagingSettings = null;
             if (typeof payload.data.financeSettings === 'undefined') payload.data.financeSettings = null;
+            if (typeof payload.data.agendaSettings === 'undefined') payload.data.agendaSettings = null;
+            if (payload.data.agendaSettings !== null && (typeof payload.data.agendaSettings !== 'object' || Array.isArray(payload.data.agendaSettings))) throw new Error('Sezione agendaSettings non valida.');
             if (payload.data.financeSettings !== null && (typeof payload.data.financeSettings !== 'object' || Array.isArray(payload.data.financeSettings))) throw new Error('Sezione financeSettings non valida.');
             if (payload.data.messagingSettings !== null && (typeof payload.data.messagingSettings !== 'object' || Array.isArray(payload.data.messagingSettings))) throw new Error('Sezione messagingSettings non valida.');
             const idSections=['patients','events','clinicalSessions','centers','treatments','news','preparations','manualRevenues'];
@@ -4259,6 +4316,7 @@
                 if(data.taxProfile) await setDoc(sharedDocument('tax_profile','default'),{...data.taxProfile,id:'default'},{merge:false});
                 if(data.messagingSettings) await setDoc(sharedDocument('settings','messaging'),data.messagingSettings,{merge:false});
                 if(data.financeSettings) await setDoc(sharedDocument('settings','finance'),data.financeSettings,{merge:false});
+                if(data.agendaSettings) await setDoc(sharedDocument('settings','agenda'),data.agendaSettings,{merge:false});
                 localStorage.setItem('lastRestoreAt',new Date().toISOString()); pendingBackupData=null; await loadAllDataFromFirestore(); progress.textContent='Ripristino completato con successo.'; renderBackupDashboard(); if(calendarInstance){calendarInstance.refetchEvents();calendarInstance.updateSize();} showToast('Ripristino completato.');
             } catch(err){startSharedRealtimeSync();progress.textContent='Ripristino interrotto: '+err.message;throw err;}
         }
@@ -4273,6 +4331,204 @@
                 if(changed){await setDoc(sharedDocument('centers_list',center.id),center,{merge:true});await setDoc(doc(db,'artifacts',appId,'public','data','centers_list',center.id),center,{merge:true});}
             }
         }
+
+        // ---- Settimana tipo e tempi di spostamento ----
+        const WEEKDAY_NAMES = ['domenica', 'lunedì', 'martedì', 'mercoledì', 'giovedì', 'venerdì', 'sabato'];
+        const WEEKDAY_ORDER = [1, 2, 3, 4, 5, 6, 0];
+        const DEFAULT_TRAVEL_MINUTES = 45;
+        const PRIVATE_STUDIO_KEY = 'studio';
+        function timeToMinutes(value) {
+            const match = /^(\d{1,2}):(\d{2})/.exec(String(value || ''));
+            return match ? Number(match[1]) * 60 + Number(match[2]) : NaN;
+        }
+        function isValidTemplateSlot(slot) {
+            const weekday = Number(slot?.weekday);
+            return Boolean(slot) && Number.isInteger(weekday) && weekday >= 0 && weekday <= 6 && timeToMinutes(slot.from) < timeToMinutes(slot.to);
+        }
+        function agendaSettings() {
+            const settings = appState.agendaSettings || {};
+            const travel = Number(settings.travelMinutes);
+            return {
+                weeklyTemplate: Array.isArray(settings.weeklyTemplate) ? settings.weeklyTemplate.filter(isValidTemplateSlot) : [],
+                travelMinutes: settings.travelMinutes !== undefined && settings.travelMinutes !== null && settings.travelMinutes !== '' && Number.isFinite(travel) && travel >= 0 ? travel : DEFAULT_TRAVEL_MINUTES
+            };
+        }
+        function findCenterById(centerId) {
+            return appState.centers.find(center => String(center.id) === String(centerId)) || null;
+        }
+        function templateLocationName(centerId) {
+            if (!centerId || centerId === PRIVATE_STUDIO_KEY) return 'Studio privato';
+            return findCenterById(centerId)?.name || 'Sede eliminata';
+        }
+        function templateLocationColor(centerId) {
+            if (!centerId || centerId === PRIVATE_STUDIO_KEY) return '#3f5e4e';
+            return safeColor(findCenterById(centerId)?.color) || '#3f5e4e';
+        }
+        /** Luogo fisico dell'appuntamento; null per i calendari personali, che non contano negli spostamenti. */
+        function eventLocationKey(eventData) {
+            const centerId = eventData?.extendedProps?.centerId;
+            if (!centerId) return eventData?.extendedProps?.isNonClinical === true ? null : PRIVATE_STUDIO_KEY;
+            const center = findCenterById(centerId);
+            if (center && center.isNonClinicalCalendar === true && !isShiftCenter(center)) return null;
+            return String(centerId);
+        }
+        function localDayKey(date) {
+            return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+        }
+        /** Appuntamenti consecutivi nello stesso giorno in sedi diverse con meno di `travelMinutes` minuti per spostarsi. */
+        function findTightTransfers(events, travelMinutes) {
+            const limit = Number(travelMinutes);
+            if (!(limit > 0)) return [];
+            const items = (events || []).map(ev => ({ ev, key: eventLocationKey(ev), start: new Date(ev?.start), end: new Date(ev?.end || ev?.start) }))
+                .filter(item => item.key && !item.ev.allDay && item.ev.extendedProps?.paymentStatus !== 'cancelled' && !Number.isNaN(item.start.getTime()) && !Number.isNaN(item.end.getTime()))
+                .sort((a, b) => a.start - b.start || a.end - b.end);
+            const transfers = [];
+            let previous = null;
+            for (const item of items) {
+                if (previous && localDayKey(previous.start) !== localDayKey(item.start)) previous = null;
+                if (previous && previous.end <= item.start && previous.key !== item.key) {
+                    const gapMinutes = Math.round((item.start - previous.end) / 60000);
+                    if (gapMinutes < limit) transfers.push({ from: previous.ev, to: item.ev, gapMinutes });
+                }
+                if (!previous || item.end >= previous.end) previous = item;
+            }
+            return transfers;
+        }
+        /** Fasce della settimana tipo come eventi di sfondo di FullCalendar nell'intervallo richiesto. */
+        function templateBackgroundEvents(rangeStart, rangeEnd) {
+            const { weeklyTemplate } = agendaSettings();
+            const start = rangeStart instanceof Date ? rangeStart : new Date(rangeStart);
+            const end = rangeEnd instanceof Date ? rangeEnd : new Date(rangeEnd);
+            if (!weeklyTemplate.length || Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) return [];
+            const out = [];
+            const day = new Date(start.getFullYear(), start.getMonth(), start.getDate());
+            for (let guard = 0; day < end && guard < 400; guard++) {
+                const key = localDayKey(day);
+                weeklyTemplate.forEach((slot, index) => {
+                    if (Number(slot.weekday) !== day.getDay()) return;
+                    out.push({
+                        id: `template_${key}_${index}`,
+                        groupId: 'weekly-template',
+                        title: templateLocationName(slot.centerId),
+                        start: `${key}T${slot.from}:00`,
+                        end: `${key}T${slot.to}:00`,
+                        display: 'background',
+                        backgroundColor: templateLocationColor(slot.centerId),
+                        extendedProps: { isTemplate: true, centerId: slot.centerId || null }
+                    });
+                });
+                day.setDate(day.getDate() + 1);
+            }
+            return out;
+        }
+        /** Fascia della settimana tipo di un'altra sede che si sovrappone all'appuntamento (null se è tutto coerente). */
+        function templateMismatch(draft) {
+            const { weeklyTemplate } = agendaSettings();
+            const key = eventLocationKey(draft);
+            const start = new Date(draft?.start);
+            if (!weeklyTemplate.length || !key || Number.isNaN(start.getTime())) return null;
+            const end = new Date(draft?.end || draft?.start);
+            const from = start.getHours() * 60 + start.getMinutes();
+            const to = Math.max(from + 1, end.getHours() * 60 + end.getMinutes());
+            const overlapping = weeklyTemplate.filter(slot => Number(slot.weekday) === start.getDay() && timeToMinutes(slot.from) < to && from < timeToMinutes(slot.to));
+            if (!overlapping.length || overlapping.some(slot => (slot.centerId || PRIVATE_STUDIO_KEY) === key)) return null;
+            return overlapping[0];
+        }
+        function templateMismatchMessage(draft) {
+            const slot = templateMismatch(draft);
+            if (!slot) return '';
+            return `Di solito il ${WEEKDAY_NAMES[Number(slot.weekday)]} dalle ${slot.from} alle ${slot.to} sei presso ${templateLocationName(slot.centerId)}: controlla la sede.`;
+        }
+        window.updateStudioTemplateHint = function() {
+            const hint = document.getElementById('studio-template-hint');
+            if (!hint) return;
+            const message = templateMismatchMessage(studioFormDraftEvent());
+            hint.textContent = message ? `🗓 ${message}` : '';
+            hint.classList.toggle('hidden', !message);
+        };
+
+        let agendaDraftSlots = [];
+        function templateLocationOptions(selected) {
+            const locations = [{ id: PRIVATE_STUDIO_KEY, name: 'Studio privato' }, ...appState.centers.filter(c => c.isNonClinicalCalendar !== true || isShiftCenter(c)).map(c => ({ id: String(c.id), name: c.name }))];
+            if (selected && !locations.some(l => l.id === selected)) locations.push({ id: selected, name: templateLocationName(selected) });
+            return locations.map(l => `<option value="${escapeHtml(l.id)}"${l.id === selected ? ' selected' : ''}>${escapeHtml(l.name)}</option>`).join('');
+        }
+        function readAgendaDraftFromForm() {
+            agendaDraftSlots = [...document.querySelectorAll('#weekly-template-list [data-slot-index]')].map(row => ({
+                weekday: Number(row.querySelector('[data-field="weekday"]').value),
+                centerId: row.querySelector('[data-field="centerId"]').value || PRIVATE_STUDIO_KEY,
+                from: row.querySelector('[data-field="from"]').value,
+                to: row.querySelector('[data-field="to"]').value
+            }));
+        }
+        function renderAgendaTemplateRows() {
+            const list = document.getElementById('weekly-template-list');
+            if (!list) return;
+            if (!agendaDraftSlots.length) {
+                list.innerHTML = '<p class="text-xs text-slate-500 italic p-3 bg-slate-50 rounded-2xl border border-dashed border-slate-200">Nessuna fascia: aggiungi i giorni e gli orari in cui lavori di solito in ogni sede.</p>';
+                return;
+            }
+            list.innerHTML = agendaDraftSlots.map((slot, index) => `
+                <div data-slot-index="${index}" class="grid grid-cols-2 sm:grid-cols-[1fr_1.4fr_auto_auto_auto] gap-2 items-end p-3 bg-white border border-slate-200 rounded-2xl">
+                    <div class="space-y-1"><label for="slot-weekday-${index}" class="block text-[10px] font-bold text-slate-600">Giorno</label><select id="slot-weekday-${index}" data-field="weekday" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs">${WEEKDAY_ORDER.map(d => `<option value="${d}"${Number(slot.weekday) === d ? ' selected' : ''}>${WEEKDAY_NAMES[d]}</option>`).join('')}</select></div>
+                    <div class="space-y-1"><label for="slot-center-${index}" class="block text-[10px] font-bold text-slate-600">Sede</label><select id="slot-center-${index}" data-field="centerId" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs">${templateLocationOptions(slot.centerId || PRIVATE_STUDIO_KEY)}</select></div>
+                    <div class="space-y-1"><label for="slot-from-${index}" class="block text-[10px] font-bold text-slate-600">Dalle</label><input type="time" step="900" id="slot-from-${index}" data-field="from" value="${escapeHtml(slot.from || '')}" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs"></div>
+                    <div class="space-y-1"><label for="slot-to-${index}" class="block text-[10px] font-bold text-slate-600">Alle</label><input type="time" step="900" id="slot-to-${index}" data-field="to" value="${escapeHtml(slot.to || '')}" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs"></div>
+                    <button type="button" onclick="removeTemplateSlot(${index})" aria-label="Rimuovi fascia" class="col-span-2 sm:col-span-1 px-3 py-2 bg-rose-50 hover:bg-rose-100 text-rose-700 rounded-xl text-xs font-semibold"><i class="fa-solid fa-trash-can"></i><span class="sm:hidden ml-1">Rimuovi</span></button>
+                </div>`).join('');
+        }
+        window.openAgendaSettingsModal = function() {
+            const settings = agendaSettings();
+            agendaDraftSlots = settings.weeklyTemplate.map(slot => ({ ...slot }));
+            document.getElementById('agenda-travel-minutes').value = String(settings.travelMinutes);
+            renderAgendaTemplateRows();
+            document.getElementById('agenda-settings-modal').classList.remove('hidden');
+            updateModalState();
+        };
+        window.closeAgendaSettingsModal = function() {
+            document.getElementById('agenda-settings-modal').classList.add('hidden');
+            updateModalState();
+        };
+        window.addTemplateSlot = function() {
+            readAgendaDraftFromForm();
+            const last = agendaDraftSlots[agendaDraftSlots.length - 1];
+            agendaDraftSlots.push({ weekday: last ? WEEKDAY_ORDER[(WEEKDAY_ORDER.indexOf(Number(last.weekday)) + 1) % 7] : 1, centerId: last?.centerId || PRIVATE_STUDIO_KEY, from: '09:00', to: '13:00' });
+            renderAgendaTemplateRows();
+        };
+        window.removeTemplateSlot = function(index) {
+            readAgendaDraftFromForm();
+            agendaDraftSlots.splice(index, 1);
+            renderAgendaTemplateRows();
+        };
+        window.saveAgendaSettings = async function(event) {
+            event?.preventDefault?.();
+            readAgendaDraftFromForm();
+            const invalid = agendaDraftSlots.findIndex(slot => !isValidTemplateSlot(slot));
+            if (invalid >= 0) { showToast(`Fascia ${invalid + 1}: l'ora di fine deve essere dopo l'inizio.`); return; }
+            const travel = Number(document.getElementById('agenda-travel-minutes').value);
+            if (!Number.isFinite(travel) || travel < 0 || travel > 240) { showToast('Tempo di spostamento non valido (da 0 a 240 minuti).'); return; }
+            const weeklyTemplate = agendaDraftSlots
+                .map(slot => ({ weekday: Number(slot.weekday), centerId: slot.centerId || PRIVATE_STUDIO_KEY, from: slot.from, to: slot.to }))
+                .sort((a, b) => WEEKDAY_ORDER.indexOf(a.weekday) - WEEKDAY_ORDER.indexOf(b.weekday) || timeToMinutes(a.from) - timeToMinutes(b.from));
+            const settings = { weeklyTemplate, travelMinutes: Math.round(travel), updatedAt: new Date().toISOString() };
+            try {
+                await setDoc(sharedDocument('settings', 'agenda'), settings);
+                appState.agendaSettings = settings;
+                if (calendarInstance) calendarInstance.refetchEvents();
+                checkCalendarConflicts();
+                closeAgendaSettingsModal();
+                showToast('Settimana tipo salvata.');
+            } catch (err) {
+                console.error('Errore salvataggio settimana tipo:', err);
+                showToast('Errore: settimana tipo non salvata.');
+            }
+        };
+        window.scrollToTightTransfer = function() {
+            const first = findTightTransfers(appState.events, agendaSettings().travelMinutes)[0];
+            if (!first || !calendarInstance) return;
+            calendarInstance.gotoDate(new Date(first.to.start));
+            calendarInstance.changeView(window.innerWidth < 768 ? 'listWeek' : 'timeGridDay');
+        };
 
         function checkCalendarConflicts() {
             let conflictCount = 0;
@@ -4300,6 +4556,16 @@
                 if (bannerText) bannerText.textContent = `Attenzione: Rilevate ${conflictCount} sovrapposizioni orarie in agenda!`;
             } else {
                 if (conflictBanner) conflictBanner.classList.add('hidden');
+            }
+
+            const travelMinutes = agendaSettings().travelMinutes;
+            const tightCount = findTightTransfers(events, travelMinutes).length;
+            const transferBanner = document.getElementById('calendar-transfer-banner');
+            if (transferBanner) {
+                transferBanner.classList.toggle('hidden', tightCount === 0);
+                document.getElementById('transfer-banner-text').textContent = tightCount === 1
+                    ? `⏱ 1 spostamento stretto: meno di ${travelMinutes} minuti tra due sedi diverse.`
+                    : `⏱ ${tightCount} spostamenti stretti: meno di ${travelMinutes} minuti tra due sedi diverse.`;
             }
         }
 
@@ -4338,6 +4604,7 @@
                 locale: 'it',
                 events: function(fetchInfo, successCallback) {
                     const events = appState.events;
+                    const tightTargets = new Set(findTightTransfers(events, agendaSettings().travelMinutes).map(t => t.to.id));
                     const mappedEvents = events.map((ev, index) => {
                         const center = appState.centers.find(c => c.id === ev.extendedProps?.centerId);
                         let color = center ? (center.color || '#3f5e4e') : (ev.backgroundColor || '#3f5e4e');
@@ -4358,20 +4625,22 @@
 
                         const isDetached=ev.extendedProps?.detachedFromExternal===true;
                         const nonClinical=isNonClinicalEvent(ev);
-                        let titlePrefix=hasConflict?'⚠️ [CONFLITTO] ':(nonClinical?'🏠 [NON CLINICO] ':(isDetached?'📌 [MANTENUTO] ':''));
-                        let cleanTitle=(ev.title||'').replace('⚠️ [CONFLITTO] ','').replace('🏠 [NON CLINICO] ','').replace('📌 [MANTENUTO] ','');
+                        const tightTransfer=!hasConflict && tightTargets.has(ev.id);
+                        let titlePrefix=hasConflict?'⚠️ [CONFLITTO] ':(tightTransfer?'⏱ [SPOSTAMENTO] ':(nonClinical?'🏠 [NON CLINICO] ':(isDetached?'📌 [MANTENUTO] ':'')));
+                        let cleanTitle=(ev.title||'').replace('⚠️ [CONFLITTO] ','').replace('⏱ [SPOSTAMENTO] ','').replace('🏠 [NON CLINICO] ','').replace('📌 [MANTENUTO] ','');
                         return { 
                             ...ev, 
                             title: titlePrefix + cleanTitle,
                             backgroundColor: color, 
-                            borderColor: hasConflict ? '#dc2626' : color, 
-                            borderWidth: hasConflict ? '3px' : '1px',
+                            borderColor: hasConflict ? '#dc2626' : (tightTransfer ? '#ea580c' : color), 
+                            borderWidth: hasConflict || tightTransfer ? '3px' : '1px',
                             textColor: '#ffffff'
                         };
                     });
-                    successCallback(mappedEvents);
+                    successCallback([...mappedEvents, ...templateBackgroundEvents(fetchInfo?.start, fetchInfo?.end)]);
                 },
                 eventClick: function(info) {
+                    if (info.event.display === 'background' || info.event.extendedProps?.isTemplate) return;
                     let clickedEventId = info.event.id;
                     let originalEvent = appState.events.find(e => e.id === clickedEventId);
                     if (originalEvent) {
@@ -4379,7 +4648,7 @@
                     } else {
                         openStudioModal({
                             id: info.event.id,
-                            title: info.event.title.replace('⚠️ [CONFLITTO] ', '').replace('📌 [MANTENUTO] ', '').replace('🏠 [NON CLINICO] ', ''),
+                            title: info.event.title.replace('⚠️ [CONFLITTO] ', '').replace('⏱ [SPOSTAMENTO] ', '').replace('📌 [MANTENUTO] ', '').replace('🏠 [NON CLINICO] ', ''),
                             start: info.event.start?.toISOString(),
                             end: info.event.end?.toISOString(),
                             extendedProps: info.event.extendedProps
