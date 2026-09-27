@@ -528,7 +528,7 @@
                 <div id="external-detached-banner" class="hidden p-3.5 bg-amber-50 border border-amber-300 rounded-2xl text-amber-950"><div class="flex items-start gap-2.5"><i class="fa-solid fa-thumbtack mt-0.5 text-amber-700"></i><div class="space-y-1"><p class="text-xs font-bold">Appuntamento mantenuto manualmente</p><p class="text-[11px] leading-relaxed">Questo appuntamento è stato cancellato dal calendario originale del poliambulatorio, ma è stato mantenuto nella tua agenda personale.</p><p id="external-detached-date" class="text-[10px] font-semibold text-amber-800"></p></div></div></div>
                 <div class="space-y-1">
                     <label for="studio-center-select" class="text-[11px] font-bold text-slate-600">Sede / Poliambulatorio</label>
-                    <select id="studio-center-select" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-2xl text-xs">
+                    <select id="studio-center-select" onchange="onStudioCenterChange()" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-2xl text-xs">
                         <option value="">Studio Privato (Default)</option>
                     </select>
                 </div>
@@ -577,7 +577,7 @@
                     </div>
                     <div class="space-y-1">
                         <label for="studio-time-end" class="text-[11px] font-bold text-slate-600">Ora Fine *</label>
-                        <select id="studio-time-end" required class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-xs">
+                        <select id="studio-time-end" required onchange="suggestStudioFee()" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-xs">
                             <option value="">Fine...</option>
                         </select>
                     </div>
@@ -595,7 +595,8 @@
                 <div id="studio-finance-section" class="grid grid-cols-1 sm:grid-cols-2 gap-3 bg-emerald-50/60 p-3.5 rounded-2xl border border-emerald-200">
                     <div class="space-y-1">
                         <label for="studio-fee" class="text-[11px] font-bold text-emerald-900">Compenso (€)</label>
-                        <input type="number" id="studio-fee" min="0" step="0.01" placeholder="0,00" class="w-full px-4 py-3 bg-white border border-emerald-200 rounded-2xl text-xs">
+                        <input type="number" id="studio-fee" min="0" step="0.01" placeholder="0,00" oninput="this.dataset.auto=''" class="w-full px-4 py-3 bg-white border border-emerald-200 rounded-2xl text-xs">
+                        <p id="studio-fee-hint" class="hidden text-[10px] text-emerald-800">Compilato dalla tariffa della sede: puoi modificarlo.</p>
                     </div>
                     <div class="space-y-1">
                         <label for="studio-payment-status" class="text-[11px] font-bold text-emerald-900">Stato pagamento</label>
@@ -783,6 +784,17 @@
                 <button aria-label="Chiudi" type="button" onclick="closeCentersModal()" class="text-slate-400 hover:text-slate-600 w-8 h-8 rounded-full flex items-center justify-center hover:bg-slate-200/60 transition"><i class="fa-solid fa-xmark"></i></button>
             </div>
             <div class="p-4 sm:p-6 overflow-y-auto space-y-6 flex-1">
+                <form id="private-rates-form" onsubmit="savePrivateRates(event)" class="p-4 sm:p-5 bg-white rounded-3xl border border-nature-100 space-y-3">
+                    <div>
+                        <h4 class="font-editorial font-bold text-sm text-nature-900 italic">Studio privato – compenso per seduta</h4>
+                        <p class="text-[10px] text-slate-600">Usato per compilare in automatico il compenso degli appuntamenti in studio.</p>
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 items-end">
+                        <div class="space-y-1"><label for="private-rate-osteopatia" class="block text-[10px] font-bold text-slate-600">Osteopatia (€)</label><input type="number" min="0" step="0.01" id="private-rate-osteopatia" placeholder="0,00" class="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-2xl text-xs focus:outline-none focus:ring-2 focus:ring-nature-500"></div>
+                        <div class="space-y-1"><label for="private-rate-idrocolonterapia" class="block text-[10px] font-bold text-slate-600">Idrocolonterapia (€)</label><input type="number" min="0" step="0.01" id="private-rate-idrocolonterapia" placeholder="0,00" class="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-2xl text-xs focus:outline-none focus:ring-2 focus:ring-nature-500"></div>
+                        <button type="submit" class="px-4 py-2.5 bg-nature-600 hover:bg-nature-700 text-white font-semibold rounded-2xl text-xs">Salva tariffe studio</button>
+                    </div>
+                </form>
                 <form id="center-form" class="bg-nature-50/40 p-4 sm:p-5 rounded-3xl border border-nature-100 space-y-3" onsubmit="handleCenterSubmit(event)">
                     <input type="hidden" id="center-edit-id">
                     <h4 id="center-form-title" class="font-editorial font-bold text-xs sm:text-sm text-nature-900 uppercase tracking-wide italic">Aggiungi Nuovo Poliambulatorio</h4>
@@ -832,6 +844,18 @@
                         <div class="sm:col-span-3 p-3 bg-sky-50 border border-sky-200 rounded-2xl flex items-start gap-3">
                             <input type="checkbox" id="new-center-non-clinical" onchange="applyNonClinicalCenterFormState()" class="w-4 h-4 mt-0.5 text-sky-600 rounded focus:ring-sky-500">
                             <label for="new-center-non-clinical" class="text-xs text-sky-950"><strong class="block">Calendario non Clinico</strong><span class="text-[10px] text-sky-800">Gli eventi restano in agenda e generano conflitti, ma non entrano in pazienti, storico, richiami, archivio clinico, compensi o appuntamenti senza paziente.</span></label>
+                        </div>
+                        <div id="center-shift-block" class="hidden sm:col-span-3 p-3 bg-slate-50 border border-slate-200 rounded-2xl space-y-2">
+                            <div class="flex items-start gap-3">
+                                <input type="checkbox" id="new-center-shift" onchange="applyNonClinicalCenterFormState()" class="w-4 h-4 mt-0.5 rounded">
+                                <label for="new-center-shift" class="text-xs text-slate-800"><strong class="block">Turni retribuiti a ore</strong><span class="text-[10px] text-slate-600">Es. Medicina dello Sport: il compenso è durata del turno × tariffa oraria ed entra nei compensi e nel simulatore fiscale.</span></label>
+                            </div>
+                            <div id="center-hourly-rate-row" class="hidden space-y-1"><label for="new-center-hourly-rate" class="block text-[10px] font-bold text-slate-600">Tariffa oraria (€)</label><input type="number" min="0" step="0.01" id="new-center-hourly-rate" placeholder="0,00" class="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-2xl text-xs focus:outline-none focus:ring-2 focus:ring-nature-500"></div>
+                        </div>
+                        <div id="center-rates-block" class="sm:col-span-3 grid grid-cols-1 sm:grid-cols-2 gap-3 p-3 bg-emerald-50 border border-emerald-200 rounded-2xl">
+                            <p class="sm:col-span-2 text-[11px] font-bold text-emerald-900">Compenso per seduta (compilato in automatico negli appuntamenti di questa sede)</p>
+                            <div class="space-y-1"><label for="new-center-rate-idrocolonterapia" class="block text-[10px] font-bold text-slate-600">Idrocolonterapia (€)</label><input type="number" min="0" step="0.01" id="new-center-rate-idrocolonterapia" placeholder="0,00" class="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-2xl text-xs focus:outline-none focus:ring-2 focus:ring-nature-500"></div>
+                            <div class="space-y-1"><label for="new-center-rate-osteopatia" class="block text-[10px] font-bold text-slate-600">Osteopatia (€)</label><input type="number" min="0" step="0.01" id="new-center-rate-osteopatia" placeholder="0,00" class="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-2xl text-xs focus:outline-none focus:ring-2 focus:ring-nature-500"></div>
                         </div>
                     </div>
                     <div class="flex justify-end gap-2 pt-1">
@@ -943,6 +967,7 @@
           </div>
           <section class="space-y-3"><div><h4 class="font-editorial text-lg font-bold italic text-slate-900">Riepilogo mensile</h4><p class="text-[10px] text-slate-500">Calcolato dagli appuntamenti clinici del mese selezionato.</p></div><div id="business-kpis" class="grid grid-cols-2 lg:grid-cols-4 gap-3"></div></section>
           <div class="bg-slate-50 rounded-3xl border border-slate-200 overflow-hidden"><div class="px-4 py-3 font-bold text-sm text-slate-700">Dettaglio mensile per poliambulatorio</div><div id="business-by-center" class="overflow-x-auto"></div></div>
+          <section id="business-shifts-section" class="hidden space-y-3 p-4 bg-slate-50 border border-slate-200 rounded-3xl"><div><h4 class="font-editorial text-lg font-bold italic text-slate-900"><i class="fa-solid fa-user-nurse mr-1"></i>Turni retribuiti</h4><p class="text-[10px] text-slate-600">Ore e compensi dei turni a ore (es. Medicina dello Sport), inclusi nel fatturato.</p></div><div id="business-shifts" class="overflow-x-auto"></div></section>
           <section class="space-y-3 p-4 bg-indigo-50/60 border border-indigo-200 rounded-3xl"><div><h4 class="font-editorial text-lg font-bold italic text-indigo-950">Totale annuale</h4><p class="text-[10px] text-indigo-800">Riepilogo dell'anno selezionato, senza includere calendari non clinici o appuntamenti annullati.</p></div><div id="business-year-kpis" class="grid grid-cols-2 lg:grid-cols-5 gap-3"></div><div class="bg-white rounded-2xl border border-indigo-100 overflow-hidden"><div class="px-4 py-3 font-bold text-sm text-indigo-900 bg-indigo-50">Dettaglio annuale per poliambulatorio</div><div id="business-year-by-center" class="overflow-x-auto"></div></div></section>
           <section class="space-y-4 p-4 bg-emerald-50/70 border border-emerald-200 rounded-3xl">
             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2"><div><h4 class="font-editorial text-lg font-bold italic text-emerald-950"><i class="fa-solid fa-file-invoice-dollar mr-1"></i>Entrate manuali</h4><p class="text-[10px] text-emerald-800">Entrate fatturate non registrate tramite appuntamenti. Sono incluse nei totali dell'anno selezionato.</p></div><span id="manual-revenue-year-total" class="px-3 py-1.5 rounded-full bg-white border border-emerald-200 text-xs font-bold text-emerald-900"></span></div>
@@ -970,7 +995,7 @@
             <div id="tax-simulator-kpis" class="grid grid-cols-2 lg:grid-cols-5 gap-3"></div>
             <div id="tax-simulator-detail" class="p-4 bg-white border border-violet-200 rounded-2xl text-xs space-y-2"></div>
           </section>
-          <section class="space-y-3 p-4 bg-amber-50/70 border border-amber-200 rounded-3xl"><div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2"><div><h4 class="font-editorial text-lg font-bold italic text-amber-950"><i class="fa-solid fa-triangle-exclamation mr-1"></i>Appuntamenti clinici senza tariffa</h4><p class="text-[10px] text-amber-800">Appuntamenti dell'anno selezionato con compenso assente o pari a zero.</p></div><span id="business-missing-fee-count" class="px-3 py-1.5 rounded-full bg-white border border-amber-200 text-xs font-bold text-amber-900"></span></div><div id="business-missing-fee-list" class="space-y-2"></div></section>
+          <section class="space-y-3 p-4 bg-amber-50/70 border border-amber-200 rounded-3xl"><div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2"><div><h4 class="font-editorial text-lg font-bold italic text-amber-950"><i class="fa-solid fa-triangle-exclamation mr-1"></i>Appuntamenti clinici senza tariffa</h4><p class="text-[10px] text-amber-800">Appuntamenti dell'anno selezionato con compenso assente o pari a zero.</p></div><div class="flex items-center gap-2 flex-wrap"><span id="business-missing-fee-count" class="px-3 py-1.5 rounded-full bg-white border border-amber-200 text-xs font-bold text-amber-900"></span><button type="button" id="fill-missing-fees-btn" onclick="fillMissingFees()" class="hidden px-3 py-1.5 rounded-full bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold">Compila con le tariffe</button></div></div><div id="business-missing-fee-list" class="space-y-2"></div></section>
         </div>
       </div>
     </div>
@@ -1135,7 +1160,8 @@
             clinicalSessions: [],
             manualRevenues: [],
             taxProfile: null,
-            messagingSettings: null
+            messagingSettings: null,
+            financeSettings: null
         };
 
         let db = null;
@@ -1218,6 +1244,10 @@
             }, err => {
                 console.error('Errore sincronizzazione entrate manuali:', err);
             }));
+            sharedUnsubscribers.push(onSnapshot(sharedDocument('settings','finance'), snapshot => {
+                appState.financeSettings = snapshot.exists() ? snapshot.data() : null;
+                populatePrivateRatesForm();
+            }, err => console.error('Errore sincronizzazione tariffe:', err)));
             sharedUnsubscribers.push(onSnapshot(sharedDocument('settings','messaging'), snapshot => {
                 appState.messagingSettings = snapshot.exists() ? snapshot.data() : null;
                 if (!document.getElementById('patient-message-modal')?.classList.contains('hidden')) renderMessageTypeList();
@@ -1365,6 +1395,9 @@
                     appState.taxProfile = taxProfileSnap.exists() ? { id:'default', ...taxProfileSnap.data() } : null;
                     const messagingSnap = await getDoc(sharedDocument('settings','messaging'));
                     appState.messagingSettings = messagingSnap.exists() ? messagingSnap.data() : null;
+                    const financeSnap = await getDoc(sharedDocument('settings','finance'));
+                    appState.financeSettings = financeSnap.exists() ? financeSnap.data() : null;
+                    populatePrivateRatesForm();
                     await runMigrationSafely('archivio sedute', migrateEventClinicalDataToArchiveOnce);
                     await runMigrationSafely('note cliniche legacy', migrateLegacyClinicalBlocksFromPatientNotesOnce);
                     startSharedRealtimeSync();
@@ -1640,6 +1673,7 @@
             if (!found) {
                 endSel.value = startVal;
             }
+            if (typeof suggestStudioFee === 'function') suggestStudioFee();
         }
 
         function getEventCenter(eventData) {
@@ -1651,10 +1685,54 @@
         function isNonClinicalEvent(eventData) {
             return eventData?.extendedProps?.isNonClinical === true || getEventCenter(eventData)?.isNonClinicalCalendar === true;
         }
-        function setAppointmentClinicalSectionsVisibility(nonClinical) {
+        /** Sede a turni retribuiti a ore (es. Medicina dello Sport): niente pazienti, ma entra nei compensi. */
+        function isShiftCenter(center) {
+            return center?.isNonClinicalCalendar === true && center?.isShiftCalendar === true;
+        }
+        function isShiftEvent(eventData) {
+            return isShiftCenter(getEventCenter(eventData));
+        }
+        function roundEuro(value) {
+            return Math.round(Number(value || 0) * 100) / 100;
+        }
+        function eventDurationHours(eventData) {
+            const start = new Date(eventData?.start).getTime();
+            const end = new Date(eventData?.end).getTime();
+            if (Number.isNaN(start) || Number.isNaN(end) || end <= start) return 0;
+            return Math.round(((end - start) / 3600000) * 100) / 100;
+        }
+        /** Trattamento dell'appuntamento: dal titolo, poi dal servizio e dal nome della sede. */
+        function eventTreatment(eventData, center = getEventCenter(eventData)) {
+            for (const text of [eventData?.title, center?.service, eventData?.extendedProps?.centerName, center?.name]) {
+                const found = detectTreatmentInText(text);
+                if (found) return found;
+            }
+            return null;
+        }
+        function ratesForCenter(center) {
+            const source = center ? { osteopatia: center.rateOsteopatia, idrocolonterapia: center.rateIdrocolonterapia } : (appState.financeSettings?.privateRates || {});
+            return { osteopatia: Number(source.osteopatia || 0), idrocolonterapia: Number(source.idrocolonterapia || 0) };
+        }
+        /**
+         * Compenso predefinito di un appuntamento:
+         * - sede a turni: durata × tariffa oraria;
+         * - sede clinica o studio privato: tariffa del trattamento (se il trattamento non si capisce e la sede ha una sola tariffa, usa quella);
+         * - calendario personale: 0.
+         */
+        function defaultFeeForEvent(eventData) {
+            const center = getEventCenter(eventData);
+            if (isShiftCenter(center)) return roundEuro(eventDurationHours(eventData) * Number(center.hourlyRate || 0));
+            if (isNonClinicalEvent(eventData)) return 0;
+            const rates = ratesForCenter(center);
+            const treatment = eventTreatment(eventData, center);
+            if (treatment && rates[treatment] > 0) return roundEuro(rates[treatment]);
+            const distinct = [...new Set(Object.values(rates).filter(v => v > 0))];
+            return distinct.length === 1 ? roundEuro(distinct[0]) : 0;
+        }
+        function setAppointmentClinicalSectionsVisibility(nonClinical, shift = false) {
             document.getElementById('non-clinical-event-banner')?.classList.toggle('hidden', !nonClinical);
             document.getElementById('studio-patient-section')?.classList.toggle('hidden', nonClinical);
-            document.getElementById('studio-finance-section')?.classList.toggle('hidden', nonClinical);
+            document.getElementById('studio-finance-section')?.classList.toggle('hidden', nonClinical && !shift);
             document.getElementById('studio-clinical-section')?.classList.toggle('hidden', nonClinical);
             if (nonClinical) {
                 document.getElementById('studio-patient-select').value = '';
@@ -1694,6 +1772,8 @@
             document.getElementById('studio-date').value = today;
             document.getElementById('studio-time-start').value = '09:00';
             document.getElementById('studio-fee').value = '';
+            document.getElementById('studio-fee').dataset.auto = '';
+            document.getElementById('studio-fee-hint').classList.add('hidden');
             document.getElementById('studio-payment-status').value = 'paid';
             document.getElementById('studio-payment-method').value = 'cash';
             document.getElementById('studio-clinical-note').value = '';
@@ -1749,12 +1829,54 @@
 
                 document.getElementById('studio-delete-btn').classList.remove('hidden');
                 const nonClinical = isNonClinicalEvent(editEv);
-                setAppointmentClinicalSectionsVisibility(nonClinical);
+                setAppointmentClinicalSectionsVisibility(nonClinical, isShiftEvent(editEv));
                 if (!nonClinical && editEv.id && editEv.id.startsWith('ical_') && !editEv.extendedProps?.patientId) showPatientMatchSuggestions(editEv);
             }
+            if (!(Number(document.getElementById('studio-fee').value) > 0)) suggestStudioFee();
 
             document.getElementById('studio-modal').classList.remove('hidden');
         }
+
+        /** Evento "in bozza" costruito dai campi del modulo appuntamento. */
+        function studioFormDraftEvent() {
+            const date = document.getElementById('studio-date').value;
+            const startH = document.getElementById('studio-time-start').value;
+            const endH = document.getElementById('studio-time-end').value;
+            return {
+                title: document.getElementById('studio-title').value,
+                start: date && startH ? `${date}T${startH}:00` : null,
+                end: date && endH ? `${date}T${endH}:00` : null,
+                extendedProps: { centerId: document.getElementById('studio-center-select').value || null }
+            };
+        }
+        /** Compila il compenso con la tariffa della sede, senza mai sovrascrivere un valore inserito a mano. */
+        window.suggestStudioFee = function() {
+            const feeInput = document.getElementById('studio-fee');
+            const hint = document.getElementById('studio-fee-hint');
+            if (!feeInput) return;
+            const manual = feeInput.value !== '' && feeInput.dataset.auto !== '1';
+            if (manual) return;
+            const draft = studioFormDraftEvent();
+            const isExternal = document.getElementById('studio-event-is-external').value === 'true';
+            const editId = document.getElementById('studio-edit-event-id').value;
+            const existing = isExternal ? appState.events.find(ev => ev.id === editId) : null;
+            const fee = defaultFeeForEvent(existing ? { ...existing, title: existing.title } : draft);
+            if (fee > 0) {
+                feeInput.value = String(fee);
+                feeInput.dataset.auto = '1';
+                hint.classList.remove('hidden');
+            } else if (feeInput.dataset.auto === '1') {
+                feeInput.value = '';
+                feeInput.dataset.auto = '';
+                hint.classList.add('hidden');
+            }
+        };
+        window.onStudioCenterChange = function() {
+            const centerId = document.getElementById('studio-center-select').value;
+            const center = appState.centers.find(c => String(c.id) === String(centerId));
+            setAppointmentClinicalSectionsVisibility(center?.isNonClinicalCalendar === true, isShiftCenter(center));
+            suggestStudioFee();
+        };
 
         window.closeStudioModal = function() {
             document.getElementById('studio-modal').classList.add('hidden');
@@ -1786,8 +1908,8 @@
         function populateCenterDropdown(currentCenterId = null) {
             const sel = document.getElementById('studio-center-select');
             if (!sel) return;
-            const selectableCenters = appState.centers.filter(c => c.isNonClinicalCalendar !== true);
-            let options = selectableCenters.map(c => `<option value="${escapeHtml(c.id)}">${escapeHtml(c.name)}</option>`).join('');
+            const selectableCenters = appState.centers.filter(c => c.isNonClinicalCalendar !== true || isShiftCenter(c));
+            let options = selectableCenters.map(c => `<option value="${escapeHtml(c.id)}">${escapeHtml(c.name)}${isShiftCenter(c) ? ' (Turni)' : ''}</option>`).join('');
             if (currentCenterId && !selectableCenters.some(c => String(c.id) === String(currentCenterId))) {
                 const currentCenter = appState.centers.find(c => String(c.id) === String(currentCenterId));
                 if (currentCenter) options += `<option value="${escapeHtml(currentCenter.id)}" data-non-clinical="true">${escapeHtml(currentCenter.name)} (Calendario non Clinico)</option>`;
@@ -1809,6 +1931,7 @@
             if (!pat) return;
             if (!isExternal) document.getElementById('studio-title').value = `Visita / Trattamento - ${pat.name}`;
             showPatientClinicalSummary(pat.id);
+            suggestStudioFee();
         }
         function escapePatientText(value) {
             return String(value || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;');
@@ -2058,7 +2181,13 @@
 
             const selectedCenter = appState.centers.find(c => c.id === centerId);
             const nonClinical = selectedCenter?.isNonClinicalCalendar === true;
+            const shift = isShiftCenter(selectedCenter);
             if (nonClinical) patientId = '';
+            // Turni: niente dati clinici, ma il compenso resta (se vuoto: durata × tariffa oraria).
+            const shiftFee = fee > 0 ? fee : defaultFeeForEvent({ start, end, extendedProps: { centerId } });
+            const finalFee = nonClinical ? (shift ? shiftFee : 0) : fee;
+            const finalPaymentStatus = nonClinical && !shift ? 'cancelled' : paymentStatus;
+            const finalPaymentMethod = nonClinical && !shift ? null : paymentMethod;
             const centerName = selectedCenter ? selectedCenter.name : 'Studio Privato';
             const centerColor = selectedCenter ? (selectedCenter.color || '#3f5e4e') : '#3f5e4e';
 
@@ -2070,7 +2199,7 @@
                     ...existingEv,
                     extendedProps: {
                         ...existingEv.extendedProps,
-                        patientId: nonClinical ? null : (patientId || null), fee: nonClinical ? 0 : fee, paymentStatus: nonClinical ? 'cancelled' : paymentStatus, paymentMethod: nonClinical ? null : paymentMethod, clinicalNote: nonClinical ? '' : clinicalNote, clinicalOutcome: nonClinical ? '' : clinicalOutcome, isNonClinical: nonClinical
+                        patientId: nonClinical ? null : (patientId || null), fee: finalFee, paymentStatus: finalPaymentStatus, paymentMethod: finalPaymentMethod, clinicalNote: nonClinical ? '' : clinicalNote, clinicalOutcome: nonClinical ? '' : clinicalOutcome, isNonClinical: nonClinical
                     }
                 };
             } else {
@@ -2082,7 +2211,7 @@
                     backgroundColor: centerColor,
                     borderColor: centerColor,
                     textColor: '#ffffff',
-                    extendedProps: { centerId: centerId || null, centerName: centerName, patientId: nonClinical ? null : (patientId || null), fee: nonClinical ? 0 : fee, paymentStatus: nonClinical ? 'cancelled' : paymentStatus, paymentMethod: nonClinical ? null : paymentMethod, clinicalNote: nonClinical ? '' : clinicalNote, clinicalOutcome: nonClinical ? '' : clinicalOutcome, isNonClinical: nonClinical } 
+                    extendedProps: { centerId: centerId || null, centerName: centerName, patientId: nonClinical ? null : (patientId || null), fee: finalFee, paymentStatus: finalPaymentStatus, paymentMethod: finalPaymentMethod, clinicalNote: nonClinical ? '' : clinicalNote, clinicalOutcome: nonClinical ? '' : clinicalOutcome, isNonClinical: nonClinical } 
                 };
             }
 
@@ -2579,6 +2708,11 @@
             }
             publicToggle.disabled = nonClinical;
             financeToggle.disabled = nonClinical;
+            const shift = nonClinical && document.getElementById('new-center-shift').checked;
+            document.getElementById('center-shift-block')?.classList.toggle('hidden', !nonClinical);
+            document.getElementById('center-hourly-rate-row')?.classList.toggle('hidden', !shift);
+            document.getElementById('center-rates-block')?.classList.toggle('hidden', nonClinical);
+            if (shift) financeToggle.checked = true;
             publicToggle.closest('div')?.classList.toggle('opacity-50', nonClinical);
             financeToggle.closest('div')?.classList.toggle('opacity-50', nonClinical);
         }
@@ -2596,9 +2730,14 @@
             const bookingUrl = document.getElementById('new-center-booking').value.trim();
             const icalUrl = document.getElementById('new-center-ical').value.trim();
             const isNonClinicalCalendar = document.getElementById('new-center-non-clinical').checked;
+            const isShiftCalendar = isNonClinicalCalendar && document.getElementById('new-center-shift').checked;
             const showPublic = isNonClinicalCalendar ? false : document.getElementById('new-center-public').checked;
-            const includeInFinance = isNonClinicalCalendar ? false : document.getElementById('new-center-finance').checked;
-            const newC = { id, name, service, icon, color, address, phone, siteUrl, bookingUrl, icalUrl, showPublic, includeInFinance, isNonClinicalCalendar };
+            const includeInFinance = isShiftCalendar ? true : (isNonClinicalCalendar ? false : document.getElementById('new-center-finance').checked);
+            const numberOrZero = (elId) => Math.max(0, roundEuro(document.getElementById(elId).value));
+            const hourlyRate = isShiftCalendar ? numberOrZero('new-center-hourly-rate') : 0;
+            const rateIdrocolonterapia = isNonClinicalCalendar ? 0 : numberOrZero('new-center-rate-idrocolonterapia');
+            const rateOsteopatia = isNonClinicalCalendar ? 0 : numberOrZero('new-center-rate-osteopatia');
+            const newC = { id, name, service, icon, color, address, phone, siteUrl, bookingUrl, icalUrl, showPublic, includeInFinance, isNonClinicalCalendar, isShiftCalendar, hourlyRate, rateIdrocolonterapia, rateOsteopatia };
             if (db && userId) {
                 try {
                     await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'centers_list', id), newC);
@@ -2635,7 +2774,7 @@
                         </div>
                         <div>
                             <strong class="text-slate-900 font-editorial italic text-sm">${escapeHtml(c.name)}</strong>
-                            <p class="text-slate-500 text-[11px]">${escapeHtml(c.service)} ${c.icalUrl ? '• iCal attivo' : ''} ${c.isNonClinicalCalendar ? '• 🏠 Non Clinico' : ''}</p>
+                            <p class="text-slate-500 text-[11px]">${escapeHtml(c.service)} ${c.icalUrl ? '• iCal attivo' : ''} ${isShiftCenter(c) ? '• Turni ' + financeEuro(c.hourlyRate) + '/h' : (c.isNonClinicalCalendar ? '• 🏠 Non Clinico' : '')} ${centerRatesLabel(c)}</p>
                         </div>
                     </div>
                     <div class="flex items-center gap-1.5">
@@ -2675,6 +2814,10 @@
             document.getElementById('new-center-public').checked = c.showPublic !== false;
             document.getElementById('new-center-finance').checked = c.includeInFinance !== false;
             document.getElementById('new-center-non-clinical').checked = c.isNonClinicalCalendar === true;
+            document.getElementById('new-center-shift').checked = isShiftCenter(c);
+            document.getElementById('new-center-hourly-rate').value = Number(c.hourlyRate) > 0 ? c.hourlyRate : '';
+            document.getElementById('new-center-rate-idrocolonterapia').value = Number(c.rateIdrocolonterapia) > 0 ? c.rateIdrocolonterapia : '';
+            document.getElementById('new-center-rate-osteopatia').value = Number(c.rateOsteopatia) > 0 ? c.rateOsteopatia : '';
             applyNonClinicalCenterFormState();
             document.getElementById('center-form-title').textContent = 'Modifica Poliambulatorio';
             document.getElementById('center-submit-btn-text').textContent = 'Aggiorna';
@@ -2687,6 +2830,7 @@
             document.getElementById('new-center-color').value = '#3f5e4e';
             document.getElementById('new-center-finance').checked = true;
             document.getElementById('new-center-non-clinical').checked = false;
+            document.getElementById('new-center-shift').checked = false;
             applyNonClinicalCenterFormState();
             const colorButtons = document.querySelectorAll('#center-color-preset-container button');
             colorButtons.forEach((b, idx) => {
@@ -3000,8 +3144,13 @@
                                     backgroundColor: centerColor,
                                     borderColor: centerColor,
                                     textColor: '#ffffff',
-                                    extendedProps: { centerId: center.id, centerName: center.name, patientId: center.isNonClinicalCalendar === true ? null : matchedPatientId, isNonClinical: center.isNonClinicalCalendar === true }
+                                    // Conserva i dati inseriti a mano (compenso, pagamento, note): prima venivano cancellati a ogni sincronizzazione.
+                                    extendedProps: { ...(existingEv?.extendedProps || {}), centerId: center.id, centerName: center.name, patientId: center.isNonClinicalCalendar === true ? null : matchedPatientId, isNonClinical: center.isNonClinicalCalendar === true }
                                 };
+                                if (!(Number(parsedEvent.extendedProps.fee || 0) > 0)) {
+                                    const autoFee = defaultFeeForEvent(parsedEvent);
+                                    if (autoFee > 0) parsedEvent.extendedProps.fee = autoFee;
+                                }
 
                                 const existingIdx = appState.events.findIndex(e => e.id === eventId);
                                 if (existingIdx >= 0) {
@@ -3405,12 +3554,71 @@
 
         let financeReturnContext = null;
         let financeReturnScrollTop = 0;
+        /** Appuntamenti che entrano nei compensi: sedute cliniche e turni retribuiti (non i calendari personali). */
         function isFinancialClinicalEvent(ev) {
-            if (!ev || isNonClinicalEvent(ev) || ev.extendedProps?.paymentStatus === 'cancelled') return false;
+            if (!ev || ev.extendedProps?.paymentStatus === 'cancelled') return false;
+            if (isShiftEvent(ev)) return true;
+            if (isNonClinicalEvent(ev)) return false;
             const centerId = ev.extendedProps?.centerId;
             const center = centerId ? appState.centers.find(c => String(c.id) === String(centerId)) : null;
             return !center || center.includeInFinance !== false;
         }
+        function centerRatesLabel(center) {
+            if (center?.isNonClinicalCalendar) return '';
+            const rates = ratesForCenter(center);
+            const parts = [];
+            if (rates.idrocolonterapia > 0) parts.push('Idro ' + financeEuro(rates.idrocolonterapia));
+            if (rates.osteopatia > 0) parts.push('Osteo ' + financeEuro(rates.osteopatia));
+            return parts.length ? '• ' + parts.join(' · ') : '';
+        }
+        window.populatePrivateRatesForm = function() {
+            const rates = ratesForCenter(null);
+            const osteo = document.getElementById('private-rate-osteopatia');
+            const idro = document.getElementById('private-rate-idrocolonterapia');
+            if (!osteo || !idro) return;
+            osteo.value = rates.osteopatia > 0 ? rates.osteopatia : '';
+            idro.value = rates.idrocolonterapia > 0 ? rates.idrocolonterapia : '';
+        };
+        window.savePrivateRates = async function(event) {
+            event.preventDefault();
+            if (!db || !appState.isLoggedIn || !isAuthorizedFirebaseUser()) { showToast('Accesso autorizzato necessario.'); return; }
+            const privateRates = {
+                osteopatia: Math.max(0, roundEuro(document.getElementById('private-rate-osteopatia').value)),
+                idrocolonterapia: Math.max(0, roundEuro(document.getElementById('private-rate-idrocolonterapia').value))
+            };
+            const settings = { ...(appState.financeSettings || {}), privateRates, updatedAt: new Date().toISOString() };
+            try {
+                await setDoc(sharedDocument('settings', 'finance'), settings, { merge: true });
+                appState.financeSettings = settings;
+                showToast('Tariffe dello studio salvate.');
+            } catch (err) {
+                console.error('Errore salvataggio tariffe studio:', err);
+                showToast('Errore: tariffe non salvate.');
+            }
+        };
+        /** Appuntamenti dell'anno selezionato senza compenso ma con una tariffa applicabile. */
+        function eventsFillableWithRates(year) {
+            return appState.events
+                .filter(isFinancialClinicalEvent)
+                .filter(ev => String(ev.start || '').slice(0, 4) === String(year))
+                .filter(ev => !(Number(ev.extendedProps?.fee || 0) > 0))
+                .map(ev => ({ ev, fee: defaultFeeForEvent(ev) }))
+                .filter(item => item.fee > 0);
+        }
+        window.fillMissingFees = function() {
+            const year = String(document.getElementById('business-year')?.value || new Date().getFullYear());
+            const items = eventsFillableWithRates(year);
+            if (!items.length) { showToast('Nessun appuntamento da compilare con le tariffe.'); return; }
+            const total = items.reduce((sum, item) => sum + item.fee, 0);
+            showConfirmDialog('Compila compensi mancanti', `Verrà impostato il compenso di ${items.length} appuntamenti del ${year} usando le tariffe delle sedi (totale ${financeEuro(total)}). Gli importi già inseriti non vengono toccati.`, async () => {
+                for (const { ev, fee } of items) {
+                    ev.extendedProps = { ...(ev.extendedProps || {}), fee };
+                    await setDoc(sharedDocument('studio_events', ev.id), ev, { merge: true });
+                }
+                renderBusinessDashboard();
+                showToast(`Compensi compilati: ${items.length} appuntamenti.`);
+            }, 'Sì, compila');
+        };
         function financeEuro(value) {
             return new Intl.NumberFormat('it-IT',{style:'currency',currency:'EUR'}).format(Number(value || 0));
         }
@@ -3442,6 +3650,35 @@
             updateModalState();
             requestAnimationFrame(() => updateModalState());
         };
+        /** Riepilogo dei turni retribuiti: ore e compensi del mese e dell'anno per ogni sede a turni. */
+        function shiftSummary(month, year) {
+            return appState.centers.filter(isShiftCenter).map(center => {
+                const events = appState.events.filter(ev => String(ev.extendedProps?.centerId || '') === String(center.id) && ev.extendedProps?.paymentStatus !== 'cancelled');
+                const sum = (list) => ({
+                    count: list.length,
+                    hours: Math.round(list.reduce((h, ev) => h + eventDurationHours(ev), 0) * 100) / 100,
+                    amount: roundEuro(list.reduce((a, ev) => a + Number(ev.extendedProps?.fee || 0), 0))
+                });
+                return {
+                    center,
+                    month: sum(events.filter(ev => String(ev.start || '').slice(0, 7) === month)),
+                    year: sum(events.filter(ev => String(ev.start || '').slice(0, 4) === String(year)))
+                };
+            });
+        }
+        function formatHours(hours) {
+            const h = Math.floor(hours);
+            const m = Math.round((hours - h) * 60);
+            return m ? `${h} h ${m} min` : `${h} h`;
+        }
+        function renderShiftSummary(month, year) {
+            const section = document.getElementById('business-shifts-section');
+            const box = document.getElementById('business-shifts');
+            if (!section || !box) return;
+            const rows = shiftSummary(month, year);
+            section.classList.toggle('hidden', rows.length === 0);
+            box.innerHTML = rows.length ? `<table class="w-full text-xs min-w-[520px]"><thead><tr class="text-slate-600"><th class="p-3 text-left">Sede</th><th class="text-right">Ore mese</th><th class="text-right">Compenso mese</th><th class="text-right">Ore anno</th><th class="p-3 text-right">Compenso anno</th></tr></thead><tbody>${rows.map(r => `<tr class="border-t border-slate-200"><td class="p-3 font-bold">${escapeHtml(r.center.name)}<span class="block text-[10px] font-normal text-slate-500">${financeEuro(r.center.hourlyRate)}/h</span></td><td class="text-right">${formatHours(r.month.hours)}</td><td class="text-right">${financeEuro(r.month.amount)}</td><td class="text-right">${formatHours(r.year.hours)}</td><td class="p-3 text-right font-bold">${financeEuro(r.year.amount)}</td></tr>`).join('')}</tbody></table>` : '';
+        }
         window.renderBusinessDashboard = function() {
             const month = document.getElementById('business-month').value || new Date().toISOString().slice(0,7);
             const year = String(document.getElementById('business-year').value || month.slice(0,4) || new Date().getFullYear());
@@ -3485,6 +3722,10 @@
             document.getElementById('manual-revenue-year-total').textContent=`${financeEuro(yearManualTotal)} nell'anno ${year}`;
             document.getElementById('manual-revenue-list').innerHTML=yearManualRevenues.length?yearManualRevenues.sort((a,b)=>String(b.date).localeCompare(String(a.date))).map(item=>{const d=new Date(item.date+'T12:00:00');const when=Number.isNaN(d.getTime())?item.date:d.toLocaleDateString('it-IT',{dateStyle:'medium'});return `<article class="p-3 bg-white border border-emerald-200 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-3"><div class="min-w-0"><div class="flex items-center gap-2 flex-wrap"><strong class="text-emerald-900">${financeEuro(item.amount)}</strong><span class="px-2 py-0.5 bg-emerald-50 border border-emerald-100 rounded-full text-[10px] font-bold text-emerald-800">${escapePatientText(item.category)}</span></div><p class="text-xs text-slate-700 mt-1">${escapePatientText(item.description)}</p><p class="text-[10px] text-slate-500 mt-1">${escapePatientText(when)}</p></div><div class="flex gap-2"><button type="button" onclick="editManualRevenue('${encodeURIComponent(item.id)}')" class="px-3 py-2 bg-emerald-100 text-emerald-900 rounded-xl text-xs font-bold">Modifica</button><button type="button" onclick="confirmDeleteManualRevenue('${encodeURIComponent(item.id)}')" class="px-3 py-2 bg-rose-50 text-rose-700 rounded-xl text-xs font-bold">Elimina</button></div></article>`;}).join(''):'<p class="p-5 bg-white border border-emerald-100 rounded-2xl text-center text-xs text-slate-500">Nessuna entrata manuale registrata per l’anno selezionato.</p>';
             renderTaxSimulator(yearSummary.total+yearManualTotal);
+            renderShiftSummary(month, year);
+            const fillable = eventsFillableWithRates(year).length;
+            const fillButton = document.getElementById('fill-missing-fees-btn');
+            if (fillButton) { fillButton.classList.toggle('hidden', !fillable); fillButton.textContent = `Compila ${fillable} con le tariffe`; }
             const missingFee=yearEvents.filter(ev=>Number(ev.extendedProps?.fee || 0)<=0).sort((a,b)=>new Date(b.start)-new Date(a.start));
             document.getElementById('business-missing-fee-count').textContent=`${missingFee.length} da completare`;
             document.getElementById('business-missing-fee-list').innerHTML=missingFee.length?missingFee.map(ev=>{const d=new Date(ev.start);const when=Number.isNaN(d.getTime())?String(ev.start||''):d.toLocaleString('it-IT',{dateStyle:'medium',timeStyle:'short'});const patient=appState.patients.find(p=>String(p.id)===String(ev.extendedProps?.patientId||''));return `<button type="button" onclick="openFinanceEvent('${encodeURIComponent(ev.id)}')" class="w-full p-3 bg-white hover:bg-amber-100 border border-amber-200 rounded-2xl text-left flex flex-col sm:flex-row sm:items-center justify-between gap-2 transition"><div><strong class="font-editorial italic text-sm text-slate-900">${escapePatientText(ev.title||'Appuntamento')}</strong><p class="text-[10px] text-slate-500 mt-1">${escapePatientText(when)} • ${escapePatientText(ev.extendedProps?.centerName||'Studio Privato')}${patient?' • '+escapePatientText(patient.name):''}</p></div><span class="px-3 py-2 bg-amber-100 text-amber-900 rounded-xl text-xs font-bold"><i class="fa-solid fa-pen-to-square mr-1"></i>Imposta tariffa</span></button>`;}).join(''):'<p class="p-5 bg-white border border-amber-100 rounded-2xl text-center text-xs text-slate-500"><i class="fa-solid fa-circle-check text-emerald-600 mr-1"></i>Nessun appuntamento clinico senza tariffa nell’anno selezionato.</p>';
@@ -3957,7 +4198,8 @@
                 clinicalSessions: structuredClone(appState.clinicalSessions || []), centers: structuredClone(appState.centers || []),
                 treatments: structuredClone(appState.treatments || []), news: structuredClone(appState.news || []),
                 preparations: structuredClone(appState.preparations || []), manualRevenues: structuredClone(appState.manualRevenues || []), taxProfile: appState.taxProfile ? structuredClone(appState.taxProfile) : null,
-                messagingSettings: appState.messagingSettings ? structuredClone(appState.messagingSettings) : null
+                messagingSettings: appState.messagingSettings ? structuredClone(appState.messagingSettings) : null,
+                financeSettings: appState.financeSettings ? structuredClone(appState.financeSettings) : null
             };
             return { schema: BACKUP_SCHEMA, schemaVersion: BACKUP_SCHEMA_VERSION, appBuild: 'v31', createdAt, exportedBy: appState.currentUserEmail || null, counts: backupCounts(data), data };
         }
@@ -3982,6 +4224,8 @@
             if (typeof payload.data.taxProfile === 'undefined') payload.data.taxProfile = null;
             if (payload.data.taxProfile !== null && typeof payload.data.taxProfile !== 'object') throw new Error('Sezione taxProfile non valida.');
             if (typeof payload.data.messagingSettings === 'undefined') payload.data.messagingSettings = null;
+            if (typeof payload.data.financeSettings === 'undefined') payload.data.financeSettings = null;
+            if (payload.data.financeSettings !== null && (typeof payload.data.financeSettings !== 'object' || Array.isArray(payload.data.financeSettings))) throw new Error('Sezione financeSettings non valida.');
             if (payload.data.messagingSettings !== null && (typeof payload.data.messagingSettings !== 'object' || Array.isArray(payload.data.messagingSettings))) throw new Error('Sezione messagingSettings non valida.');
             const idSections=['patients','events','clinicalSessions','centers','treatments','news','preparations','manualRevenues'];
             for (const key of idSections) for (const item of payload.data[key]) if (!item || typeof item!=='object' || !String(item.id || item.eventId || '').trim()) throw new Error(`Record senza ID nella sezione ${key}.`);
@@ -4014,6 +4258,7 @@
                 await restoreCollection(data.manualRevenues || [],id=>sharedDocument('manual_revenue',id),'entrate manuali',progress);
                 if(data.taxProfile) await setDoc(sharedDocument('tax_profile','default'),{...data.taxProfile,id:'default'},{merge:false});
                 if(data.messagingSettings) await setDoc(sharedDocument('settings','messaging'),data.messagingSettings,{merge:false});
+                if(data.financeSettings) await setDoc(sharedDocument('settings','finance'),data.financeSettings,{merge:false});
                 localStorage.setItem('lastRestoreAt',new Date().toISOString()); pendingBackupData=null; await loadAllDataFromFirestore(); progress.textContent='Ripristino completato con successo.'; renderBackupDashboard(); if(calendarInstance){calendarInstance.refetchEvents();calendarInstance.updateSize();} showToast('Ripristino completato.');
             } catch(err){startSharedRealtimeSync();progress.textContent='Ripristino interrotto: '+err.message;throw err;}
         }
@@ -4023,7 +4268,7 @@
                 let changed=false;
                 if(typeof center.isNonClinicalCalendar==='undefined'){center.isNonClinicalCalendar=false;changed=true;}
                 if(typeof center.includeInFinance==='undefined'){center.includeInFinance=true;changed=true;}
-                if(center.isNonClinicalCalendar && center.includeInFinance!==false){center.includeInFinance=false;changed=true;}
+                if(center.isNonClinicalCalendar && !isShiftCenter(center) && center.includeInFinance!==false){center.includeInFinance=false;changed=true;}
                 if(center.isNonClinicalCalendar && center.showPublic!==false){center.showPublic=false;changed=true;}
                 if(changed){await setDoc(sharedDocument('centers_list',center.id),center,{merge:true});await setDoc(doc(db,'artifacts',appId,'public','data','centers_list',center.id),center,{merge:true});}
             }
