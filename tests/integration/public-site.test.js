@@ -29,10 +29,12 @@ describe('sito pubblico', () => {
         expect(centerCard.textContent).toContain('Via Monza 1');
         expect(centerCard.textContent).toContain('039 000');
         expect(centerCard.querySelector('a[href="https://monza.example"]').textContent).toContain('Sito Web');
+        expect(centerCard.querySelector('a[href="https://monza.example"]').className).toContain('bg-water-50');
         expect(centerCard.textContent).not.toContain('Prenota Online');
         expect(app.text('public-treatments-grid')).toContain('Massaggio viscerale');
         expect(app.text('public-news-grid')).toContain('1 marzo 2030');
         expect(app.$('#public-news-grid a[href="https://example.com/news"]')).not.toBeNull();
+        expect(app.$('#public-news-grid a[href="https://example.com/news"]').className).toContain('bg-water-50');
         expect(app.text('public-preparations-grid')).toContain('Indossare abiti comodi');
     });
 

@@ -25,6 +25,11 @@ describe('integrità di index.html', () => {
         expect(() => parseModuleScript()).not.toThrow();
     });
 
+    it('non contiene attributi con virgolette doppie errate (es. class=""px-4 ...)', () => {
+        const broken = [...html.matchAll(/\s[\w-]+=""[^\s>]/g)].map(m => m[0].trim());
+        expect(broken).toEqual([]);
+    });
+
     it('non contiene id duplicati nel markup statico', () => {
         const duplicates = staticIds.filter((id, i) => staticIds.indexOf(id) !== i);
         expect(duplicates).toEqual([]);
