@@ -4,7 +4,7 @@ import { loadFunctions } from '../support/app-source.js';
 function recallFns(state) {
     const appState = { centers: [], events: [], patients: [], ...state };
     return loadFunctions(
-        ['buildRecallWhatsAppUrl', 'buildRecallEmailUrl', 'getPatientRecallStatus', 'isNonClinicalEvent', 'getEventCenter'],
+        ['buildRecallWhatsAppUrl', 'buildWhatsAppUrl', 'normalizeWhatsAppNumber', 'buildRecallEmailUrl', 'getPatientRecallStatus', 'isNonClinicalEvent', 'getEventCenter'],
         { appState }
     );
 }
@@ -15,6 +15,9 @@ describe('buildRecallWhatsAppUrl', () => {
         const url = buildRecallWhatsAppUrl({ name: 'Anna', phone: '+39 333-123 4567' });
         expect(url.startsWith('https://wa.me/393331234567?text=')).toBe(true);
         expect(decodeURIComponent(url.split('text=')[1])).toBe('Ciao Anna, ti contatto dallo studio per sapere come stai e, se desideri, organizzare il prossimo appuntamento.');
+    });
+    it('aggiunge il prefisso 39 ai numeri italiani salvati senza prefisso', () => {
+        expect(buildRecallWhatsAppUrl({ name: 'Anna', phone: '333 1234567' })).toMatch(/^https:\/\/wa\.me\/393331234567\?text=/);
     });
     it.each([undefined, '', 'nessuno'])('restituisce stringa vuota senza cifre (%s)', (phone) => {
         expect(buildRecallWhatsAppUrl({ name: 'Anna', phone })).toBe('');

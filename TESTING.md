@@ -29,6 +29,10 @@ npm run serve               # avvia il sito in locale su http://127.0.0.1:4173 (
 | Integrazione | `tests/integration` | Vitest + jsdom | L'**intero script dell'app** eseguito in jsdom con Firebase simulato: login/logout e autorizzazioni, sito pubblico, agenda e conflitti, eventi non clinici ed esterni, anagrafica, unione duplicati, richiami, sincronizzazione iCal (aggiunte, modifiche, cancellazioni con decisione obbligatoria, proxy di riserva), dashboard compensi e simulatore fiscale, backup/ripristino, gestione contenuti, migrazioni dati. Più test HTTP reali di `/api/ical` su server locali. |
 | End-to-end | `tests/e2e` | Playwright (Chromium desktop 1366×900 + Pixel 7) | Flussi utente reali nel browser. `controls.spec.js` verifica che ogni funzione sia raggiungibile (header desktop, barra inferiore e menu "Altro" su mobile), che in ogni finestra tutti i pulsanti e campi visibili siano dentro lo schermo e cliccabili, e che "Elimina"/"Modifica" funzionino per ogni tipo di elemento. Poi: navigazione pubblica, accesso, creazione/modifica/eliminazione appuntamenti in FullCalendar, sincronizzazione iCal **passando dalla vera funzione `/api/ical`**, pazienti, compensi, news, export/import backup (download reale), navigazione mobile, accessibilità (axe-core, WCAG 2.1 AA). |
 
+## Messaggi WhatsApp ai pazienti
+
+Dall'anagrafica pazienti il pulsante **WhatsApp** apre un menu di messaggi precompilati (richiesta notizie, nuovo appuntamento, recensione Google, ringraziamento, promemoria), in versione Osteopatia e Idrocolonterapia. I testi sono in `WHATSAPP_TEMPLATES` in `index.html`; il link recensioni si imposta dall'app ed è salvato in `shared/data/settings/messaging`. Test: `tests/unit/whatsapp.test.js`, `tests/integration/patient-messages.test.js`, `tests/e2e/patient-messages.spec.js`.
+
 ## Come funzionano i doppi di test
 
 - **Firebase** → `tests/mocks/firebase/firebase-mock-core.js`: implementazione in memoria di `initializeApp`, Auth (anonimo, popup Google, signOut, `onAuthStateChanged`) e Firestore (`doc`, `collection`, `getDoc(s)`, `setDoc` con `merge`, `deleteDoc`, `onSnapshot` realtime). Lo stesso modulo è usato in jsdom e nel browser (dove sostituisce gli URL `https://www.gstatic.com/firebasejs/...`). Dai test si controlla tramite `window.__firebaseMock` (`seed`, `get`, `list`, `failNext` per simulare errori di permesso, `setPopupUser`, …).
@@ -56,6 +60,7 @@ L'ambiente di test ha individuato i difetti seguenti, ora corretti. Ognuno è co
 | Sicurezza | Contenuti inseriti con `innerHTML` senza escape (XSS), link `javascript:` possibili | Escape di tutti i testi, solo link `http(s)`/`mailto`, colori e icone validati, `rel="noopener noreferrer"` | `public-site`, `safe-html` |
 | Sicurezza | `/api/ical` scaricava qualunque URL, anche host interni (SSRF), e accettava ogni metodo | Solo `http(s)` verso indirizzi pubblici (verificati via DNS e a ogni redirect, max 5), `405` per metodi diversi da GET | `api-ical`, `api-server` |
 | Dati | Un errore in una migrazione una-tantum impediva il caricamento di pazienti e appuntamenti | Ogni migrazione è isolata e ritentata al prossimo accesso | `migrations` |
+| Richiami | Il link WhatsApp usava il numero senza prefisso internazionale (`333…` → `wa.me/333…`, non funzionante) | `normalizeWhatsAppNumber` aggiunge `39` ai numeri italiani | `whatsapp`, `patient-messages` |
 | Contenuti | Le guide di preparazione non si potevano modificare (mancava il pulsante "Modifica") | Aggiunto `Modifica` come per news e trattamenti | `controls` (E2E) |
 | Accessibilità | Etichette del modulo appuntamento non associate ai campi, pulsanti "chiudi" senza nome, contrasto 4.45:1 del badge data news | `for`/`aria-label`, colore più scuro | `accessibility` (E2E) |
 

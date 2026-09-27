@@ -117,7 +117,7 @@ test.describe('raggiungibilità di tutte le funzioni', () => {
         await auditModal(page, 'patient-edit-modal');
         await closeModal(page, 'patient-edit-modal');
         const card = page.locator('#patients-alphabetical-list > div').filter({ hasText: 'Mario Rossi' });
-        await card.getByRole('button', { name: /Mario Rossi/ }).click();
+        await card.getByRole('button', { name: /^Mario Rossi/ }).click();
         await card.getByRole('button', { name: 'Storico' }).filter({ visible: true }).first().click();
         await auditModal(page, 'patient-history-modal');
         await closeModal(page, 'patient-history-modal');
@@ -167,7 +167,7 @@ test.describe('pulsanti Elimina', () => {
         await loginViaUi(page);
         await openEntry(page, ENTRY_POINTS[1]);
         const card = page.locator('#patients-alphabetical-list > div').filter({ hasText: 'Paziente da eliminare' });
-        await card.getByRole('button', { name: /Paziente da eliminare/ }).click();
+        await card.getByRole('button', { name: /^Paziente da eliminare/ }).click();
         await card.getByRole('button', { name: 'Elimina', exact: true }).click();
         await confirmDeletion(page);
         await expect(page.locator('#toast-message')).toHaveText('Paziente eliminato definitivamente.');

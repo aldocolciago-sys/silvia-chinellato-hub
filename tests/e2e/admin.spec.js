@@ -59,7 +59,7 @@ test.describe('anagrafica pazienti', () => {
     test('espande la scheda e apre lo storico', async ({ page }) => {
         await loginViaUi(page);
         await openPatients(page);
-        await page.locator('#patients-alphabetical-list').getByRole('button', { name: /Giulia Bianchi/ }).click();
+        await page.locator('#patients-alphabetical-list').getByRole('button', { name: /^Giulia Bianchi/ }).click();
         await expect(page.locator('#patients-alphabetical-list')).toContainText('PROSSIMO APPUNTAMENTO');
         const card = page.locator('#patients-alphabetical-list > div').filter({ hasText: 'Giulia Bianchi' });
         await card.getByRole('button', { name: 'Storico' }).filter({ visible: true }).first().click();

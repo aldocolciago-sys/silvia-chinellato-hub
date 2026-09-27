@@ -987,6 +987,47 @@
         </div>
       </div>
     </div>
+    <!-- PATIENT WHATSAPP MESSAGE MODAL -->
+    <div id="patient-message-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-md hidden z-[80] flex items-center justify-center p-4">
+      <div class="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-lg overflow-hidden flex flex-col max-h-[92vh] border border-emerald-100">
+        <div class="px-5 sm:px-6 py-4 border-b border-emerald-100 flex items-center justify-between gap-3 bg-emerald-50/60">
+          <div class="min-w-0">
+            <h3 id="patient-message-title" class="font-editorial text-lg font-bold text-slate-900 italic truncate">Messaggio WhatsApp</h3>
+            <p id="patient-message-subtitle" class="text-[10px] text-slate-600"></p>
+          </div>
+          <button type="button" aria-label="Chiudi" onclick="closePatientMessageModal()" class="w-10 h-10 rounded-full bg-white flex-shrink-0"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div class="p-4 sm:p-6 overflow-y-auto space-y-4 flex-1">
+          <div class="space-y-1.5">
+            <p class="text-[11px] font-bold text-slate-600">Trattamento</p>
+            <div class="grid grid-cols-2 gap-2" role="group" aria-label="Trattamento">
+              <button type="button" id="message-treatment-osteopatia" onclick="selectMessageTreatment('osteopatia')" aria-pressed="false" class="px-3 py-2.5 rounded-xl text-xs font-bold border border-slate-200 bg-slate-100 text-slate-700">Osteopatia</button>
+              <button type="button" id="message-treatment-idrocolonterapia" onclick="selectMessageTreatment('idrocolonterapia')" aria-pressed="false" class="px-3 py-2.5 rounded-xl text-xs font-bold border border-slate-200 bg-slate-100 text-slate-700">Idrocolonterapia</button>
+            </div>
+            <p id="message-treatment-hint" class="text-[10px] text-slate-600"></p>
+          </div>
+          <div id="message-type-list" class="space-y-2"></div>
+          <div id="message-preview-panel" class="hidden space-y-2">
+            <label for="message-preview-text" id="message-preview-label" class="block text-[11px] font-bold text-slate-600">Testo del messaggio</label>
+            <textarea id="message-preview-text" class="w-full px-3 py-2.5 bg-white border border-emerald-200 rounded-xl text-xs h-48 resize-y"></textarea>
+            <p class="text-[10px] text-slate-600">Puoi modificare il testo prima di aprire WhatsApp.</p>
+            <div class="flex gap-2">
+              <button type="button" onclick="backToMessageTypes()" class="px-4 py-2.5 bg-slate-100 text-slate-700 font-bold rounded-xl text-xs">Indietro</button>
+              <button type="button" id="message-send-btn" onclick="sendPatientWhatsApp()" class="flex-1 px-4 py-2.5 bg-emerald-700 hover:bg-emerald-800 text-white font-bold rounded-xl text-xs"><i class="fa-brands fa-whatsapp mr-1"></i>Apri WhatsApp</button>
+            </div>
+          </div>
+          <details id="messaging-settings" class="p-3 bg-slate-50 border border-slate-200 rounded-2xl text-xs">
+            <summary class="font-bold text-slate-700 cursor-pointer">Impostazioni messaggi</summary>
+            <form id="messaging-settings-form" onsubmit="saveMessagingSettings(event)" class="mt-3 space-y-2">
+              <label for="google-review-url" class="block text-[11px] font-bold text-slate-600">Link recensioni Google</label>
+              <input type="url" id="google-review-url" placeholder="https://g.page/r/..." class="w-full px-3 py-2.5 bg-white border border-slate-200 rounded-xl text-xs">
+              <p class="text-[10px] text-slate-600">Lo trovi nel Profilo dell'attività su Google, alla voce "Chiedi recensioni".</p>
+              <button type="submit" class="px-4 py-2.5 bg-nature-600 hover:bg-nature-700 text-white font-bold rounded-xl text-xs">Salva link</button>
+            </form>
+          </details>
+        </div>
+      </div>
+    </div>
     <!-- UNASSIGNED EVENTS MODAL -->
     <div id="unassigned-events-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-md hidden z-[75] flex items-center justify-center p-4">
       <div class="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-5xl overflow-hidden flex flex-col max-h-[92vh]">
@@ -1093,7 +1134,8 @@
             events: [],
             clinicalSessions: [],
             manualRevenues: [],
-            taxProfile: null
+            taxProfile: null,
+            messagingSettings: null
         };
 
         let db = null;
@@ -1176,6 +1218,10 @@
             }, err => {
                 console.error('Errore sincronizzazione entrate manuali:', err);
             }));
+            sharedUnsubscribers.push(onSnapshot(sharedDocument('settings','messaging'), snapshot => {
+                appState.messagingSettings = snapshot.exists() ? snapshot.data() : null;
+                if (!document.getElementById('patient-message-modal')?.classList.contains('hidden')) renderMessageTypeList();
+            }, err => console.error('Errore sincronizzazione impostazioni messaggi:', err)));
             sharedUnsubscribers.push(onSnapshot(sharedDocument('tax_profile','default'), snapshot => {
                 appState.taxProfile = snapshot.exists() ? { id:'default', ...snapshot.data() } : null;
                 populateTaxProfileForm();
@@ -1317,6 +1363,8 @@
                     appState.manualRevenues = manualRevenueSnap.docs.map(d => ({ id: d.data().id || d.id, ...d.data() }));
                     const taxProfileSnap = await getDoc(sharedDocument('tax_profile','default'));
                     appState.taxProfile = taxProfileSnap.exists() ? { id:'default', ...taxProfileSnap.data() } : null;
+                    const messagingSnap = await getDoc(sharedDocument('settings','messaging'));
+                    appState.messagingSettings = messagingSnap.exists() ? messagingSnap.data() : null;
                     await runMigrationSafely('archivio sedute', migrateEventClinicalDataToArchiveOnce);
                     await runMigrationSafely('note cliniche legacy', migrateLegacyClinicalBlocksFromPatientNotesOnce);
                     startSharedRealtimeSync();
@@ -2383,6 +2431,7 @@
                     patientDetailItem('Farmaci',p.medications),
                     patientDetailItem('Tag clinici',tags),
                     patientDetailItem('Richiamo previsto',(p.recallDays || 120) + ' giorni'),
+                    patientDetailItem('Ultimo contatto WhatsApp',lastContactLabel(p)),
                     patientDetailItem('Note anamnestiche generali',p.notes,true)
                 ].join('');
                 return `<div class="bg-white border border-slate-200 rounded-2xl shadow-2xs overflow-hidden">
@@ -2396,6 +2445,7 @@
                             </span>
                             <i class="fa-solid fa-chevron-${expanded?'up':'down'} text-slate-400"></i>
                         </button>
+                        ${normalizeWhatsAppNumber(p.phone) ? `<button type="button" onclick="openPatientMessageModal('${escapeHtml(p.id)}')" title="Messaggio WhatsApp" aria-label="Messaggio WhatsApp a ${escapeHtml(p.name)}" class="h-10 px-3 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white flex items-center justify-center gap-1.5 flex-shrink-0 shadow-sm"><i class="fa-brands fa-whatsapp text-base"></i><span class="hidden sm:inline text-xs font-bold">WhatsApp</span></button>` : ''}
                         <div class="hidden sm:flex items-center gap-1.5 flex-shrink-0">
                             <button onclick="openPatientHistoryModal('${p.id}')" class="px-3 py-1.5 bg-amber-50 text-amber-800 font-semibold rounded-xl">Storico</button>
                             <button type="button" onclick="editPatientById('${p.id}')" class="px-3 py-1.5 bg-nature-50 text-nature-700 font-semibold rounded-xl">Modifica</button>
@@ -3453,12 +3503,240 @@
         }
         window.openRecallModal = function() { renderRecallList(); document.getElementById('recall-modal').classList.remove('hidden'); }
         window.closeRecallModal = function() { document.getElementById('recall-modal').classList.add('hidden'); }
-        function buildRecallWhatsAppUrl(patient) {
-            const digits = String(patient.phone || '').replace(/\D/g, '');
+        /**
+         * Numero nel formato richiesto da wa.me (solo cifre, con prefisso internazionale).
+         * I numeri italiani salvati senza prefisso (cellulari 3xx, fissi 0x) ricevono il 39.
+         */
+        function normalizeWhatsAppNumber(phone) {
+            const raw = String(phone || '').trim();
+            const hasPlus = raw.startsWith('+');
+            let digits = raw.replace(/\D/g, '');
             if (!digits) return '';
-            const message = `Ciao ${patient.name || ''}, ti contatto dallo studio per sapere come stai e, se desideri, organizzare il prossimo appuntamento.`;
-            return `https://wa.me/${digits}?text=${encodeURIComponent(message)}`;
+            if (!hasPlus && digits.startsWith('00')) digits = digits.slice(2);
+            else if (!hasPlus && /^[03]\d{5,10}$/.test(digits)) digits = '39' + digits;
+            return digits.length >= 8 && digits.length <= 15 ? digits : '';
         }
+        function buildWhatsAppUrl(phone, text = '') {
+            const number = normalizeWhatsAppNumber(phone);
+            if (!number) return '';
+            return text ? `https://wa.me/${number}?text=${encodeURIComponent(text)}` : `https://wa.me/${number}`;
+        }
+        function buildRecallWhatsAppUrl(patient) {
+            const message = `Ciao ${patient.name || ''}, ti contatto dallo studio per sapere come stai e, se desideri, organizzare il prossimo appuntamento.`;
+            return buildWhatsAppUrl(patient.phone, message);
+        }
+
+        // ---- Messaggi WhatsApp precompilati dall'anagrafica pazienti ----
+        const MESSAGE_TREATMENT_LABELS = { osteopatia: 'Osteopatia', idrocolonterapia: 'Idrocolonterapia' };
+        const WHATSAPP_MESSAGE_TYPES = [
+            { id: 'news', label: 'Richiesta notizie', desc: 'Chiedere come sta dopo il trattamento', icon: 'fa-heart-pulse' },
+            { id: 'appointment', label: 'Nuovo appuntamento', desc: 'Invitare a prenotare una nuova seduta', icon: 'fa-calendar-plus' },
+            { id: 'review', label: 'Recensione Google', desc: 'Invitare a lasciare una recensione', icon: 'fa-star' },
+            { id: 'thanks', label: 'Ringraziamento dopo la seduta', desc: 'Ringraziare e dare i consigli per i giorni successivi', icon: 'fa-hand-holding-heart' },
+            { id: 'reminder', label: 'Promemoria appuntamento', desc: 'Ricordare il prossimo appuntamento', icon: 'fa-bell' }
+        ];
+        /** Testi dei messaggi (tono formale). Segnaposto: {nome} {link} {data} {ora} {sede}. */
+        const WHATSAPP_TEMPLATES = {
+            osteopatia: {
+                news: "Gentile {nome}, sono Silvia Chinellato. A qualche settimana dal trattamento osteopatico desideravo sapere come sta: la tensione e il dolore sono migliorati? Se ha piacere, mi racconti pure come sono andati questi giorni. Un cordiale saluto.",
+                appointment: "Gentile {nome}, sono Silvia Chinellato. È trascorso un po' di tempo dall'ultimo trattamento osteopatico: un controllo periodico aiuta a mantenere i benefici ottenuti e a prevenire nuove tensioni. Se desidera fissare un appuntamento, mi indichi pure i giorni e gli orari che preferisce. Cordiali saluti.",
+                review: "Gentile {nome}, sono Silvia Chinellato. La ringrazio per la fiducia accordatami nel percorso osteopatico. Se l'esperienza è stata positiva, mi farebbe molto piacere se volesse lasciare una breve recensione su Google: aiuta altre persone a conoscere il mio lavoro. Può farlo qui: {link}. Grazie di cuore!",
+                thanks: "Gentile {nome}, la ringrazio per la visita di oggi. Nei prossimi giorni le consiglio di bere molta acqua, evitare sforzi intensi e ascoltare il suo corpo: un lieve indolenzimento è normale e passa in breve tempo. Per qualsiasi dubbio resto a disposizione. Silvia Chinellato",
+                reminder: "Gentile {nome}, le ricordo l'appuntamento di osteopatia di {data} alle {ora} presso {sede}. Le consiglio un abbigliamento comodo. In caso di imprevisti la prego di avvisarmi per tempo. Cordiali saluti, Silvia Chinellato"
+            },
+            idrocolonterapia: {
+                news: "Gentile {nome}, sono Silvia Chinellato. A qualche tempo dalla seduta di idrocolonterapia desideravo sapere come sta: come va la digestione e come si sente in generale? Se ha piacere, mi aggiorni pure. Un cordiale saluto.",
+                appointment: "Gentile {nome}, sono Silvia Chinellato. Per mantenere il benessere intestinale raggiunto può essere utile programmare una nuova seduta di idrocolonterapia. Se lo desidera, mi indichi i giorni e gli orari che preferisce: le invierò anche le indicazioni per la preparazione. Cordiali saluti.",
+                review: "Gentile {nome}, sono Silvia Chinellato. La ringrazio per la fiducia accordatami nel percorso di idrocolonterapia. Se l'esperienza è stata positiva, mi farebbe molto piacere se volesse lasciare una breve recensione su Google: aiuta altre persone a conoscere il mio lavoro. Può farlo qui: {link}. Grazie di cuore!",
+                thanks: "Gentile {nome}, la ringrazio per la seduta di oggi. Nelle prossime 24-48 ore le consiglio di bere molta acqua e di seguire un'alimentazione leggera, reintroducendo gradualmente i cibi abituali. Per qualsiasi dubbio resto a disposizione. Silvia Chinellato",
+                reminder: "Gentile {nome}, le ricordo la seduta di idrocolonterapia di {data} alle {ora} presso {sede}. Nei due giorni precedenti le consiglio un'alimentazione leggera, ricca di acqua e povera di scorie. In caso di imprevisti la prego di avvisarmi per tempo. Cordiali saluti, Silvia Chinellato"
+            }
+        };
+        let messageModalState = { patientId: null, treatment: 'osteopatia', type: null };
+
+        function isValidReviewUrl(value) {
+            return /^https:\/\/[^\s<>"']+$/i.test(String(value || '').trim());
+        }
+        function detectTreatmentInText(text) {
+            const t = normalizePersonName(text);
+            if (/idrocolon|colon/.test(t)) return 'idrocolonterapia';
+            if (/osteo/.test(t)) return 'osteopatia';
+            return null;
+        }
+        /** Trattamento suggerito: ultimo appuntamento (poi prossimo), poi tag del paziente. */
+        function suggestPatientTreatment(patient) {
+            const status = getPatientRecallStatus(patient);
+            for (const item of [status.lastVisit, status.nextAppointment]) {
+                if (!item) continue;
+                const ev = item.event;
+                const center = getEventCenter(ev);
+                for (const text of [ev.title, ev.extendedProps?.centerName, center?.service]) {
+                    const found = detectTreatmentInText(text);
+                    if (found) return { treatment: found, date: item.date, reason: 'appointment' };
+                }
+            }
+            const tags = Array.isArray(patient?.tags) ? patient.tags.join(' ') : String(patient?.tags || '');
+            const fromTags = detectTreatmentInText(tags);
+            if (fromTags) return { treatment: fromTags, date: null, reason: 'tags' };
+            return { treatment: 'osteopatia', date: null, reason: null };
+        }
+        function buildPatientMessage(type, treatment, patient, context = {}) {
+            const template = WHATSAPP_TEMPLATES[treatment]?.[type];
+            if (!template) return '';
+            const values = {
+                nome: String(patient?.name || '').trim() || 'paziente',
+                link: context.reviewUrl || '',
+                data: context.date || '',
+                ora: context.time || '',
+                sede: context.place || 'lo studio'
+            };
+            return template.replace(/\{(nome|link|data|ora|sede)\}/g, (m, key) => values[key]);
+        }
+        function nextAppointmentContext(patient) {
+            const next = getPatientRecallStatus(patient).nextAppointment;
+            if (!next) return null;
+            const centerName = next.event.extendedProps?.centerName;
+            return {
+                date: next.date.toLocaleDateString('it-IT', { weekday: 'long', day: 'numeric', month: 'long' }),
+                time: `${String(next.date.getHours()).padStart(2, '0')}:${String(next.date.getMinutes()).padStart(2, '0')}`,
+                place: centerName && centerName !== 'Studio Privato' ? centerName : 'lo studio'
+            };
+        }
+        function messageTypeLabel(type) {
+            return WHATSAPP_MESSAGE_TYPES.find(t => t.id === type)?.label || type || '';
+        }
+        function lastContactLabel(patient) {
+            if (!patient?.lastContactAt) return '';
+            const d = new Date(patient.lastContactAt);
+            if (Number.isNaN(d.getTime())) return '';
+            const treatment = MESSAGE_TREATMENT_LABELS[patient.lastContactTreatment];
+            return `${d.toLocaleString('it-IT', { dateStyle: 'medium', timeStyle: 'short' })} – ${messageTypeLabel(patient.lastContactType)}${treatment ? ' (' + treatment + ')' : ''}`;
+        }
+        function currentMessagePatient() {
+            return appState.patients.find(p => String(p.id) === String(messageModalState.patientId)) || null;
+        }
+        window.openPatientMessageModal = function(patientId) {
+            const patient = appState.patients.find(p => String(p.id) === String(patientId));
+            if (!patient) { showToast('Paziente non trovato.'); return; }
+            const number = normalizeWhatsAppNumber(patient.phone);
+            if (!number) { showToast('Numero di telefono non valido per WhatsApp.'); return; }
+            const suggestion = suggestPatientTreatment(patient);
+            messageModalState = { patientId: patient.id, treatment: suggestion.treatment, type: null };
+            document.getElementById('patient-message-title').textContent = `Messaggio a ${patient.name || 'paziente'}`;
+            const last = lastContactLabel(patient);
+            document.getElementById('patient-message-subtitle').textContent = `WhatsApp +${number}${last ? ' • Ultimo contatto: ' + last : ''}`;
+            const hint = suggestion.reason === 'appointment' && suggestion.date
+                ? `Suggerito in base all'appuntamento del ${suggestion.date.toLocaleDateString('it-IT')}`
+                : suggestion.reason === 'tags' ? 'Suggerito in base ai tag del paziente' : 'Scegli il trattamento a cui si riferisce il messaggio';
+            document.getElementById('message-treatment-hint').textContent = hint;
+            document.getElementById('google-review-url').value = appState.messagingSettings?.googleReviewUrl || '';
+            document.getElementById('messaging-settings').open = false;
+            updateMessageTreatmentButtons();
+            backToMessageTypes();
+            document.getElementById('patient-message-modal').classList.remove('hidden');
+        };
+        window.closePatientMessageModal = function() {
+            document.getElementById('patient-message-modal').classList.add('hidden');
+            updateModalState();
+        };
+        function updateMessageTreatmentButtons() {
+            for (const key of Object.keys(MESSAGE_TREATMENT_LABELS)) {
+                const button = document.getElementById(`message-treatment-${key}`);
+                const active = messageModalState.treatment === key;
+                button.setAttribute('aria-pressed', active ? 'true' : 'false');
+                button.classList.toggle('bg-emerald-700', active);
+                button.classList.toggle('text-white', active);
+                button.classList.toggle('border-emerald-700', active);
+                button.classList.toggle('bg-slate-100', !active);
+                button.classList.toggle('text-slate-700', !active);
+            }
+        }
+        window.renderMessageTypeList = function() {
+            const patient = currentMessagePatient();
+            const list = document.getElementById('message-type-list');
+            if (!patient || !list) return;
+            const next = nextAppointmentContext(patient);
+            const hasReviewLink = isValidReviewUrl(appState.messagingSettings?.googleReviewUrl);
+            list.innerHTML = WHATSAPP_MESSAGE_TYPES.map(type => {
+                let note = type.desc;
+                let disabled = false;
+                if (type.id === 'reminder') {
+                    if (next) note = `Appuntamento di ${next.date} alle ${next.time}`;
+                    else { note = 'Nessun appuntamento futuro registrato'; disabled = true; }
+                }
+                if (type.id === 'review' && !hasReviewLink) { note = 'Imposta prima il link recensioni (in fondo)'; disabled = true; }
+                return `<button type="button" onclick="selectMessageType('${type.id}')" ${disabled ? 'disabled' : ''} class="w-full p-3 bg-white hover:bg-emerald-50 border border-slate-200 rounded-2xl text-left flex items-center gap-3 transition disabled:opacity-50 disabled:cursor-not-allowed"><span class="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center flex-shrink-0"><i class="fa-solid ${type.icon}"></i></span><span class="min-w-0"><strong class="block text-xs text-slate-900">${escapeHtml(type.label)}</strong><span class="block text-[10px] text-slate-600">${escapeHtml(note)}</span></span></button>`;
+            }).join('');
+        };
+        function refreshMessagePreview() {
+            const patient = currentMessagePatient();
+            if (!patient || !messageModalState.type) return;
+            const context = { reviewUrl: appState.messagingSettings?.googleReviewUrl || '', ...(nextAppointmentContext(patient) || {}) };
+            document.getElementById('message-preview-text').value = buildPatientMessage(messageModalState.type, messageModalState.treatment, patient, context);
+            document.getElementById('message-preview-label').textContent = `${messageTypeLabel(messageModalState.type)} – ${MESSAGE_TREATMENT_LABELS[messageModalState.treatment]}`;
+        }
+        window.selectMessageTreatment = function(treatment) {
+            if (!MESSAGE_TREATMENT_LABELS[treatment]) return;
+            messageModalState.treatment = treatment;
+            updateMessageTreatmentButtons();
+            refreshMessagePreview();
+        };
+        window.selectMessageType = function(type) {
+            messageModalState.type = type;
+            refreshMessagePreview();
+            document.getElementById('message-type-list').classList.add('hidden');
+            document.getElementById('message-preview-panel').classList.remove('hidden');
+            document.getElementById('message-preview-text').focus();
+        };
+        window.backToMessageTypes = function() {
+            messageModalState.type = null;
+            renderMessageTypeList();
+            document.getElementById('message-type-list').classList.remove('hidden');
+            document.getElementById('message-preview-panel').classList.add('hidden');
+        };
+        window.sendPatientWhatsApp = async function() {
+            const patient = currentMessagePatient();
+            if (!patient) return;
+            const text = document.getElementById('message-preview-text').value.trim();
+            if (!text) { showToast('Il messaggio è vuoto.'); return; }
+            const url = buildWhatsAppUrl(patient.phone, text);
+            if (!url) { showToast('Numero di telefono non valido per WhatsApp.'); return; }
+            window.open(url, '_blank', 'noopener');
+            const now = new Date().toISOString();
+            const entry = { at: now, type: messageModalState.type, treatment: messageModalState.treatment };
+            const update = {
+                lastContactAt: now,
+                lastContactType: entry.type,
+                lastContactTreatment: entry.treatment,
+                contactLog: [entry, ...(Array.isArray(patient.contactLog) ? patient.contactLog : [])].slice(0, 20)
+            };
+            try {
+                await setDoc(sharedDocument('patients_list', patient.id), update, { merge: true });
+                Object.assign(patient, update);
+                renderPatientsList(document.getElementById('patient-search-input')?.value.toLowerCase().trim() || '');
+                closePatientMessageModal();
+                showToast('WhatsApp aperto: contatto registrato.');
+            } catch (err) {
+                console.error('Errore registrazione contatto:', err);
+                showToast('WhatsApp aperto, ma il contatto non è stato registrato.');
+            }
+        };
+        window.saveMessagingSettings = async function(event) {
+            event.preventDefault();
+            if (!db || !appState.isLoggedIn || !isAuthorizedFirebaseUser()) { showToast('Accesso autorizzato necessario.'); return; }
+            const url = document.getElementById('google-review-url').value.trim();
+            if (url && !isValidReviewUrl(url)) { showToast('Inserisci un link che inizi con https://'); return; }
+            const settings = { ...(appState.messagingSettings || {}), googleReviewUrl: url, updatedAt: new Date().toISOString() };
+            try {
+                await setDoc(sharedDocument('settings', 'messaging'), settings, { merge: true });
+                appState.messagingSettings = settings;
+                renderMessageTypeList();
+                showToast(url ? 'Link recensioni salvato.' : 'Link recensioni rimosso.');
+            } catch (err) {
+                console.error('Errore salvataggio impostazioni messaggi:', err);
+                showToast('Errore: link non salvato.');
+            }
+        };
         function buildRecallEmailUrl(patient) {
             const email = String(patient.email || '').trim();
             if (!email) return '';
@@ -3678,7 +3956,8 @@
                 patients: structuredClone(appState.patients || []), events: structuredClone(appState.events || []),
                 clinicalSessions: structuredClone(appState.clinicalSessions || []), centers: structuredClone(appState.centers || []),
                 treatments: structuredClone(appState.treatments || []), news: structuredClone(appState.news || []),
-                preparations: structuredClone(appState.preparations || []), manualRevenues: structuredClone(appState.manualRevenues || []), taxProfile: appState.taxProfile ? structuredClone(appState.taxProfile) : null
+                preparations: structuredClone(appState.preparations || []), manualRevenues: structuredClone(appState.manualRevenues || []), taxProfile: appState.taxProfile ? structuredClone(appState.taxProfile) : null,
+                messagingSettings: appState.messagingSettings ? structuredClone(appState.messagingSettings) : null
             };
             return { schema: BACKUP_SCHEMA, schemaVersion: BACKUP_SCHEMA_VERSION, appBuild: 'v31', createdAt, exportedBy: appState.currentUserEmail || null, counts: backupCounts(data), data };
         }
@@ -3702,6 +3981,8 @@
             if (!Array.isArray(payload.data.manualRevenues)) throw new Error('Sezione manualRevenues non valida.');
             if (typeof payload.data.taxProfile === 'undefined') payload.data.taxProfile = null;
             if (payload.data.taxProfile !== null && typeof payload.data.taxProfile !== 'object') throw new Error('Sezione taxProfile non valida.');
+            if (typeof payload.data.messagingSettings === 'undefined') payload.data.messagingSettings = null;
+            if (payload.data.messagingSettings !== null && (typeof payload.data.messagingSettings !== 'object' || Array.isArray(payload.data.messagingSettings))) throw new Error('Sezione messagingSettings non valida.');
             const idSections=['patients','events','clinicalSessions','centers','treatments','news','preparations','manualRevenues'];
             for (const key of idSections) for (const item of payload.data[key]) if (!item || typeof item!=='object' || !String(item.id || item.eventId || '').trim()) throw new Error(`Record senza ID nella sezione ${key}.`);
             return payload;
@@ -3732,6 +4013,7 @@
                 await restoreCollection(data.preparations,id=>doc(db,'artifacts',appId,'public','data','preparations_list',id),'guide',progress);
                 await restoreCollection(data.manualRevenues || [],id=>sharedDocument('manual_revenue',id),'entrate manuali',progress);
                 if(data.taxProfile) await setDoc(sharedDocument('tax_profile','default'),{...data.taxProfile,id:'default'},{merge:false});
+                if(data.messagingSettings) await setDoc(sharedDocument('settings','messaging'),data.messagingSettings,{merge:false});
                 localStorage.setItem('lastRestoreAt',new Date().toISOString()); pendingBackupData=null; await loadAllDataFromFirestore(); progress.textContent='Ripristino completato con successo.'; renderBackupDashboard(); if(calendarInstance){calendarInstance.refetchEvents();calendarInstance.updateSize();} showToast('Ripristino completato.');
             } catch(err){startSharedRealtimeSync();progress.textContent='Ripristino interrotto: '+err.message;throw err;}
         }
