@@ -4,7 +4,7 @@ import { loadFunctions } from '../support/app-source.js';
 function financeFns(centers = []) {
     const appState = { centers, events: [], patients: [] };
     return { appState, ...loadFunctions(
-        ['normalizeManualRevenue', 'normalizeTaxProfile', 'financeEuro', 'isFinancialClinicalEvent', 'isNonClinicalEvent', 'getEventCenter'],
+        ['normalizeManualRevenue', 'normalizeTaxProfile', 'financeEuro', 'isFinancialClinicalEvent', 'isNonClinicalEvent', 'getEventCenter', 'isShiftEvent', 'isShiftCenter'],
         { appState }
     ) };
 }
@@ -65,7 +65,8 @@ describe('isFinancialClinicalEvent', () => {
     const centers = [
         { id: 'c1', name: 'Clinico', includeInFinance: true },
         { id: 'c2', name: 'Escluso', includeInFinance: false },
-        { id: 'c3', name: 'Personale', isNonClinicalCalendar: true }
+        { id: 'c3', name: 'Personale', isNonClinicalCalendar: true },
+        { id: 'c4', name: 'Medicina dello Sport', isNonClinicalCalendar: true, isShiftCalendar: true, hourlyRate: 25, includeInFinance: false }
     ];
     const { isFinancialClinicalEvent } = financeFns(centers);
 
@@ -77,6 +78,8 @@ describe('isFinancialClinicalEvent', () => {
         ['evento di calendario non clinico', { extendedProps: { centerId: 'c3' } }, false],
         ['evento marcato non clinico', { extendedProps: { isNonClinical: true } }, false],
         ['evento annullato', { extendedProps: { paymentStatus: 'cancelled' } }, false],
+        ['turno retribuito', { extendedProps: { centerId: 'c4' } }, true],
+        ['turno annullato', { extendedProps: { centerId: 'c4', paymentStatus: 'cancelled' } }, false],
         ['evento nullo', null, false]
     ])('%s → %s', (_label, ev, expected) => {
         expect(isFinancialClinicalEvent(ev)).toBe(expected);
