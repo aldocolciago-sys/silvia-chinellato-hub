@@ -1407,8 +1407,8 @@
                         ${center.phone ? `<p class="text-xs sm:text-sm text-slate-500 font-light flex items-center gap-2"><i class="fa-solid fa-phone text-nature-600"></i> ${escapeHtml(center.phone)}</p>` : ''}
                     </div>
                     <div class="flex flex-wrap items-center gap-3 pt-2">
-                        ${siteUrl ? `<a href="${siteUrl}" target="_blank" rel="noopener noreferrer" class=""px-4 py-2 bg-water-50 hover:bg-water-100 text-water-800 font-semibold rounded-xl text-xs transition flex items-center gap-1.5 shadow-2xs"><i class="fa-solid fa-globe"></i> <span>Sito Web</span></a>` : ''}
-                        ${bookingUrl ? `<a href="${bookingUrl}" target="_blank" rel="noopener noreferrer" class=""px-4 py-2 bg-nature-600 hover:bg-nature-700 text-white font-semibold rounded-xl text-xs transition flex items-center gap-1.5 shadow-md"><i class="fa-solid fa-calendar-check"></i> <span>Prenota Online</span></a>` : ''}
+                        ${siteUrl ? `<a href="${siteUrl}" target="_blank" rel="noopener noreferrer" class="px-4 py-2 bg-water-50 hover:bg-water-100 text-water-800 font-semibold rounded-xl text-xs transition flex items-center gap-1.5 shadow-2xs"><i class="fa-solid fa-globe"></i> <span>Sito Web</span></a>` : ''}
+                        ${bookingUrl ? `<a href="${bookingUrl}" target="_blank" rel="noopener noreferrer" class="px-4 py-2 bg-nature-600 hover:bg-nature-700 text-white font-semibold rounded-xl text-xs transition flex items-center gap-1.5 shadow-md"><i class="fa-solid fa-calendar-check"></i> <span>Prenota Online</span></a>` : ''}
                     </div>
                 </div>
             `;
@@ -1460,7 +1460,7 @@
                             <button onclick="toggleNewsExpand(${idx})" id="news-btn-${idx}" class="text-xs font-bold text-water-700 hover:text-water-900 transition flex items-center gap-1 italic-title">
                                 <span>Leggi tutto</span> <i class="fa-solid fa-chevron-down text-[10px]"></i>
                             </button>
-                            ${safeUrl(item.link) ? `<a href="${safeUrl(item.link)}" target="_blank" rel="noopener noreferrer" class=""px-3 py-1.5 bg-water-50 hover:bg-water-100 text-water-800 rounded-xl text-xs font-semibold transition"><i class="fa-solid fa-arrow-up-right-from-square"></i> Approfondisci</a>` : ''}
+                            ${safeUrl(item.link) ? `<a href="${safeUrl(item.link)}" target="_blank" rel="noopener noreferrer" class="px-3 py-1.5 bg-water-50 hover:bg-water-100 text-water-800 rounded-xl text-xs font-semibold transition"><i class="fa-solid fa-arrow-up-right-from-square"></i> Approfondisci</a>` : ''}
                         </div>
                     </div>
                 `;

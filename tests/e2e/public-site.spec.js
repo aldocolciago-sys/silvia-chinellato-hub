@@ -69,6 +69,13 @@ test.describe('sito pubblico', () => {
             await expect(card).toContainText('Studio Monza');
             await expect(card.getByRole('link', { name: 'Prenota Online' })).toHaveAttribute('href', 'https://prenota.example/monza');
             await expect(card.getByRole('link', { name: 'Prenota Online' })).toHaveAttribute('target', '_blank');
+            // i link sono pulsanti ben visibili: sfondo pieno verde e testo bianco
+            const booking = card.getByRole('link', { name: 'Prenota Online' });
+            await expect(booking).toHaveCSS('background-color', 'rgb(63, 94, 78)');
+            await expect(booking).toHaveCSS('color', 'rgb(255, 255, 255)');
+            const site = card.getByRole('link', { name: 'Sito Web' });
+            await expect(site).toHaveCSS('background-color', 'rgb(244, 248, 249)');
+            expect((await booking.boundingBox()).height).toBeGreaterThanOrEqual(30);
             await expect(page.locator('#public-news-grid')).toContainText('1 settembre 2030');
         });
     });
