@@ -2768,9 +2768,23 @@
             list.innerHTML = appState.preparations.map(p => `
                 <div class="p-3 bg-white border border-slate-200 rounded-2xl flex items-center justify-between text-xs">
                     <div><span class="px-2 py-0.5 rounded bg-nature-50 text-nature-800 text-[10px] font-bold">${escapeHtml(p.tag)}</span> <strong class="text-slate-900 ml-1">${escapeHtml(p.title)}</strong></div>
-                    <button type="button" onclick="confirmDeletePrep('${p.id}')" class="px-2.5 py-1 bg-rose-50 text-rose-600 rounded-lg font-semibold">Elimina</button>
+                    <div class="flex items-center gap-1.5">
+                        <button type="button" onclick="editPrep('${p.id}')" class="px-2.5 py-1 bg-nature-50 text-nature-700 rounded-lg font-semibold">Modifica</button>
+                        <button type="button" onclick="confirmDeletePrep('${p.id}')" class="px-2.5 py-1 bg-rose-50 text-rose-600 rounded-lg font-semibold">Elimina</button>
+                    </div>
                 </div>
             `).join('');
+        }
+
+        window.editPrep = function(id) {
+            const p = appState.preparations.find(x => x.id === id);
+            if (!p) return;
+            document.getElementById('prep-edit-id').value = p.id;
+            document.getElementById('prep-title').value = p.title || '';
+            document.getElementById('prep-tag').value = p.tag || '';
+            document.getElementById('prep-content').value = p.content || '';
+            document.getElementById('prep-submit-btn-text').textContent = 'Aggiorna Guida';
+            document.getElementById('prep-cancel-edit').classList.remove('hidden');
         }
 
         window.resetPrepForm = function() {
