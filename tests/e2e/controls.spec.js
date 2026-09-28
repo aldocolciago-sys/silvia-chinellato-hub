@@ -44,7 +44,8 @@ const ENTRY_POINTS = [
     { name: 'Ultime novità', modal: 'sync-report-modal', desktop: { role: 'Ultime novità' }, mobile: { more: 'Ultime novità' } },
     { name: 'Sincronizza calendari', modal: 'sync-report-modal', desktop: { role: 'Sincronizza Calendari' }, mobile: { nav: 'Sincronizza' } },
     { name: 'Settimana tipo', modal: 'agenda-settings-modal', desktop: { title: 'Settimana tipo e spostamenti' }, mobile: { more: 'Settimana tipo' } },
-    { name: 'Promemoria', modal: 'reminders-modal', desktop: { title: 'Promemoria di oggi e domani' }, mobile: { more: 'Promemoria' } }
+    { name: 'Promemoria', modal: 'reminders-modal', desktop: { title: 'Promemoria di oggi e domani' }, mobile: { more: 'Promemoria' } },
+    { name: 'Richieste', modal: 'requests-modal', desktop: { title: 'Richieste di appuntamento' }, mobile: { more: 'Richieste' } }
 ];
 
 async function openEntry(page, entry) {
@@ -113,6 +114,7 @@ test.describe('raggiungibilità di tutte le funzioni', () => {
     }
 
     test('schede secondarie: modifica paziente, storico, unione duplicati', async ({ page }) => {
+        test.setTimeout(60_000); // controlla ogni pulsante di tre finestre: ~28 s, troppo vicino al limite di 30 s
         await loginViaUi(page);
         await openEntry(page, ENTRY_POINTS[1]);
         await page.locator('#patients-modal').getByRole('button', { name: /Nuovo Paziente/ }).click();
@@ -138,7 +140,7 @@ test.describe('raggiungibilità di tutte le funzioni', () => {
         test.skip(isMobile(page), 'Su mobile le funzioni sono nella barra inferiore');
         await loginViaUi(page);
         const header = page.locator('#private-view > header');
-        for (const title of ['Gestisci Poliambulatori', 'Settimana tipo e spostamenti', 'Gestisci Trattamenti', 'Pazienti', 'Gestisci News', 'Gestisci Preparazione', 'Dashboard compensi', 'Promemoria di oggi e domani', 'Pazienti da richiamare', 'Appuntamenti senza paziente', 'Backup & Ripristino', 'Esci']) {
+        for (const title of ['Gestisci Poliambulatori', 'Settimana tipo e spostamenti', 'Gestisci Trattamenti', 'Pazienti', 'Gestisci News', 'Gestisci Preparazione', 'Dashboard compensi', 'Richieste di appuntamento', 'Promemoria di oggi e domani', 'Pazienti da richiamare', 'Appuntamenti senza paziente', 'Backup & Ripristino', 'Esci']) {
             await expect(header.getByTitle(title, { exact: true }), title).toBeVisible();
         }
         for (const name of ['Studio', 'Ultime novità', 'Sincronizza Calendari']) {
@@ -153,7 +155,7 @@ test.describe('raggiungibilità di tutte le funzioni', () => {
         for (const button of await nav.getByRole('button').all()) await button.click({ trial: true });
         await nav.getByRole('button', { name: 'Altro' }).click();
         const more = page.locator('#mobile-admin-more');
-        await expect(more.getByRole('button')).toHaveText(['Chiudi', 'Poliambulatori', 'Settimana tipo', 'Trattamenti', 'News e offerte', 'Preparazione', 'Compensi', 'Promemoria', 'Richiami', 'Ultime novità', 'Senza paziente', 'Backup e ripristino', 'Esci'].map(t => t === 'Chiudi' ? '' : t));
+        await expect(more.getByRole('button')).toHaveText(['Chiudi', 'Poliambulatori', 'Settimana tipo', 'Trattamenti', 'News e offerte', 'Preparazione', 'Compensi', 'Richieste', 'Promemoria', 'Richiami', 'Ultime novità', 'Senza paziente', 'Backup e ripristino', 'Esci'].map(t => t === 'Chiudi' ? '' : t));
         for (const button of await more.getByRole('button').all()) await button.click({ trial: true });
     });
 });

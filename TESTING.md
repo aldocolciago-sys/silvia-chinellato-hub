@@ -54,6 +54,19 @@ Nella dashboard compensi la sezione "Scadenze fiscali" stima i versamenti dell'a
 
 Dall'anagrafica pazienti il pulsante **WhatsApp** apre un menu di messaggi precompilati (richiesta notizie, nuovo appuntamento, recensione Google, ringraziamento, promemoria), in versione Osteopatia e Idrocolonterapia. I testi sono in `WHATSAPP_TEMPLATES` in `index.html`; il link recensioni si imposta dall'app ed è salvato in `shared/data/settings/messaging`. Test: `tests/unit/whatsapp.test.js`, `tests/integration/patient-messages.test.js`, `tests/e2e/patient-messages.spec.js`.
 
+## Richieste di appuntamento dal sito
+
+Nella sezione Contatti il modulo "Richiedi un appuntamento in studio" (solo osteopatia nello studio privato) salva le richieste in `artifacts/{app}/requests` con i soli campi previsti dalle regole Firestore.
+- Antispam: campo nascosto, tempo minimo di compilazione di 3 secondi (ai robot si mostra comunque il messaggio di conferma, senza salvare) e un solo invio al minuto dallo stesso browser.
+- Nell'area riservata la voce "Richieste" (con contatore delle nuove) permette di:
+  - creare paziente e appuntamento con i dati precompilati (se il paziente esiste già, per telefono o nome, viene selezionato); quando l'appuntamento è salvato la richiesta diventa "Appuntamento creato";
+  - rispondere su WhatsApp;
+  - archiviare;
+  - eliminare.
+- Le richieste sono incluse nel backup.
+
+Logica in `validateAppointmentRequest`, `isLikelySpam`, `submitAppointmentRequest` e `convertRequest` (`index.html`). Test: `tests/unit/appointment-requests.test.js`, `tests/integration/appointment-requests.test.js`, `tests/e2e/appointment-requests.spec.js` (con controllo di accessibilità del modulo) e `tests/rules` per la regola "solo creazione".
+
 ## Regole di sicurezza Firestore
 
 `firestore.rules` è la copia di riferimento delle regole pubblicate nella console Firebase. `tests/rules/firestore-rules.test.js` le prova sull'emulatore Firestore (`npm run test:rules`, job "Regole Firestore" in CI) per visitatori, utenti anonimi, account non autorizzati, amministratori con email non verificata e amministratori, su tutte le collezioni usate da `index.html`. Istruzioni per pubblicarle: [`FIRESTORE_RULES.md`](FIRESTORE_RULES.md).
