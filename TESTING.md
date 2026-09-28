@@ -15,9 +15,10 @@ npx playwright install chromium   # una volta, solo per gli E2E (non serve se il
 
 npm run test:unit           # unit + integrazione (Vitest, ~15 s)
 npm run test:coverage       # come sopra con copertura di api/ (soglia 95%)
+npm run test:rules          # regole di sicurezza Firestore sull'emulatore (serve Java 21)
 npm run test:e2e            # end-to-end nel browser (Playwright, desktop + mobile)
 npm run test:e2e:ui         # E2E in modalità interattiva
-npm test                    # unit + E2E
+npm test                    # unit + regole + E2E
 npm run serve               # avvia il sito in locale su http://127.0.0.1:4173 (con /api/ical funzionante)
 ```
 
@@ -52,6 +53,10 @@ Nella dashboard compensi la sezione "Scadenze fiscali" stima i versamenti dell'a
 ## Messaggi WhatsApp ai pazienti
 
 Dall'anagrafica pazienti il pulsante **WhatsApp** apre un menu di messaggi precompilati (richiesta notizie, nuovo appuntamento, recensione Google, ringraziamento, promemoria), in versione Osteopatia e Idrocolonterapia. I testi sono in `WHATSAPP_TEMPLATES` in `index.html`; il link recensioni si imposta dall'app ed è salvato in `shared/data/settings/messaging`. Test: `tests/unit/whatsapp.test.js`, `tests/integration/patient-messages.test.js`, `tests/e2e/patient-messages.spec.js`.
+
+## Regole di sicurezza Firestore
+
+`firestore.rules` è la copia di riferimento delle regole pubblicate nella console Firebase. `tests/rules/firestore-rules.test.js` le prova sull'emulatore Firestore (`npm run test:rules`, job "Regole Firestore" in CI) per visitatori, utenti anonimi, account non autorizzati, amministratori con email non verificata e amministratori, su tutte le collezioni usate da `index.html`. Istruzioni per pubblicarle: [`FIRESTORE_RULES.md`](FIRESTORE_RULES.md).
 
 ## Come funzionano i doppi di test
 

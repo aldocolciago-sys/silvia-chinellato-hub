@@ -5,3 +5,4 @@ test-results/
 blob-report/
 tests/.cache/
 .DS_Store
+*-debug.log
