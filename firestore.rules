@@ -17,7 +17,7 @@ service cloud.firestore {
       return !(field in data) || (data[field] is string && data[field].size() <= maxLength);
     }
 
-    // Richiesta di appuntamento inviata dal sito: solo i campi previsti, con limiti di lunghezza
+    // Richiesta di appuntamento o di informazioni inviata dal sito: solo i campi previsti, con limiti di lunghezza
     function isValidAppointmentRequest(data) {
       return data.keys().hasOnly(['name', 'phone', 'email', 'treatment', 'preferredDays', 'preferredTime', 'message', 'consent', 'createdAt', 'status'])
         && data.keys().hasAll(['name', 'phone', 'consent', 'createdAt', 'status'])
@@ -27,7 +27,7 @@ service cloud.firestore {
         && optionalString(data, 'preferredDays', 100)
         && optionalString(data, 'preferredTime', 50)
         && optionalString(data, 'message', 1000)
-        && (!('treatment' in data) || data.treatment in ['osteopatia'])
+        && (!('treatment' in data) || data.treatment in ['osteopatia', 'idrocolonterapia'])
         && data.consent == true
         && data.status == 'new'
         && data.createdAt is string && data.createdAt.size() <= 40;

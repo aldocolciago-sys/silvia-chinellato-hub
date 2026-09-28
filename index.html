@@ -381,6 +381,34 @@
                         <span class="text-xs font-bold text-water-700 underline font-editorial italic text-lg">silviachine@gmail.com</span>
                     </a>
                 </div>
+
+                <div id="appointment-request" class="max-w-2xl mx-auto bg-nature-50/70 border border-nature-100 rounded-3xl p-5 sm:p-8 space-y-4">
+                    <div class="text-center space-y-1">
+                        <h4 class="font-editorial text-xl sm:text-2xl font-bold text-nature-900 italic">Contatta Silvia in privato</h4>
+                        <p class="text-xs sm:text-sm text-slate-600">Per richiedere un appuntamento o semplicemente informazioni su osteopatia e idrocolonterapia. Silvia la ricontatterà personalmente al più presto. Per prenotare direttamente presso i poliambulatori può usare i pulsanti "Prenota Online".</p>
+                    </div>
+                    <form id="appointment-request-form" onsubmit="submitAppointmentRequest(event)" onfocusin="markRequestFormStarted()" novalidate class="space-y-3">
+                        <fieldset class="space-y-1">
+                            <legend class="block text-xs font-bold text-slate-700 mb-1">Trattamento di interesse *</legend>
+                            <div class="grid grid-cols-2 gap-2">
+                                <label class="flex items-center justify-center gap-2 px-3 py-3 bg-white border border-slate-200 rounded-2xl text-sm font-semibold text-slate-800 cursor-pointer has-[:checked]:bg-nature-100 has-[:checked]:border-nature-500"><input type="radio" name="request-treatment" value="osteopatia" class="w-4 h-4">Osteopatia</label>
+                                <label class="flex items-center justify-center gap-2 px-3 py-3 bg-white border border-slate-200 rounded-2xl text-sm font-semibold text-slate-800 cursor-pointer has-[:checked]:bg-water-100 has-[:checked]:border-water-500"><input type="radio" name="request-treatment" value="idrocolonterapia" class="w-4 h-4">Idrocolonterapia</label>
+                            </div>
+                        </fieldset>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <div class="space-y-1"><label for="request-name" class="block text-xs font-bold text-slate-700">Nome e cognome *</label><input type="text" id="request-name" autocomplete="name" maxlength="100" required class="w-full px-4 py-3 bg-white border border-slate-200 rounded-2xl text-sm"></div>
+                            <div class="space-y-1"><label for="request-phone" class="block text-xs font-bold text-slate-700">Telefono *</label><input type="tel" id="request-phone" autocomplete="tel" maxlength="30" required class="w-full px-4 py-3 bg-white border border-slate-200 rounded-2xl text-sm"></div>
+                            <div class="space-y-1"><label for="request-email" class="block text-xs font-bold text-slate-700">Email (facoltativa)</label><input type="email" id="request-email" autocomplete="email" maxlength="120" class="w-full px-4 py-3 bg-white border border-slate-200 rounded-2xl text-sm"></div>
+                            <div class="space-y-1"><label for="request-time" class="block text-xs font-bold text-slate-700">Fascia preferita</label><select id="request-time" class="w-full px-4 py-3 bg-white border border-slate-200 rounded-2xl text-sm"><option value="">Indifferente</option><option value="mattina">Mattina</option><option value="pomeriggio">Pomeriggio</option><option value="sera">Sera</option></select></div>
+                        </div>
+                        <div class="space-y-1"><label for="request-days" class="block text-xs font-bold text-slate-700">Giorni preferiti</label><input type="text" id="request-days" maxlength="100" placeholder="Es. martedì o giovedì" class="w-full px-4 py-3 bg-white border border-slate-200 rounded-2xl text-sm"></div>
+                        <div class="space-y-1"><label for="request-message" class="block text-xs font-bold text-slate-700">Messaggio (facoltativo)</label><textarea id="request-message" maxlength="1000" rows="3" placeholder="Motivo della visita, domande o altre informazioni utili" class="w-full px-4 py-3 bg-white border border-slate-200 rounded-2xl text-sm"></textarea></div>
+                        <div aria-hidden="true" style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden"><label for="request-website">Lasciare vuoto</label><input type="text" id="request-website" tabindex="-1" autocomplete="off"></div>
+                        <label class="flex items-start gap-2 text-xs text-slate-700"><input type="checkbox" id="request-consent" class="mt-0.5 w-4 h-4 flex-shrink-0"><span>Acconsento al trattamento dei miei dati personali, ai sensi del Regolamento UE 2016/679, al solo fine di essere ricontattato/a in merito a questa richiesta. *</span></label>
+                        <p id="request-feedback" role="status" aria-live="polite" class="hidden text-sm font-semibold rounded-2xl px-4 py-3"></p>
+                        <button type="submit" id="request-submit" class="w-full sm:w-auto px-6 py-3 bg-nature-700 hover:bg-nature-800 text-white font-bold rounded-2xl text-sm shadow-sm">Invia la richiesta</button>
+                    </form>
+                </div>
             </section>
         </main>
 
@@ -437,6 +465,10 @@
                 </button>
                 <button onclick="openBusinessDashboard()" class="w-7 h-7 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 rounded-xl transition flex items-center justify-center border border-emerald-200 shadow-xs" title="Dashboard compensi">
                     <i class="fa-solid fa-chart-line text-[10px]"></i>
+                </button>
+                <button onclick="openRequestsModal()" class="relative w-7 h-7 bg-nature-50 hover:bg-nature-100 text-nature-800 rounded-xl transition flex items-center justify-center border border-nature-200 shadow-xs" title="Richieste di appuntamento">
+                    <i class="fa-solid fa-inbox text-[10px]"></i>
+                    <span id="requests-badge" class="hidden absolute -top-1.5 -right-1.5 min-w-[16px] h-4 px-1 rounded-full bg-rose-600 text-white text-[9px] font-bold flex items-center justify-center"></span>
                 </button>
                 <button onclick="openRemindersModal()" class="w-7 h-7 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 rounded-xl transition flex items-center justify-center border border-emerald-200 shadow-xs" title="Promemoria di oggi e domani">
                     <i class="fa-solid fa-bell text-[10px]"></i>
@@ -505,6 +537,7 @@
                 <button type="button" onclick="mobileOpenAdmin(openNewsAdminModal)"><i class="fa-solid fa-bullhorn"></i>News e offerte</button>
                 <button type="button" onclick="mobileOpenAdmin(openPrepAdminModal)"><i class="fa-solid fa-book-medical"></i>Preparazione</button>
                 <button type="button" onclick="mobileOpenAdmin(openBusinessDashboard)"><i class="fa-solid fa-chart-line"></i>Compensi</button>
+                <button type="button" onclick="mobileOpenAdmin(openRequestsModal)"><i class="fa-solid fa-inbox"></i>Richieste<span id="requests-badge-mobile" class="hidden ml-1 px-1.5 rounded-full bg-rose-600 text-white text-[10px] font-bold"></span></button>
                 <button type="button" onclick="mobileOpenAdmin(openRemindersModal)"><i class="fa-solid fa-bell"></i>Promemoria</button>
                 <button type="button" onclick="mobileOpenAdmin(openRecallModal)"><i class="fa-solid fa-phone-volume"></i>Richiami</button>
                 <button type="button" onclick="mobileOpenAdmin(openLastSyncReport)"><i class="fa-solid fa-clock-rotate-left"></i>Ultime novità</button>
@@ -1167,6 +1200,26 @@
         </div>
     </div>
 
+    <!-- APPOINTMENT REQUESTS MODAL -->
+    <div id="requests-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-md hidden z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-2xl overflow-hidden flex flex-col max-h-[90vh] border border-nature-100">
+            <div class="px-5 sm:px-6 py-4 sm:py-5 border-b border-nature-100 flex items-center justify-between gap-3 bg-nature-50/60">
+                <div class="flex items-center gap-3 min-w-0">
+                    <div class="w-9 h-9 rounded-2xl bg-nature-100 text-nature-800 flex items-center justify-center flex-shrink-0"><i class="fa-solid fa-inbox text-sm"></i></div>
+                    <div class="min-w-0">
+                        <h3 class="font-editorial text-base sm:text-lg font-bold text-slate-900 italic">Richieste di appuntamento</h3>
+                        <p id="requests-summary" class="text-[11px] text-slate-600"></p>
+                    </div>
+                </div>
+                <button aria-label="Chiudi" type="button" onclick="closeRequestsModal()" class="text-slate-400 hover:text-slate-600 w-8 h-8 rounded-full flex items-center justify-center hover:bg-slate-200/60 transition flex-shrink-0"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="p-4 sm:p-6 overflow-y-auto space-y-3 flex-1">
+                <label class="inline-flex items-center gap-2 text-xs font-semibold text-slate-700"><input type="checkbox" id="requests-show-archived" onchange="renderRequestsList()">Mostra anche le richieste gestite e archiviate</label>
+                <div id="requests-list" class="space-y-3"></div>
+            </div>
+        </div>
+    </div>
+
     <!-- UNASSIGNED EVENTS MODAL -->
     <div id="unassigned-events-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-md hidden z-[75] flex items-center justify-center p-4">
       <div class="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-5xl overflow-hidden flex flex-col max-h-[92vh]">
@@ -1276,7 +1329,8 @@
             taxProfile: null,
             messagingSettings: null,
             financeSettings: null,
-            agendaSettings: null
+            agendaSettings: null,
+            requests: []
         };
 
         let db = null;
@@ -1287,6 +1341,9 @@
         const SHARED_DATA_ROOT = ['artifacts', appId, 'shared', 'data'];
         const sharedCollection = (name) => collection(db, ...SHARED_DATA_ROOT, name);
         const sharedDocument = (name, id) => doc(db, ...SHARED_DATA_ROOT, name, id);
+        // Richieste di appuntamento dal sito: fuori da shared/data, perché i visitatori possono solo crearle
+        const requestsCollection = () => collection(db, 'artifacts', appId, 'requests');
+        const requestDocument = (id) => doc(db, 'artifacts', appId, 'requests', id);
         let sharedUnsubscribers = [];
 
         function refreshPrivateUI() {
@@ -1364,6 +1421,11 @@
                 appState.financeSettings = snapshot.exists() ? snapshot.data() : null;
                 populatePrivateRatesForm();
             }, err => console.error('Errore sincronizzazione tariffe:', err)));
+            sharedUnsubscribers.push(onSnapshot(requestsCollection(), snapshot => {
+                appState.requests = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+                updateRequestsBadge();
+                if (!document.getElementById('requests-modal')?.classList.contains('hidden')) renderRequestsList();
+            }, err => console.error('Errore sincronizzazione richieste:', err)));
             sharedUnsubscribers.push(onSnapshot(sharedDocument('settings','agenda'), snapshot => {
                 appState.agendaSettings = snapshot.exists() ? snapshot.data() : null;
                 if (calendarInstance) calendarInstance.refetchEvents();
@@ -1522,6 +1584,15 @@
                     populatePrivateRatesForm();
                     const agendaSnap = await getDoc(sharedDocument('settings','agenda'));
                     appState.agendaSettings = agendaSnap.exists() ? agendaSnap.data() : null;
+                    try {
+                        const requestsSnap = await getDocs(requestsCollection());
+                        appState.requests = requestsSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+                    } catch (err) {
+                        // se le regole non consentono ancora le richieste, il resto dell'area riservata funziona comunque
+                        console.error('Richieste non disponibili:', err);
+                        appState.requests = [];
+                    }
+                    updateRequestsBadge();
                     await runMigrationSafely('archivio sedute', migrateEventClinicalDataToArchiveOnce);
                     await runMigrationSafely('note cliniche legacy', migrateLegacyClinicalBlocksFromPatientNotesOnce);
                     startSharedRealtimeSync();
@@ -1873,6 +1944,7 @@
 
         window.openStudioModal = function(editEv = null) {
             pendingAppointmentPatientId = null;
+            pendingRequestConversionId = null;
             populateTimeSelects();
             populateCenterDropdown(editEv?.extendedProps?.centerId || null);
             const form = document.getElementById('studio-event-form');
@@ -2372,6 +2444,10 @@
             const idx = appState.events.findIndex(ev => ev.id === id);
             if (idx >= 0) appState.events[idx] = newEv;
             else appState.events.push(newEv);
+            if (pendingRequestConversionId) {
+                await markRequestConverted(pendingRequestConversionId, { eventId: id, patientId: newEv.extendedProps?.patientId || null });
+                pendingRequestConversionId = null;
+            }
 
             if (db && userId) {
                 try {
@@ -4639,6 +4715,217 @@
             closeRemindersModal();
             editPatientById(patientId);
         };
+        // ---- Richieste di appuntamento dal sito (studio privato) ----
+        const REQUEST_MIN_FILL_MS = 3000;
+        const REQUEST_RESEND_MS = 60000;
+        let pendingRequestConversionId = null;
+        const REQUEST_TIME_LABELS = { mattina: 'Mattina', pomeriggio: 'Pomeriggio', sera: 'Sera' };
+        const REQUEST_TREATMENTS = ['osteopatia', 'idrocolonterapia'];
+        const REQUEST_TREATMENT_LABELS = { osteopatia: 'Osteopatia', idrocolonterapia: 'Idrocolonterapia' };
+        /** Controlla i dati del modulo pubblico; restituisce l'elenco degli errori (vuoto se valido). */
+        function validateAppointmentRequest(data) {
+            const errors = [];
+            if (String(data.name || '').trim().length < 2) errors.push('Indichi nome e cognome.');
+            const digits = String(data.phone || '').replace(/\D/g, '');
+            if (digits.length < 6 || String(data.phone || '').trim().length > 30) errors.push('Indichi un numero di telefono valido.');
+            if (data.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email)) errors.push("L'indirizzo email non è valido.");
+            if (String(data.name || '').length > 100 || String(data.email || '').length > 120 || String(data.preferredDays || '').length > 100 || String(data.message || '').length > 1000) errors.push('Alcuni campi sono troppo lunghi.');
+            if (!REQUEST_TREATMENTS.includes(data.treatment)) errors.push('Scelga il trattamento di interesse (osteopatia o idrocolonterapia).');
+            if (data.consent !== true) errors.push('Per inviare la richiesta serve il consenso al trattamento dei dati.');
+            return errors;
+        }
+        /** Invio sospetto (campo nascosto compilato o modulo compilato troppo in fretta). */
+        function isLikelySpam({ honeypot, startedAt, now = Date.now() }) {
+            if (String(honeypot || '').trim()) return true;
+            const started = Number(startedAt);
+            return !(started > 0) || now - started < REQUEST_MIN_FILL_MS;
+        }
+        window.markRequestFormStarted = function() {
+            const form = document.getElementById('appointment-request-form');
+            if (form && !form.dataset.startedAt) form.dataset.startedAt = String(Date.now());
+        };
+        function showRequestFeedback(text, ok) {
+            const box = document.getElementById('request-feedback');
+            box.textContent = text;
+            box.classList.remove('hidden');
+            box.classList.toggle('bg-emerald-50', ok); box.classList.toggle('text-emerald-900', ok);
+            box.classList.toggle('bg-rose-50', !ok); box.classList.toggle('text-rose-900', !ok);
+        }
+        function lastRequestSentAt() { try { return Number(localStorage.getItem('appointmentRequestSentAt') || 0); } catch (err) { return 0; } }
+        window.submitAppointmentRequest = async function(event) {
+            event?.preventDefault?.();
+            const form = document.getElementById('appointment-request-form');
+            const value = (id) => document.getElementById(id).value.trim();
+            const data = {
+                name: value('request-name'), phone: value('request-phone'), email: value('request-email'),
+                preferredDays: value('request-days'), preferredTime: document.getElementById('request-time').value,
+                message: value('request-message'), consent: document.getElementById('request-consent').checked,
+                treatment: document.querySelector('input[name="request-treatment"]:checked')?.value || ''
+            };
+            const errors = validateAppointmentRequest(data);
+            if (errors.length) { showRequestFeedback(errors.join(' '), false); return; }
+            const thanks = 'Grazie! La richiesta è stata inviata: Silvia la ricontatterà al più presto.';
+            if (isLikelySpam({ honeypot: document.getElementById('request-website').value, startedAt: form.dataset.startedAt })) {
+                // ai robot si mostra lo stesso messaggio, senza salvare nulla
+                form.reset(); showRequestFeedback(thanks, true); return;
+            }
+            if (Date.now() - lastRequestSentAt() < REQUEST_RESEND_MS) { showRequestFeedback('Richiesta già inviata: attenda un minuto prima di inviarne un\'altra.', false); return; }
+            const record = { name: data.name, phone: data.phone, treatment: data.treatment, consent: true, createdAt: new Date().toISOString(), status: 'new' };
+            for (const key of ['email', 'preferredDays', 'preferredTime', 'message']) if (data[key]) record[key] = data[key];
+            const button = document.getElementById('request-submit');
+            button.disabled = true;
+            try {
+                if (!db) throw new Error('Database non disponibile');
+                await setDoc(requestDocument(`req_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`), record);
+                try { localStorage.setItem('appointmentRequestSentAt', String(Date.now())); } catch (err) { /* archiviazione non disponibile */ }
+                form.reset();
+                delete form.dataset.startedAt;
+                showRequestFeedback(thanks, true);
+            } catch (err) {
+                console.error('Invio richiesta non riuscito:', err);
+                showRequestFeedback('Invio non riuscito. La preghiamo di riprovare o di scrivere a silviachine@gmail.com.', false);
+            } finally {
+                button.disabled = false;
+            }
+        };
+
+        // Area riservata
+        function newRequestsCount() { return (appState.requests || []).filter(r => r.status === 'new').length; }
+        window.updateRequestsBadge = function() {
+            const count = newRequestsCount();
+            for (const id of ['requests-badge', 'requests-badge-mobile']) {
+                const badge = document.getElementById(id);
+                if (!badge) continue;
+                badge.textContent = count ? String(count) : '';
+                badge.classList.toggle('hidden', count === 0);
+            }
+        };
+        const REQUEST_STATUS_LABELS = { new: 'Nuova', converted: 'Appuntamento creato', archived: 'Archiviata' };
+        function findPatientForRequest(request) {
+            const phone = normalizeWhatsAppNumber(request.phone);
+            return appState.patients.find(p => phone && normalizeWhatsAppNumber(p.phone) === phone)
+                || appState.patients.find(p => normalizePersonName(p.name) === normalizePersonName(request.name))
+                || null;
+        }
+        function requestReplyText(request) {
+            const treatment = request.treatment === 'idrocolonterapia' ? "l'idrocolonterapia" : "l'osteopatia";
+            return `Gentile ${String(request.name || '').trim()}, sono Silvia Chinellato: ho ricevuto la sua richiesta riguardante ${treatment}. [Risposta alle sue domande / proposta di appuntamento: giorno e ora]. Resto a disposizione per qualsiasi chiarimento. Cordiali saluti.`;
+        }
+        window.renderRequestsList = function() {
+            const list = document.getElementById('requests-list');
+            if (!list) return;
+            const showAll = document.getElementById('requests-show-archived').checked;
+            const all = [...(appState.requests || [])].sort((a, b) => String(b.createdAt || '').localeCompare(String(a.createdAt || '')));
+            const items = showAll ? all : all.filter(r => r.status === 'new');
+            const count = newRequestsCount();
+            document.getElementById('requests-summary').textContent = count === 1 ? '1 richiesta da gestire' : `${count} richieste da gestire`;
+            if (!items.length) {
+                list.innerHTML = `<p class="p-4 text-xs text-slate-600 bg-slate-50 border border-dashed border-slate-200 rounded-2xl text-center">${showAll ? 'Nessuna richiesta ricevuta.' : 'Nessuna nuova richiesta dal sito.'}</p>`;
+                return;
+            }
+            list.innerHTML = items.map(r => {
+                const received = new Date(r.createdAt);
+                const when = Number.isNaN(received.getTime()) ? '' : received.toLocaleString('it-IT', { dateStyle: 'medium', timeStyle: 'short' });
+                const hasWhatsApp = Boolean(normalizeWhatsAppNumber(r.phone));
+                const existing = findPatientForRequest(r);
+                const details = [
+                    ['Telefono', r.phone], ['Email', r.email], ['Giorni preferiti', r.preferredDays], ['Fascia', REQUEST_TIME_LABELS[r.preferredTime] || (r.preferredTime ? r.preferredTime : '')]
+                ].filter(d => d[1]).map(d => `<div><dt class="inline font-bold text-slate-600">${d[0]}:</dt> <dd class="inline">${escapeHtml(d[1])}</dd></div>`).join('');
+                const id = escapeHtml(r.id);
+                return `<article data-request-id="${id}" class="p-4 bg-white border ${r.status === 'new' ? 'border-nature-300' : 'border-slate-200 opacity-80'} rounded-2xl space-y-2">
+                    <div class="flex flex-wrap items-center justify-between gap-2">
+                        <strong class="text-sm text-slate-900">${escapeHtml(r.name)}${REQUEST_TREATMENT_LABELS[r.treatment] ? ` <span class="ml-1 px-2 py-0.5 rounded-full text-[10px] font-bold ${r.treatment === 'idrocolonterapia' ? 'bg-water-100 text-water-900' : 'bg-nature-100 text-nature-900'}">${REQUEST_TREATMENT_LABELS[r.treatment]}</span>` : ''}</strong>
+                        <span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${r.status === 'new' ? 'bg-rose-100 text-rose-800' : 'bg-slate-100 text-slate-700'}">${escapeHtml(REQUEST_STATUS_LABELS[r.status] || r.status)}</span>
+                    </div>
+                    <p class="text-[11px] text-slate-500">Ricevuta ${escapeHtml(when)}${existing ? ` • già in anagrafica: ${escapeHtml(existing.name)}` : ''}</p>
+                    <dl class="text-xs text-slate-800 space-y-0.5">${details}</dl>
+                    ${r.message ? `<p class="text-xs text-slate-700 bg-slate-50 border border-slate-100 rounded-xl p-2.5 whitespace-pre-line">${escapeHtml(r.message)}</p>` : ''}
+                    <div class="flex flex-wrap gap-2 pt-1">
+                        <button type="button" onclick="convertRequest('${id}')" class="px-3 py-2 bg-nature-700 hover:bg-nature-800 text-white rounded-xl text-xs font-bold"><i class="fa-solid fa-calendar-plus mr-1"></i>${existing ? 'Crea appuntamento' : 'Crea paziente e appuntamento'}</button>
+                        ${hasWhatsApp ? `<button type="button" onclick="replyToRequest('${id}')" aria-label="Rispondi su WhatsApp a ${escapeHtml(r.name)}" class="px-3 py-2 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl text-xs font-bold"><i class="fa-brands fa-whatsapp mr-1"></i>Rispondi su WhatsApp</button>` : ''}
+                        ${r.status === 'new' ? `<button type="button" onclick="archiveRequest('${id}')" class="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-xl text-xs font-bold">Archivia</button>` : ''}
+                        <button type="button" onclick="confirmDeleteRequest('${id}')" class="px-3 py-2 bg-rose-50 hover:bg-rose-100 text-rose-700 rounded-xl text-xs font-bold">Elimina</button>
+                    </div>
+                </article>`;
+            }).join('');
+        };
+        window.openRequestsModal = function() {
+            renderRequestsList();
+            document.getElementById('requests-modal').classList.remove('hidden');
+            updateModalState();
+        };
+        window.closeRequestsModal = function() {
+            document.getElementById('requests-modal').classList.add('hidden');
+            updateModalState();
+        };
+        async function updateRequest(id, changes, successMessage) {
+            const request = appState.requests.find(r => r.id === id);
+            if (!request) return false;
+            try {
+                await setDoc(requestDocument(id), changes, { merge: true });
+                Object.assign(request, changes);
+                updateRequestsBadge();
+                renderRequestsList();
+                if (successMessage) showToast(successMessage);
+                return true;
+            } catch (err) {
+                console.error('Aggiornamento richiesta non riuscito:', err);
+                showToast('Errore: richiesta non aggiornata.');
+                return false;
+            }
+        }
+        window.archiveRequest = function(id) {
+            return updateRequest(id, { status: 'archived', handledAt: new Date().toISOString() }, 'Richiesta archiviata.');
+        };
+        async function markRequestConverted(id, { eventId, patientId }) {
+            await updateRequest(id, { status: 'converted', eventId, patientId, handledAt: new Date().toISOString() });
+        }
+        window.replyToRequest = function(id) {
+            const request = appState.requests.find(r => r.id === id);
+            const url = request ? buildWhatsAppUrl(request.phone, requestReplyText(request)) : '';
+            if (!url) { showToast('Numero di telefono non valido per WhatsApp.'); return; }
+            window.open(url, '_blank', 'noopener');
+            updateRequest(id, { repliedAt: new Date().toISOString() });
+        };
+        window.confirmDeleteRequest = function(id) {
+            const request = appState.requests.find(r => r.id === id);
+            if (!request) return;
+            showConfirmDialog('Elimina richiesta', `Eliminare definitivamente la richiesta di ${request.name}?`, async () => {
+                await deleteDoc(requestDocument(id));
+                appState.requests = appState.requests.filter(r => r.id !== id);
+                updateRequestsBadge();
+                renderRequestsList();
+                showToast('Richiesta eliminata.');
+            }, 'Sì, elimina');
+        };
+        /** Apre il modulo appuntamento già compilato; se il paziente non esiste apre anche la scheda nuova con i dati della richiesta. */
+        window.convertRequest = function(id) {
+            const request = appState.requests.find(r => r.id === id);
+            if (!request) return;
+            closeRequestsModal();
+            openStudioModal();
+            pendingRequestConversionId = id;
+            const treatment = REQUEST_TREATMENTS.includes(request.treatment) ? request.treatment : 'osteopatia';
+            const treatmentLabel = REQUEST_TREATMENT_LABELS[treatment];
+            document.getElementById('studio-title').value = `${treatmentLabel} - ${request.name}`;
+            document.getElementById('studio-treatment').value = treatment;
+            document.getElementById('studio-treatment').dataset.manual = '1';
+            const existing = findPatientForRequest(request);
+            if (existing) {
+                document.getElementById('studio-patient-select').value = existing.id;
+                showPatientClinicalSummary(existing.id);
+                document.getElementById('studio-title').value = `${treatmentLabel} - ${existing.name}`;
+                updateStudioAssessmentWarning();
+                suggestStudioFee();
+                return;
+            }
+            openNewPatientFromAppointment(request.name);
+            document.getElementById('patient-phone').value = request.phone || '';
+            document.getElementById('patient-email').value = request.email || '';
+            const notes = [request.treatment ? `Richiesta dal sito: ${treatmentLabel.toLowerCase()}` : '', request.message, request.preferredDays ? `Giorni preferiti: ${request.preferredDays}` : '', REQUEST_TIME_LABELS[request.preferredTime] ? `Fascia preferita: ${REQUEST_TIME_LABELS[request.preferredTime].toLowerCase()}` : ''].filter(Boolean);
+            document.getElementById('patient-current-issues').value = notes.join('\n');
+        };
+
         function buildRecallEmailUrl(patient) {
             const email = String(patient.email || '').trim();
             if (!email) return '';
@@ -4861,7 +5148,8 @@
                 preparations: structuredClone(appState.preparations || []), manualRevenues: structuredClone(appState.manualRevenues || []), taxProfile: appState.taxProfile ? structuredClone(appState.taxProfile) : null,
                 messagingSettings: appState.messagingSettings ? structuredClone(appState.messagingSettings) : null,
                 financeSettings: appState.financeSettings ? structuredClone(appState.financeSettings) : null,
-                agendaSettings: appState.agendaSettings ? structuredClone(appState.agendaSettings) : null
+                agendaSettings: appState.agendaSettings ? structuredClone(appState.agendaSettings) : null,
+                requests: structuredClone(appState.requests || [])
             };
             return { schema: BACKUP_SCHEMA, schemaVersion: BACKUP_SCHEMA_VERSION, appBuild: 'v31', createdAt, exportedBy: appState.currentUserEmail || null, counts: backupCounts(data), data };
         }
@@ -4888,6 +5176,8 @@
             if (typeof payload.data.messagingSettings === 'undefined') payload.data.messagingSettings = null;
             if (typeof payload.data.financeSettings === 'undefined') payload.data.financeSettings = null;
             if (typeof payload.data.agendaSettings === 'undefined') payload.data.agendaSettings = null;
+            if (typeof payload.data.requests === 'undefined') payload.data.requests = [];
+            if (!Array.isArray(payload.data.requests)) throw new Error('Sezione requests non valida.');
             if (payload.data.agendaSettings !== null && (typeof payload.data.agendaSettings !== 'object' || Array.isArray(payload.data.agendaSettings))) throw new Error('Sezione agendaSettings non valida.');
             if (payload.data.financeSettings !== null && (typeof payload.data.financeSettings !== 'object' || Array.isArray(payload.data.financeSettings))) throw new Error('Sezione financeSettings non valida.');
             if (payload.data.messagingSettings !== null && (typeof payload.data.messagingSettings !== 'object' || Array.isArray(payload.data.messagingSettings))) throw new Error('Sezione messagingSettings non valida.');
@@ -4924,6 +5214,7 @@
                 if(data.messagingSettings) await setDoc(sharedDocument('settings','messaging'),data.messagingSettings,{merge:false});
                 if(data.financeSettings) await setDoc(sharedDocument('settings','finance'),data.financeSettings,{merge:false});
                 if(data.agendaSettings) await setDoc(sharedDocument('settings','agenda'),data.agendaSettings,{merge:false});
+                await restoreCollection((data.requests || []).filter(item => item && item.id),id=>requestDocument(id),'richieste',progress);
                 localStorage.setItem('lastRestoreAt',new Date().toISOString()); pendingBackupData=null; await loadAllDataFromFirestore(); progress.textContent='Ripristino completato con successo.'; renderBackupDashboard(); if(calendarInstance){calendarInstance.refetchEvents();calendarInstance.updateSize();} showToast('Ripristino completato.');
             } catch(err){startSharedRealtimeSync();progress.textContent='Ripristino interrotto: '+err.message;throw err;}
         }

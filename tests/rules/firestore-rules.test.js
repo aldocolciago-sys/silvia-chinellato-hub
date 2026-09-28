@@ -128,6 +128,7 @@ describe('richieste di appuntamento dal sito', () => {
     for (const [who, db] of Object.entries({ visitatore: visitor, 'utente anonimo': anonymous })) {
         it(`${who}: può inviare una richiesta valida`, async () => {
             await assertSucceeds(setDoc(doc(db(), `${REQUESTS}/nuova`), validRequest()));
+            await assertSucceeds(setDoc(doc(db(), `${REQUESTS}/idro`), validRequest({ treatment: 'idrocolonterapia' })));
             const { email, treatment, preferredDays, preferredTime, message, ...minimal } = validRequest();
             await assertSucceeds(setDoc(doc(db(), `${REQUESTS}/minima`), minimal));
         });
@@ -148,7 +149,7 @@ describe('richieste di appuntamento dal sito', () => {
         ['nome troppo lungo', validRequest({ name: 'x'.repeat(101) })],
         ['telefono troppo corto', validRequest({ phone: '123' })],
         ['messaggio troppo lungo', validRequest({ message: 'x'.repeat(1001) })],
-        ['trattamento diverso dall\'osteopatia in studio', validRequest({ treatment: 'idrocolonterapia' })],
+        ['un trattamento non previsto', validRequest({ treatment: 'massaggio' })],
         ['email non testuale', validRequest({ email: 42 })]
     ])('rifiuta una richiesta con %s', async (_, data) => {
         await assertFails(setDoc(doc(visitor(), `${REQUESTS}/x`), data));
