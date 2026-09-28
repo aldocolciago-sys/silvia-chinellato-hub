@@ -6,22 +6,26 @@
   "type": "module",
   "scripts": {
     "serve": "node tests/support/server.mjs",
-    "test": "npm run test:unit && npm run test:e2e",
+    "test": "npm run test:unit && npm run test:rules && npm run test:e2e",
     "test:unit": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
-    "test:all": "npm run test:coverage && npm run test:e2e"
+    "test:all": "npm run test:coverage && npm run test:e2e",
+    "test:rules": "firebase emulators:exec --only firestore --project demo-silvia-rules \"vitest run --config vitest.rules.config.js\""
   },
   "engines": {
     "node": ">=20"
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.13.0",
+    "@firebase/rules-unit-testing": "^5.0.2",
     "@playwright/test": "^1.56.1",
     "@vitest/coverage-v8": "^3.2.7",
     "acorn": "^8.18.0",
+    "firebase": "^12.19.0",
+    "firebase-tools": "^15.31.0",
     "fullcalendar": "^6.1.8",
     "jsdom": "^26.1.0",
     "tailwindcss": "^3.4.19",

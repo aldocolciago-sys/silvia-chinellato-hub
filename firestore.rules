@@ -1,0 +1,58 @@
+rules_version = '2';
+
+// Regole di sicurezza Firestore di silvia-chinellato-hub.
+// Si pubblicano dalla console Firebase (Firestore Database → Regole) copiando questo file.
+// Sono verificate automaticamente dai test in tests/rules (emulatore Firestore).
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Solo i due account Google autorizzati, con email verificata
+    function isAdmin() {
+      return request.auth != null
+        && request.auth.token.email_verified == true
+        && request.auth.token.email in ['aldo.colciago@gmail.com', 'silviachine@gmail.com'];
+    }
+
+    function optionalString(data, field, maxLength) {
+      return !(field in data) || (data[field] is string && data[field].size() <= maxLength);
+    }
+
+    // Richiesta di appuntamento inviata dal sito: solo i campi previsti, con limiti di lunghezza
+    function isValidAppointmentRequest(data) {
+      return data.keys().hasOnly(['name', 'phone', 'email', 'treatment', 'preferredDays', 'preferredTime', 'message', 'consent', 'createdAt', 'status'])
+        && data.keys().hasAll(['name', 'phone', 'consent', 'createdAt', 'status'])
+        && data.name is string && data.name.size() >= 2 && data.name.size() <= 100
+        && data.phone is string && data.phone.size() >= 6 && data.phone.size() <= 30
+        && optionalString(data, 'email', 120)
+        && optionalString(data, 'preferredDays', 100)
+        && optionalString(data, 'preferredTime', 50)
+        && optionalString(data, 'message', 1000)
+        && (!('treatment' in data) || data.treatment in ['osteopatia'])
+        && data.consent == true
+        && data.status == 'new'
+        && data.createdAt is string && data.createdAt.size() <= 40;
+    }
+
+    // DATI PUBBLICI: tutti leggono, solo gli amministratori scrivono
+    match /artifacts/{appId}/public/data/{document=**} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // RICHIESTE DI APPUNTAMENTO DAL SITO: chiunque può solo crearle; leggerle e gestirle spetta agli amministratori
+    match /artifacts/{appId}/requests/{requestId} {
+      allow create: if isAdmin() || isValidAppointmentRequest(request.resource.data);
+      allow read, update, delete: if isAdmin();
+    }
+
+    // DATI PRIVATI LEGACY: solo il proprietario, se autorizzato
+    match /artifacts/{appId}/users/{userId}/{document=**} {
+      allow read, write: if isAdmin() && request.auth.uid == userId;
+    }
+
+    // DATI CONDIVISI ALDO + SILVIA (pazienti, sedute, compensi, impostazioni)
+    match /artifacts/{appId}/shared/data/{collection}/{docId} {
+      allow read, write: if isAdmin();
+    }
+  }
+}

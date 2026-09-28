@@ -7,3 +7,8 @@ playwright.config.js
 vitest.config.js
 TESTING.md
 .github/
+firebase.json
+firestore.rules
+vitest.rules.config.js
+*-debug.log
+FIRESTORE_RULES.md
