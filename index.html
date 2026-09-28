@@ -384,10 +384,17 @@
 
                 <div id="appointment-request" class="max-w-2xl mx-auto bg-nature-50/70 border border-nature-100 rounded-3xl p-5 sm:p-8 space-y-4">
                     <div class="text-center space-y-1">
-                        <h4 class="font-editorial text-xl sm:text-2xl font-bold text-nature-900 italic">Richiedi un appuntamento in studio</h4>
-                        <p class="text-xs sm:text-sm text-slate-600">Per trattamenti di osteopatia nello studio privato. Silvia la ricontatterà per concordare giorno e orario. Per i poliambulatori usi i pulsanti "Prenota Online".</p>
+                        <h4 class="font-editorial text-xl sm:text-2xl font-bold text-nature-900 italic">Contatta Silvia in privato</h4>
+                        <p class="text-xs sm:text-sm text-slate-600">Per richiedere un appuntamento o semplicemente informazioni su osteopatia e idrocolonterapia. Silvia la ricontatterà personalmente al più presto. Per prenotare direttamente presso i poliambulatori può usare i pulsanti "Prenota Online".</p>
                     </div>
                     <form id="appointment-request-form" onsubmit="submitAppointmentRequest(event)" onfocusin="markRequestFormStarted()" novalidate class="space-y-3">
+                        <fieldset class="space-y-1">
+                            <legend class="block text-xs font-bold text-slate-700 mb-1">Trattamento di interesse *</legend>
+                            <div class="grid grid-cols-2 gap-2">
+                                <label class="flex items-center justify-center gap-2 px-3 py-3 bg-white border border-slate-200 rounded-2xl text-sm font-semibold text-slate-800 cursor-pointer has-[:checked]:bg-nature-100 has-[:checked]:border-nature-500"><input type="radio" name="request-treatment" value="osteopatia" class="w-4 h-4">Osteopatia</label>
+                                <label class="flex items-center justify-center gap-2 px-3 py-3 bg-white border border-slate-200 rounded-2xl text-sm font-semibold text-slate-800 cursor-pointer has-[:checked]:bg-water-100 has-[:checked]:border-water-500"><input type="radio" name="request-treatment" value="idrocolonterapia" class="w-4 h-4">Idrocolonterapia</label>
+                            </div>
+                        </fieldset>
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                             <div class="space-y-1"><label for="request-name" class="block text-xs font-bold text-slate-700">Nome e cognome *</label><input type="text" id="request-name" autocomplete="name" maxlength="100" required class="w-full px-4 py-3 bg-white border border-slate-200 rounded-2xl text-sm"></div>
                             <div class="space-y-1"><label for="request-phone" class="block text-xs font-bold text-slate-700">Telefono *</label><input type="tel" id="request-phone" autocomplete="tel" maxlength="30" required class="w-full px-4 py-3 bg-white border border-slate-200 rounded-2xl text-sm"></div>
@@ -395,9 +402,9 @@
                             <div class="space-y-1"><label for="request-time" class="block text-xs font-bold text-slate-700">Fascia preferita</label><select id="request-time" class="w-full px-4 py-3 bg-white border border-slate-200 rounded-2xl text-sm"><option value="">Indifferente</option><option value="mattina">Mattina</option><option value="pomeriggio">Pomeriggio</option><option value="sera">Sera</option></select></div>
                         </div>
                         <div class="space-y-1"><label for="request-days" class="block text-xs font-bold text-slate-700">Giorni preferiti</label><input type="text" id="request-days" maxlength="100" placeholder="Es. martedì o giovedì" class="w-full px-4 py-3 bg-white border border-slate-200 rounded-2xl text-sm"></div>
-                        <div class="space-y-1"><label for="request-message" class="block text-xs font-bold text-slate-700">Messaggio (facoltativo)</label><textarea id="request-message" maxlength="1000" rows="3" placeholder="Motivo della visita o altre informazioni utili" class="w-full px-4 py-3 bg-white border border-slate-200 rounded-2xl text-sm"></textarea></div>
+                        <div class="space-y-1"><label for="request-message" class="block text-xs font-bold text-slate-700">Messaggio (facoltativo)</label><textarea id="request-message" maxlength="1000" rows="3" placeholder="Motivo della visita, domande o altre informazioni utili" class="w-full px-4 py-3 bg-white border border-slate-200 rounded-2xl text-sm"></textarea></div>
                         <div aria-hidden="true" style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden"><label for="request-website">Lasciare vuoto</label><input type="text" id="request-website" tabindex="-1" autocomplete="off"></div>
-                        <label class="flex items-start gap-2 text-xs text-slate-700"><input type="checkbox" id="request-consent" class="mt-0.5 w-4 h-4 flex-shrink-0"><span>Acconsento al trattamento dei miei dati personali, ai sensi del Regolamento UE 2016/679, al solo fine di essere ricontattato/a per questa richiesta. *</span></label>
+                        <label class="flex items-start gap-2 text-xs text-slate-700"><input type="checkbox" id="request-consent" class="mt-0.5 w-4 h-4 flex-shrink-0"><span>Acconsento al trattamento dei miei dati personali, ai sensi del Regolamento UE 2016/679, al solo fine di essere ricontattato/a in merito a questa richiesta. *</span></label>
                         <p id="request-feedback" role="status" aria-live="polite" class="hidden text-sm font-semibold rounded-2xl px-4 py-3"></p>
                         <button type="submit" id="request-submit" class="w-full sm:w-auto px-6 py-3 bg-nature-700 hover:bg-nature-800 text-white font-bold rounded-2xl text-sm shadow-sm">Invia la richiesta</button>
                     </form>
@@ -4713,6 +4720,8 @@
         const REQUEST_RESEND_MS = 60000;
         let pendingRequestConversionId = null;
         const REQUEST_TIME_LABELS = { mattina: 'Mattina', pomeriggio: 'Pomeriggio', sera: 'Sera' };
+        const REQUEST_TREATMENTS = ['osteopatia', 'idrocolonterapia'];
+        const REQUEST_TREATMENT_LABELS = { osteopatia: 'Osteopatia', idrocolonterapia: 'Idrocolonterapia' };
         /** Controlla i dati del modulo pubblico; restituisce l'elenco degli errori (vuoto se valido). */
         function validateAppointmentRequest(data) {
             const errors = [];
@@ -4721,6 +4730,7 @@
             if (digits.length < 6 || String(data.phone || '').trim().length > 30) errors.push('Indichi un numero di telefono valido.');
             if (data.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email)) errors.push("L'indirizzo email non è valido.");
             if (String(data.name || '').length > 100 || String(data.email || '').length > 120 || String(data.preferredDays || '').length > 100 || String(data.message || '').length > 1000) errors.push('Alcuni campi sono troppo lunghi.');
+            if (!REQUEST_TREATMENTS.includes(data.treatment)) errors.push('Scelga il trattamento di interesse (osteopatia o idrocolonterapia).');
             if (data.consent !== true) errors.push('Per inviare la richiesta serve il consenso al trattamento dei dati.');
             return errors;
         }
@@ -4749,7 +4759,8 @@
             const data = {
                 name: value('request-name'), phone: value('request-phone'), email: value('request-email'),
                 preferredDays: value('request-days'), preferredTime: document.getElementById('request-time').value,
-                message: value('request-message'), consent: document.getElementById('request-consent').checked
+                message: value('request-message'), consent: document.getElementById('request-consent').checked,
+                treatment: document.querySelector('input[name="request-treatment"]:checked')?.value || ''
             };
             const errors = validateAppointmentRequest(data);
             if (errors.length) { showRequestFeedback(errors.join(' '), false); return; }
@@ -4759,7 +4770,7 @@
                 form.reset(); showRequestFeedback(thanks, true); return;
             }
             if (Date.now() - lastRequestSentAt() < REQUEST_RESEND_MS) { showRequestFeedback('Richiesta già inviata: attenda un minuto prima di inviarne un\'altra.', false); return; }
-            const record = { name: data.name, phone: data.phone, treatment: 'osteopatia', consent: true, createdAt: new Date().toISOString(), status: 'new' };
+            const record = { name: data.name, phone: data.phone, treatment: data.treatment, consent: true, createdAt: new Date().toISOString(), status: 'new' };
             for (const key of ['email', 'preferredDays', 'preferredTime', 'message']) if (data[key]) record[key] = data[key];
             const button = document.getElementById('request-submit');
             button.disabled = true;
@@ -4797,7 +4808,8 @@
                 || null;
         }
         function requestReplyText(request) {
-            return `Gentile ${String(request.name || '').trim()}, sono Silvia Chinellato: ho ricevuto la sua richiesta di appuntamento per un trattamento di osteopatia nel mio studio. Le propongo il seguente appuntamento: [giorno] alle [ora]. Mi conferma se le va bene? Cordiali saluti.`;
+            const treatment = request.treatment === 'idrocolonterapia' ? "l'idrocolonterapia" : "l'osteopatia";
+            return `Gentile ${String(request.name || '').trim()}, sono Silvia Chinellato: ho ricevuto la sua richiesta riguardante ${treatment}. [Risposta alle sue domande / proposta di appuntamento: giorno e ora]. Resto a disposizione per qualsiasi chiarimento. Cordiali saluti.`;
         }
         window.renderRequestsList = function() {
             const list = document.getElementById('requests-list');
@@ -4822,7 +4834,7 @@
                 const id = escapeHtml(r.id);
                 return `<article data-request-id="${id}" class="p-4 bg-white border ${r.status === 'new' ? 'border-nature-300' : 'border-slate-200 opacity-80'} rounded-2xl space-y-2">
                     <div class="flex flex-wrap items-center justify-between gap-2">
-                        <strong class="text-sm text-slate-900">${escapeHtml(r.name)}</strong>
+                        <strong class="text-sm text-slate-900">${escapeHtml(r.name)}${REQUEST_TREATMENT_LABELS[r.treatment] ? ` <span class="ml-1 px-2 py-0.5 rounded-full text-[10px] font-bold ${r.treatment === 'idrocolonterapia' ? 'bg-water-100 text-water-900' : 'bg-nature-100 text-nature-900'}">${REQUEST_TREATMENT_LABELS[r.treatment]}</span>` : ''}</strong>
                         <span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${r.status === 'new' ? 'bg-rose-100 text-rose-800' : 'bg-slate-100 text-slate-700'}">${escapeHtml(REQUEST_STATUS_LABELS[r.status] || r.status)}</span>
                     </div>
                     <p class="text-[11px] text-slate-500">Ricevuta ${escapeHtml(when)}${existing ? ` • già in anagrafica: ${escapeHtml(existing.name)}` : ''}</p>
@@ -4893,14 +4905,16 @@
             closeRequestsModal();
             openStudioModal();
             pendingRequestConversionId = id;
-            document.getElementById('studio-title').value = `Osteopatia - ${request.name}`;
-            document.getElementById('studio-treatment').value = 'osteopatia';
+            const treatment = REQUEST_TREATMENTS.includes(request.treatment) ? request.treatment : 'osteopatia';
+            const treatmentLabel = REQUEST_TREATMENT_LABELS[treatment];
+            document.getElementById('studio-title').value = `${treatmentLabel} - ${request.name}`;
+            document.getElementById('studio-treatment').value = treatment;
             document.getElementById('studio-treatment').dataset.manual = '1';
             const existing = findPatientForRequest(request);
             if (existing) {
                 document.getElementById('studio-patient-select').value = existing.id;
                 showPatientClinicalSummary(existing.id);
-                document.getElementById('studio-title').value = `Osteopatia - ${existing.name}`;
+                document.getElementById('studio-title').value = `${treatmentLabel} - ${existing.name}`;
                 updateStudioAssessmentWarning();
                 suggestStudioFee();
                 return;
@@ -4908,7 +4922,7 @@
             openNewPatientFromAppointment(request.name);
             document.getElementById('patient-phone').value = request.phone || '';
             document.getElementById('patient-email').value = request.email || '';
-            const notes = [request.message, request.preferredDays ? `Giorni preferiti: ${request.preferredDays}` : '', REQUEST_TIME_LABELS[request.preferredTime] ? `Fascia preferita: ${REQUEST_TIME_LABELS[request.preferredTime].toLowerCase()}` : ''].filter(Boolean);
+            const notes = [request.treatment ? `Richiesta dal sito: ${treatmentLabel.toLowerCase()}` : '', request.message, request.preferredDays ? `Giorni preferiti: ${request.preferredDays}` : '', REQUEST_TIME_LABELS[request.preferredTime] ? `Fascia preferita: ${REQUEST_TIME_LABELS[request.preferredTime].toLowerCase()}` : ''].filter(Boolean);
             document.getElementById('patient-current-issues').value = notes.join('\n');
         };
 

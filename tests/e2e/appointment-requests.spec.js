@@ -15,7 +15,7 @@ test('un visitatore invia una richiesta e Silvia la trasforma in appuntamento', 
     await openSite(page);
     const form = page.locator('#appointment-request-form');
     await form.scrollIntoViewIfNeeded();
-    await expect(page.getByRole('heading', { name: 'Richiedi un appuntamento in studio' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Contatta Silvia in privato' })).toBeVisible();
 
     const axe = await new AxeBuilder({ page }).include('#appointment-request').withTags(['wcag2a', 'wcag2aa']).analyze();
     expect(axe.violations.map(v => v.id)).toEqual([]);
@@ -23,6 +23,7 @@ test('un visitatore invia una richiesta e Silvia la trasforma in appuntamento', 
     // il campo antispam non è visibile né raggiungibile
     await expect(page.locator('#request-website')).not.toBeInViewport();
 
+    await form.getByLabel('Idrocolonterapia').check();
     await form.getByLabel('Nome e cognome *').fill('Anna Bianchi');
     await form.getByLabel('Telefono *').fill('333 7654321');
     await form.getByLabel('Giorni preferiti').fill('martedì');
@@ -60,7 +61,7 @@ test('un visitatore invia una richiesta e Silvia la trasforma in appuntamento', 
     await expect(page.locator('#patient-phone')).toHaveValue('333 7654321');
     await patientModal.getByRole('button', { name: 'Salva Paziente' }).click();
     await expect(patientModal).toBeHidden();
-    await expect(page.locator('#studio-treatment')).toHaveValue('osteopatia');
+    await expect(page.locator('#studio-treatment')).toHaveValue('idrocolonterapia');
     await page.locator('#studio-time-start').selectOption('15:00');
     await page.getByRole('button', { name: 'Salva Appuntamento' }).click();
     await expect(page.locator('#studio-modal')).toBeHidden();

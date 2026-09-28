@@ -56,7 +56,7 @@ Dall'anagrafica pazienti il pulsante **WhatsApp** apre un menu di messaggi preco
 
 ## Richieste di appuntamento dal sito
 
-Nella sezione Contatti il modulo "Richiedi un appuntamento in studio" (solo osteopatia nello studio privato) salva le richieste in `artifacts/{app}/requests` con i soli campi previsti dalle regole Firestore.
+Nella sezione Contatti il modulo "Contatta Silvia in privato" (richiesta di appuntamento o di informazioni, con scelta obbligatoria tra osteopatia e idrocolonterapia) salva le richieste in `artifacts/{app}/requests` con i soli campi previsti dalle regole Firestore.
 - Antispam: campo nascosto, tempo minimo di compilazione di 3 secondi (ai robot si mostra comunque il messaggio di conferma, senza salvare) e un solo invio al minuto dallo stesso browser.
 - Nell'area riservata la voce "Richieste" (con contatore delle nuove) permette di:
   - creare paziente e appuntamento con i dati precompilati (se il paziente esiste già, per telefono o nome, viene selezionato); quando l'appuntamento è salvato la richiesta diventa "Appuntamento creato";

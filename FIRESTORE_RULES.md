@@ -16,6 +16,7 @@ Una richiesta di appuntamento è valida solo se:
 - contiene esclusivamente i campi previsti;
 - nome (2–100 caratteri), telefono (6–30 caratteri) e consenso sono presenti;
 - lo stato è `new`;
+- il trattamento, se presente, è osteopatia o idrocolonterapia;
 - i testi rispettano i limiti di lunghezza.
 
 ## Come pubblicarle

@@ -13,7 +13,8 @@ async function publicSite() {
     app = await bootApp({ docs: seedDocs({}) });
     return app;
 }
-function fillRequest({ name = 'Anna Bianchi', phone = '333 7654321', email = '', days = '', time = '', message = '', consent = true, startedAgo = 10000 } = {}) {
+function fillRequest({ name = 'Anna Bianchi', phone = '333 7654321', email = '', days = '', time = '', message = '', treatment = 'osteopatia', consent = true, startedAgo = 10000 } = {}) {
+    for (const radio of app.$$('input[name="request-treatment"]')) radio.checked = radio.value === treatment;
     app.setValue('request-name', name);
     app.setValue('request-phone', phone);
     app.setValue('request-email', email);
@@ -27,11 +28,11 @@ function fillRequest({ name = 'Anna Bianchi', phone = '333 7654321', email = '',
 describe('modulo pubblico di richiesta appuntamento', () => {
     it('invia una richiesta valida con i soli campi compilati', async () => {
         await publicSite();
-        fillRequest({ email: 'anna@example.com', days: 'martedì o giovedì', time: 'pomeriggio', message: 'Mal di schiena' });
+        fillRequest({ email: 'anna@example.com', days: 'martedì o giovedì', time: 'pomeriggio', message: 'Info sulla preparazione', treatment: 'idrocolonterapia' });
         await app.submit('appointment-request-form');
         const saved = app.mock.list(REQUESTS);
         expect(saved).toHaveLength(1);
-        expect(saved[0]).toMatchObject({ name: 'Anna Bianchi', phone: '333 7654321', email: 'anna@example.com', preferredDays: 'martedì o giovedì', preferredTime: 'pomeriggio', message: 'Mal di schiena', treatment: 'osteopatia', consent: true, status: 'new' });
+        expect(saved[0]).toMatchObject({ name: 'Anna Bianchi', phone: '333 7654321', email: 'anna@example.com', preferredDays: 'martedì o giovedì', preferredTime: 'pomeriggio', message: 'Info sulla preparazione', treatment: 'idrocolonterapia', consent: true, status: 'new' });
         expect(Object.keys(app.mock.get(`${REQUESTS}/${saved[0].id}`)).sort()).toEqual(['consent', 'createdAt', 'email', 'message', 'name', 'phone', 'preferredDays', 'preferredTime', 'status', 'treatment']);
         expect(app.text('request-feedback')).toBe('Grazie! La richiesta è stata inviata: Silvia la ricontatterà al più presto.');
         expect(app.byId('request-name').value).toBe('');
@@ -47,9 +48,9 @@ describe('modulo pubblico di richiesta appuntamento', () => {
 
     it('mostra gli errori senza inviare', async () => {
         await publicSite();
-        fillRequest({ phone: '12', consent: false });
+        fillRequest({ phone: '12', consent: false, treatment: '' });
         await app.submit('appointment-request-form');
-        expect(app.text('request-feedback')).toBe('Indichi un numero di telefono valido. Per inviare la richiesta serve il consenso al trattamento dei dati.');
+        expect(app.text('request-feedback')).toBe('Indichi un numero di telefono valido. Scelga il trattamento di interesse (osteopatia o idrocolonterapia). Per inviare la richiesta serve il consenso al trattamento dei dati.');
         expect(app.mock.list(REQUESTS)).toHaveLength(0);
     });
 
@@ -129,7 +130,7 @@ describe('richieste nell\'area riservata', () => {
         await app.flush();
         const url = new URL(opened.at(-1)[0]);
         expect(url.pathname).toBe('/393337654321');
-        expect(url.searchParams.get('text')).toMatch(/^Gentile Anna Bianchi, sono Silvia Chinellato/);
+        expect(url.searchParams.get('text')).toMatch(/^Gentile Anna Bianchi, sono Silvia Chinellato: ho ricevuto la sua richiesta riguardante l'osteopatia/);
         expect(app.mock.get(`${REQUESTS}/r1`).repliedAt).toBeTruthy();
     });
 
@@ -143,7 +144,7 @@ describe('richieste nell\'area riservata', () => {
         expect(app.byId('patient-name').value).toBe('Anna Bianchi');
         expect(app.byId('patient-phone').value).toBe('333 7654321');
         expect(app.byId('patient-email').value).toBe('anna@example.com');
-        expect(app.byId('patient-current-issues').value).toBe('Mal di schiena\nGiorni preferiti: martedì\nFascia preferita: pomeriggio');
+        expect(app.byId('patient-current-issues').value).toBe('Richiesta dal sito: osteopatia\nMal di schiena\nGiorni preferiti: martedì\nFascia preferita: pomeriggio');
         await app.submit('patient-form');
         const created = app.state.patients.find(p => p.name === 'Anna Bianchi');
         expect(app.byId('studio-patient-select').value).toBe(created.id);
@@ -178,6 +179,15 @@ describe('richieste nell\'area riservata', () => {
         app.setValue('studio-date', '2030-03-12');
         await app.submit('studio-event-form');
         expect(app.mock.get(`${REQUESTS}/r2`).status).toBe('new');
+    });
+
+    it('una richiesta di idrocolonterapia apre l\'appuntamento con quel trattamento', async () => {
+        await loggedIn({ requests: [request('r5', { name: 'Luca Verdi', phone: '333 1234567', treatment: 'idrocolonterapia' })], patients: [patient({ id: 'p9', name: 'Luca Verdi', phone: '333 1234567' })] });
+        app.window.openRequestsModal();
+        expect(cards()[0].textContent).toContain('Idrocolonterapia');
+        app.window.convertRequest('r5');
+        expect(app.byId('studio-treatment').value).toBe('idrocolonterapia');
+        expect(app.byId('studio-title').value).toBe('Idrocolonterapia - Luca Verdi');
     });
 
     it('il backup include le richieste', async () => {
