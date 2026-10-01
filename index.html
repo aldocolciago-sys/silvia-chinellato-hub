@@ -1196,6 +1196,16 @@
             <div class="p-4 sm:p-6 overflow-y-auto space-y-2 flex-1">
                 <p class="text-[11px] text-slate-600">Per ogni appuntamento si apre il messaggio "Promemoria appuntamento" già compilato con data, ora e sede: puoi modificarlo prima di inviarlo.</p>
                 <div id="reminders-list" class="space-y-4"></div>
+                <section id="daily-digest-panel" aria-labelledby="daily-digest-title" class="mt-4 p-3 sm:p-4 bg-emerald-50/60 border border-emerald-200 rounded-2xl space-y-2">
+                    <h4 id="daily-digest-title" class="text-xs font-bold text-slate-800 uppercase tracking-wide"><i class="fa-brands fa-whatsapp mr-1"></i>Riepilogo automatico alle 7:00</h4>
+                    <label class="flex items-start gap-2 text-xs font-semibold text-slate-800 cursor-pointer">
+                        <input type="checkbox" id="daily-digest-enabled" onchange="saveDailyDigestEnabled(this.checked)" class="mt-0.5 w-4 h-4 accent-emerald-700">
+                        <span>Ogni mattina invia questo promemoria sul WhatsApp di Silvia</span>
+                    </label>
+                    <p class="text-[11px] text-slate-600">Contiene ora, iniziali del paziente, trattamento e sede degli appuntamenti di oggi e domani: i nomi completi non escono dall'app.</p>
+                    <p id="daily-digest-status" class="text-[11px] text-slate-700" aria-live="polite"></p>
+                    <button type="button" id="daily-digest-test" onclick="sendDailyDigestTest()" class="inline-flex items-center gap-1.5 px-3 py-2 bg-white border border-emerald-300 text-emerald-800 hover:bg-emerald-50 rounded-xl text-xs font-bold"><i class="fa-solid fa-paper-plane"></i>Invia una prova ora</button>
+                </section>
             </div>
         </div>
     </div>
@@ -1328,6 +1338,7 @@
             manualRevenues: [],
             taxProfile: null,
             messagingSettings: null,
+            dailyDigestStatus: null,
             financeSettings: null,
             agendaSettings: null,
             requests: []
@@ -1434,7 +1445,12 @@
             sharedUnsubscribers.push(onSnapshot(sharedDocument('settings','messaging'), snapshot => {
                 appState.messagingSettings = snapshot.exists() ? snapshot.data() : null;
                 if (!document.getElementById('patient-message-modal')?.classList.contains('hidden')) renderMessageTypeList();
+                renderDailyDigestPanel();
             }, err => console.error('Errore sincronizzazione impostazioni messaggi:', err)));
+            sharedUnsubscribers.push(onSnapshot(sharedDocument('settings','daily_reminder'), snapshot => {
+                appState.dailyDigestStatus = snapshot.exists() ? snapshot.data() : null;
+                renderDailyDigestPanel();
+            }, err => console.error('Errore sincronizzazione riepilogo WhatsApp:', err)));
             sharedUnsubscribers.push(onSnapshot(sharedDocument('tax_profile','default'), snapshot => {
                 appState.taxProfile = snapshot.exists() ? { id:'default', ...snapshot.data() } : null;
                 populateTaxProfileForm();
@@ -4693,6 +4709,7 @@
         };
         window.openRemindersModal = function() {
             renderReminders();
+            renderDailyDigestPanel();
             document.getElementById('reminders-modal').classList.remove('hidden');
             updateModalState();
         };
@@ -4714,6 +4731,58 @@
         window.openReminderPatient = function(patientId) {
             closeRemindersModal();
             editPatientById(patientId);
+        };
+        // ---- Riepilogo automatico su WhatsApp (api/daily-reminder.js, cron delle 7:00) ----
+        function formatDigestMoment(iso) {
+            const d = new Date(iso);
+            if (!iso || Number.isNaN(d.getTime())) return '';
+            return `${d.toLocaleDateString('it-IT', { day: 'numeric', month: 'short' })} alle ${d.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' })}`;
+        }
+        function dailyDigestStatusText(enabled, status) {
+            const parts = [];
+            if (status?.lastSentAt) parts.push(`Ultimo riepilogo inviato il ${formatDigestMoment(status.lastSentAt)}.`);
+            if (status?.lastError && status?.lastErrorAt) parts.push(`Ultimo invio non riuscito il ${formatDigestMoment(status.lastErrorAt)}: ${status.lastError}`);
+            if (!parts.length) parts.push(enabled ? 'Attivo: il primo riepilogo arriverà domattina alle 7.' : 'Disattivato.');
+            return parts.join(' ');
+        }
+        function renderDailyDigestPanel() {
+            const checkbox = document.getElementById('daily-digest-enabled');
+            if (!checkbox) return;
+            const enabled = appState.messagingSettings?.dailyDigestEnabled === true;
+            const status = appState.dailyDigestStatus || null;
+            checkbox.checked = enabled;
+            const label = document.getElementById('daily-digest-status');
+            label.textContent = dailyDigestStatusText(enabled, status);
+            label.classList.toggle('text-rose-700', Boolean(status?.lastError));
+        }
+        window.saveDailyDigestEnabled = async function(enabled) {
+            if (!db || !appState.isLoggedIn || !isAuthorizedFirebaseUser()) { showToast('Accesso autorizzato necessario.'); renderDailyDigestPanel(); return; }
+            const settings = { ...(appState.messagingSettings || {}), dailyDigestEnabled: Boolean(enabled), updatedAt: new Date().toISOString() };
+            try {
+                await setDoc(sharedDocument('settings', 'messaging'), { dailyDigestEnabled: Boolean(enabled), updatedAt: settings.updatedAt }, { merge: true });
+                appState.messagingSettings = settings;
+                showToast(enabled ? 'Riepilogo delle 7:00 attivato.' : 'Riepilogo delle 7:00 disattivato.');
+            } catch (err) {
+                console.error('Errore salvataggio riepilogo WhatsApp:', err);
+                showToast('Errore: impostazione non salvata.');
+            }
+            renderDailyDigestPanel();
+        };
+        window.sendDailyDigestTest = async function() {
+            const user = auth?.currentUser;
+            if (!user || !isAuthorizedFirebaseUser(user) || typeof user.getIdToken !== 'function') { showToast('Accesso autorizzato necessario.'); return; }
+            const button = document.getElementById('daily-digest-test');
+            button.disabled = true;
+            try {
+                const response = await fetch('/api/daily-reminder', { method: 'POST', headers: { Authorization: `Bearer ${await user.getIdToken()}` } });
+                const result = await response.json().catch(() => ({}));
+                showToast(response.ok ? 'Prova inviata: controlla WhatsApp.' : `Prova non inviata: ${result.error || `errore ${response.status}`}`);
+            } catch (err) {
+                console.error('Errore prova riepilogo WhatsApp:', err);
+                showToast('Prova non inviata: servizio non raggiungibile.');
+            } finally {
+                button.disabled = false;
+            }
         };
         // ---- Richieste di appuntamento dal sito (studio privato) ----
         const REQUEST_MIN_FILL_MS = 3000;

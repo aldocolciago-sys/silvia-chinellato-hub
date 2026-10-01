@@ -1,4 +1,5 @@
 import { test, expect, loginViaUi, isMobile, firestore } from './fixtures.js';
+import AxeBuilder from '@axe-core/playwright';
 import { seedDocs, center, patient, studioEvent, SHARED } from '../fixtures/seed.js';
 
 test.use({
@@ -50,4 +51,29 @@ test('promemoria di oggi e domani: invio su WhatsApp e stato "inviato"', async (
 
     await modal.getByRole('button', { name: 'Promemoria WhatsApp a Mario Rossi (16:00)' }).click();
     await expect(page.locator('#message-preview-text')).toHaveValue(/l'appuntamento di osteopatia di lunedì 4 marzo alle 16:00/);
+});
+
+test('riepilogo automatico delle 7:00: attivazione, prova e accessibilità', async ({ page }) => {
+    const requests = [];
+    await page.route('**/api/daily-reminder', async route => {
+        requests.push({ method: route.request().method(), auth: route.request().headers().authorization });
+        await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ status: 'sent' }) });
+    });
+    await loginViaUi(page);
+    await page.evaluate(() => window.openRemindersModal());
+    const panel = page.locator('#daily-digest-panel');
+    await panel.scrollIntoViewIfNeeded();
+    await expect(panel.locator('#daily-digest-status')).toHaveText('Disattivato.');
+
+    const axe = await new AxeBuilder({ page }).include('#daily-digest-panel').withTags(['wcag2a', 'wcag2aa']).analyze();
+    expect(axe.violations.map(v => v.id)).toEqual([]);
+
+    await panel.getByLabel('Ogni mattina invia questo promemoria sul WhatsApp di Silvia').check();
+    await expect(page.locator('#toast-message')).toHaveText('Riepilogo delle 7:00 attivato.');
+    await expect.poll(async () => (await firestore(page).get(`${SHARED}/settings/messaging`))?.dailyDigestEnabled).toBe(true);
+    await expect(panel.locator('#daily-digest-status')).toHaveText('Attivo: il primo riepilogo arriverà domattina alle 7.');
+
+    await panel.getByRole('button', { name: 'Invia una prova ora' }).click();
+    await expect(page.locator('#toast-message')).toHaveText('Prova inviata: controlla WhatsApp.');
+    expect(requests).toEqual([{ method: 'POST', auth: 'Bearer mock-id-token:silviachine@gmail.com' }]);
 });
