@@ -5,12 +5,15 @@ Ogni mattina Silvia riceve sul proprio WhatsApp il promemoria di oggi e domani:
 ```
 ☀️ Buongiorno Silvia! Oggi è giovedì 1 ottobre.
 
-*Oggi* (1)
+*Oggi* (2)
 • 09:00 – M.R. – Osteopatia – studio
+• 12:30–13:30 – 🗓️ Pranzo con Aldo
 
-*Domani, venerdì 2 ottobre* (2)
-• 10:00 – senza paziente – studio
+*Domani, venerdì 2 ottobre* (4)
+• Tutto il giorno – 🗓️ Corso ECM
+• 08:00–13:00 – 🩺 Turno – Medicina dello Sport
 • 15:00 – A.D. – Idrocolonterapia – CMS Carate ⚠️ senza telefono
+• 17:00 – senza paziente – studio
 
 📲 1 promemoria da inviare ai pazienti
 ⚠️ 1 paziente senza telefono
@@ -19,10 +22,14 @@ Ogni mattina Silvia riceve sul proprio WhatsApp il promemoria di oggi e domani:
 Apri l'agenda: https://…
 ```
 
-Il messaggio contiene solo le **iniziali** dei pazienti. Le regole sono le stesse della finestra *Promemoria*:
+Il messaggio contiene:
 
-- esclusi i turni, i calendari personali, gli appuntamenti annullati e quelli di un'intera giornata;
-- di oggi compaiono solo gli appuntamenti non ancora iniziati.
+- gli **appuntamenti con i pazienti**, indicati solo con le **iniziali**. Le regole sono le stesse della finestra *Promemoria*: esclusi gli appuntamenti annullati;
+- i **turni** (🩺), con orario di inizio e fine e sede;
+- gli **impegni dei calendari personali** (🗓️), con il loro titolo;
+- le **giornate intere** di qualsiasi calendario (per esempio "Studio chiuso" o un corso di più giorni), in cima alla giornata.
+
+Di oggi compaiono solo gli impegni non ancora finiti.
 
 ## Come funziona
 
@@ -88,6 +95,7 @@ Per sospendere gli invii basta togliere la spunta: non serve toccare Vercel.
 Il doppio invio non è possibile, perché la funzione manda un solo riepilogo al giorno: si possono quindi lasciare attivi anche i cron di Vercel come riserva.
 
 ## Privacy
-- Il testo passa da CallMeBot, un servizio esterno senza garanzie contrattuali. Per questo il messaggio contiene solo iniziali, orari, trattamento e sede, mai nomi completi, telefoni o note cliniche.
+- Il testo passa da CallMeBot, un servizio esterno senza garanzie contrattuali. Per questo gli appuntamenti con i pazienti riportano solo iniziali, orari, trattamento e sede: mai nomi completi, telefoni o note cliniche.
+- Degli impegni personali invece passa il titolo così com'è nel calendario: meglio non scriverci nomi di pazienti.
 - Le credenziali (`FIREBASE_SERVICE_ACCOUNT`, `CALLMEBOT_APIKEY`, `CRON_SECRET`) stanno solo nelle variabili d'ambiente di Vercel. Non vanno mai inserite nel codice.
 - Le regole Firestore non cambiano: la funzione usa le credenziali di servizio, che non passano dalle regole.

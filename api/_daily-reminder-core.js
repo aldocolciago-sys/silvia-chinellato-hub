@@ -107,20 +107,32 @@ function eventTreatment(ev, center) {
     return null;
 }
 
-/** Appuntamenti clinici di un giorno di Roma: esclusi giornate intere, calendari non clinici, turni e annullati. */
+function eventKind(ev, center) {
+    if (center?.isNonClinicalCalendar === true && center?.isShiftCalendar === true) return 'shift';
+    if (ev?.extendedProps?.isNonClinical === true || center?.isNonClinicalCalendar === true) return 'personal';
+    return 'clinical';
+}
+
+function clockTime(date) {
+    const p = romeParts(date);
+    return `${pad(p.hour)}:${pad(p.minute)}`;
+}
+
+/** Appuntamenti con pazienti di un giorno di Roma: esclusi giornate intere, calendari personali, turni e annullati. */
 export function appointmentsForDay({ events = [], patients = [], centers = [] }, dayKey, notBefore = null) {
     return events
         .filter(ev => ev && !ev.allDay && ev.extendedProps?.paymentStatus !== 'cancelled')
         .map(ev => ({ ev, center: eventCenter(ev, centers), start: parseEventStart(ev.start) }))
-        .filter(({ ev, center, start }) => start && ev.extendedProps?.isNonClinical !== true && center?.isNonClinicalCalendar !== true
+        .filter(({ ev, center, start }) => start && eventKind(ev, center) === 'clinical'
             && romeDayKey(start) === dayKey && (!notBefore || start >= notBefore))
         .sort((a, b) => a.start - b.start)
         .map(({ ev, center, start }) => {
             const patient = patients.find(p => String(p.id) === String(ev.extendedProps?.patientId || '')) || null;
             const centerName = ev.extendedProps?.centerName || center?.name;
-            const p = romeParts(start);
             return {
-                time: `${pad(p.hour)}:${pad(p.minute)}`,
+                kind: 'clinical',
+                start,
+                time: clockTime(start),
                 who: patient ? initials(patient.name) : 'senza paziente',
                 treatment: TREATMENT_LABELS[eventTreatment(ev, center)] || null,
                 place: centerName && centerName !== 'Studio Privato' ? centerName : 'studio',
@@ -131,35 +143,87 @@ export function appointmentsForDay({ events = [], patients = [], centers = [] },
         });
 }
 
+function cleanTitle(value) {
+    const text = String(value || '').replace(/[\s*_~`]+/g, ' ').trim();
+    return text.length > 60 ? `${text.slice(0, 59)}…` : text;
+}
+
+/**
+ * Turni, impegni dei calendari personali e giornate intere di qualsiasi calendario (anche di più
+ * giorni, es. "Studio chiuso") di un giorno di Roma. Di oggi restano quelli non ancora finiti.
+ */
+export function commitmentsForDay({ events = [], centers = [] }, dayKey, notBefore = null) {
+    return events
+        .filter(ev => ev && ev.extendedProps?.paymentStatus !== 'cancelled')
+        .map(ev => ({ ev, center: eventCenter(ev, centers), start: parseEventStart(ev.start), end: parseEventStart(ev.end) }))
+        .filter(({ ev, center, start, end }) => {
+            if (!start || (!ev.allDay && eventKind(ev, center) === 'clinical')) return false;
+            if (ev.allDay) {
+                const first = romeDayKey(start);
+                const endKey = end ? romeDayKey(end) : '';
+                return first <= dayKey && dayKey < (endKey > first ? endKey : addDaysToKey(first, 1));
+            }
+            return romeDayKey(start) === dayKey && (!notBefore || (end && end > start ? end : start) >= notBefore);
+        })
+        .sort((a, b) => (b.ev.allDay === true) - (a.ev.allDay === true) || a.start - b.start)
+        .map(({ ev, center, start, end }) => {
+            const kind = eventKind(ev, center) === 'shift' ? 'shift' : 'personal';
+            const centerName = ev.extendedProps?.centerName || center?.name || '';
+            return {
+                kind,
+                start,
+                allDay: ev.allDay === true,
+                time: ev.allDay ? 'Tutto il giorno' : `${clockTime(start)}${end && end > start ? `–${clockTime(end)}` : ''}`,
+                label: kind === 'shift' ? 'Turno' : cleanTitle(ev.title) || 'Impegno personale',
+                place: kind === 'shift' ? centerName : ''
+            };
+        });
+}
+
 function plural(count, one, many) {
     return `${count} ${count === 1 ? one : many}`;
 }
 
-function sectionLines(title, items) {
-    if (!items.length) return [`*${title}*: nessun appuntamento con pazienti.`];
-    const lines = [`*${title}* (${items.length})`];
-    for (const item of items.slice(0, MAX_LINES_PER_DAY)) {
-        const parts = [item.time, item.who, item.treatment, item.place].filter(Boolean);
+function itemLine(item) {
+    if (item.kind === 'clinical') {
         const flag = !item.hasPatient ? '' : !item.hasPhone ? ' ⚠️ senza telefono' : '';
-        lines.push(`• ${parts.join(' – ')}${flag}`);
+        return `• ${[item.time, item.who, item.treatment, item.place].filter(Boolean).join(' – ')}${flag}`;
     }
+    const icon = item.kind === 'shift' ? '🩺' : '🗓️';
+    return `• ${[item.time, `${icon} ${item.label}`, item.place].filter(Boolean).join(' – ')}`;
+}
+
+function sectionLines(title, items) {
+    if (!items.length) return [`*${title}*: nessun impegno in agenda.`];
+    const lines = [`*${title}* (${items.length})`];
+    for (const item of items.slice(0, MAX_LINES_PER_DAY)) lines.push(itemLine(item));
     if (items.length > MAX_LINES_PER_DAY) lines.push(`…e altri ${items.length - MAX_LINES_PER_DAY}`);
     return lines;
 }
 
+/** Agenda di un giorno: prima le giornate intere, poi tutto in ordine di orario. */
+function dayItems(data, dayKey, notBefore) {
+    const commitments = commitmentsForDay(data, dayKey, notBefore);
+    const allDay = commitments.filter(item => item.allDay);
+    const timed = [...appointmentsForDay(data, dayKey, notBefore), ...commitments.filter(item => !item.allDay)].sort((a, b) => a.start - b.start);
+    return [...allDay, ...timed];
+}
+
 /**
- * Testo del riepilogo: appuntamenti di oggi (non ancora iniziati) e di domani,
- * con le sole iniziali dei pazienti, più il conteggio dei promemoria da inviare.
+ * Testo del riepilogo di oggi (impegni non ancora finiti) e di domani: appuntamenti con le
+ * sole iniziali dei pazienti, turni e calendari personali, più le cose da sistemare.
  */
 export function buildDigest(data, now, { appUrl = '', test = false } = {}) {
     const todayKey = romeDayKey(now);
     const tomorrowKey = addDaysToKey(todayKey, 1);
-    const today = appointmentsForDay(data, todayKey, now);
-    const tomorrow = appointmentsForDay(data, tomorrowKey);
+    const today = dayItems(data, todayKey, now);
+    const tomorrow = dayItems(data, tomorrowKey);
     const all = [...today, ...tomorrow];
-    const pending = all.filter(item => item.hasPhone && !item.reminderSent).length;
-    const noPhone = all.filter(item => item.hasPatient && !item.hasPhone).length;
-    const noPatient = all.filter(item => !item.hasPatient).length;
+    const clinical = all.filter(item => item.kind === 'clinical');
+    const pending = clinical.filter(item => item.hasPhone && !item.reminderSent).length;
+    const noPhone = clinical.filter(item => item.hasPatient && !item.hasPhone).length;
+    const noPatient = clinical.filter(item => !item.hasPatient).length;
+    const countKind = (items, kind) => items.filter(item => item.kind === kind).length;
 
     const lines = [];
     if (test) lines.push('🧪 Messaggio di prova', '');
@@ -172,5 +236,13 @@ export function buildDigest(data, now, { appUrl = '', test = false } = {}) {
     if (noPatient) todo.push(`⚠️ ${plural(noPatient, 'appuntamento', 'appuntamenti')} senza paziente associato`);
     if (todo.length) lines.push('', ...todo);
     if (appUrl) lines.push('', `Apri l'agenda: ${appUrl}`);
-    return { text: lines.join('\n'), todayKey, counts: { today: today.length, tomorrow: tomorrow.length, pending, noPhone, noPatient } };
+    return {
+        text: lines.join('\n'),
+        todayKey,
+        counts: {
+            today: countKind(today, 'clinical'), tomorrow: countKind(tomorrow, 'clinical'),
+            shifts: countKind(all, 'shift'), personal: countKind(all, 'personal'),
+            pending, noPhone, noPatient
+        }
+    };
 }

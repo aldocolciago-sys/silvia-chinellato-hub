@@ -22,7 +22,7 @@ vi.mock('firebase-admin/auth', () => ({
 
 import defaultHandler, { createHandler, realDeps, sendCallMeBot, firebaseAdmin, TEST_COOLDOWN_MS } from '../../api/daily-reminder.js';
 import {
-    buildDigest, parseEventStart, romeDayKey, initials, appointmentsForDay, dayLabel, addDaysToKey, normalizeWhatsAppNumber, MAX_LINES_PER_DAY
+    buildDigest, commitmentsForDay, parseEventStart, romeDayKey, initials, appointmentsForDay, dayLabel, addDaysToKey, normalizeWhatsAppNumber, MAX_LINES_PER_DAY
 } from '../../api/_daily-reminder-core.js';
 import { createMockReq, createMockRes } from '../support/vercel-mock.js';
 
@@ -134,15 +134,18 @@ describe('riepilogo WhatsApp – contenuto', () => {
     it('compone il testo con iniziali, trattamento, sede e cose da fare', () => {
         const { text, todayKey, counts } = buildDigest(DATA, SEVEN_AM, { appUrl: 'https://agenda.example' });
         expect(todayKey).toBe('2026-10-01');
-        expect(counts).toEqual({ today: 1, tomorrow: 3, pending: 1, noPhone: 1, noPatient: 1 });
+        expect(counts).toEqual({ today: 1, tomorrow: 3, shifts: 1, personal: 2, pending: 1, noPhone: 1, noPatient: 1 });
         expect(text).toBe([
             '☀️ Buongiorno Silvia! Oggi è giovedì 1 ottobre.',
             '',
             '*Oggi* (1)',
             '• 09:00 – M.R. – Osteopatia – studio',
             '',
-            '*Domani, venerdì 2 ottobre* (3)',
+            '*Domani, venerdì 2 ottobre* (6)',
+            '• Tutto il giorno – 🗓️ Ferie',
+            '• 08:00 – 🩺 Turno – Medicina dello Sport',
             '• 10:00 – senza paziente – studio',
+            '• 12:00 – 🗓️ Pranzo',
             '• 15:00 – A.D. – Idrocolonterapia – CMS Carate ⚠️ senza telefono',
             '• 17:00 – M.R. – Osteopatia – studio',
             '',
@@ -158,13 +161,44 @@ describe('riepilogo WhatsApp – contenuto', () => {
     it('giornate vuote, messaggio di prova e plurali', () => {
         const { text } = buildDigest({}, SEVEN_AM, { test: true });
         expect(text.split('\n').slice(0, 2)).toEqual(['🧪 Messaggio di prova', '']);
-        expect(text).toContain('*Oggi*: nessun appuntamento con pazienti.');
-        expect(text).toContain('*Domani, venerdì 2 ottobre*: nessun appuntamento con pazienti.');
+        expect(text).toContain('*Oggi*: nessun impegno in agenda.');
+        expect(text).toContain('*Domani, venerdì 2 ottobre*: nessun impegno in agenda.');
         expect(text).not.toContain('Apri l\'agenda');
         const two = buildDigest({ events: [DATA.events[6], { ...DATA.events[6], id: 'n2', start: '2026-10-02T11:00:00' }] }, SEVEN_AM);
         expect(two.text).toContain('⚠️ 2 appuntamenti senza paziente associato');
         const noPhones = buildDigest({ ...DATA, patients: [{ id: 'p1', name: 'Maria Rossi' }, DATA.patients[1]] }, SEVEN_AM);
         expect(noPhones.text).toContain('⚠️ 3 pazienti senza telefono');
+    });
+
+    it('include turni, calendari personali e giornate intere', () => {
+        const centers = [
+            { id: 'sport', name: 'Medicina dello Sport', isNonClinicalCalendar: true, isShiftCalendar: true },
+            { id: 'pers', name: 'Personale', isNonClinicalCalendar: true },
+            { id: 'cms', name: 'CMS Carate' }
+        ];
+        const events = [
+            { id: 'turno', start: '2026-10-01T06:00:00', end: '2026-10-01T13:00:00', title: 'Turno', extendedProps: { centerId: 'sport' } },
+            { id: 'finito', start: '2026-10-01T05:00:00', end: '2026-10-01T06:30:00', title: 'Corsa', extendedProps: { centerId: 'pers' } },
+            { id: 'corso', start: '2026-09-30T09:00:00.000Z', end: '2026-10-03T09:00:00.000Z', allDay: true, title: 'Corso **ECM**', extendedProps: { centerId: 'pers' } },
+            { id: 'chiuso', start: '2026-10-01T09:00:00.000Z', allDay: true, title: 'Studio chiuso', extendedProps: { centerId: 'cms' } },
+            { id: 'annullato', start: '2026-10-01T18:00:00', title: 'Cena', extendedProps: { centerId: 'pers', paymentStatus: 'cancelled' } },
+            { id: 'lungo', start: '2026-10-01T20:00:00', end: '2026-10-01T19:00:00', title: 'x'.repeat(80), extendedProps: { isNonClinical: true } },
+            { id: 'senza-titolo', start: '2026-10-01T21:00:00', title: '  ', extendedProps: { centerId: 'pers' } },
+            { id: 'paziente', start: '2026-10-01T10:00:00', title: 'Osteopatia', extendedProps: { centerId: 'cms' } }
+        ];
+        const today = commitmentsForDay({ events, centers }, '2026-10-01', SEVEN_AM);
+        expect(today.map(item => `${item.time} | ${item.kind} | ${item.label} | ${item.place}`)).toEqual([
+            'Tutto il giorno | personal | Corso ECM | ',
+            'Tutto il giorno | personal | Studio chiuso | ',
+            '06:00–13:00 | shift | Turno | Medicina dello Sport', // già iniziato ma non finito
+            `20:00 | personal | ${'x'.repeat(59)}… | `, // fine prima dell'inizio: solo l'ora d'inizio
+            '21:00 | personal | Impegno personale | '
+        ]);
+        expect(commitmentsForDay({ events, centers }, '2026-10-02').map(item => item.label)).toEqual(['Corso ECM']);
+        expect(commitmentsForDay({ events, centers }, '2026-10-03')).toEqual([]);
+        const { text, counts } = buildDigest({ events, centers }, SEVEN_AM);
+        expect(text).toContain('*Oggi* (6)\n• Tutto il giorno – 🗓️ Corso ECM\n• Tutto il giorno – 🗓️ Studio chiuso\n• 06:00–13:00 – 🩺 Turno – Medicina dello Sport\n• 10:00 – senza paziente – Osteopatia – CMS Carate\n');
+        expect(counts).toMatchObject({ today: 1, shifts: 1, personal: 5 });
     });
 
     it('tronca le giornate molto piene', () => {
@@ -180,7 +214,7 @@ describe('api/daily-reminder – invio programmato (GET)', () => {
         const deps = makeDeps();
         const res = await call(deps);
         expect(res.statusCode).toBe(200);
-        expect(res.body).toEqual({ status: 'sent', counts: { today: 1, tomorrow: 3, pending: 1, noPhone: 1, noPatient: 1 } });
+        expect(res.body).toEqual({ status: 'sent', counts: { today: 1, tomorrow: 3, shifts: 1, personal: 2, pending: 1, noPhone: 1, noPatient: 1 } });
         expect(res.headers['cache-control']).toBe('no-store');
         const url = new URL(deps.fetch.mock.calls[0][0]);
         expect(url.origin + url.pathname).toBe('https://api.callmebot.com/whatsapp.php');
