@@ -28,6 +28,10 @@ function safeEqual(a, b) {
     return left.length === right.length && timingSafeEqual(left, right);
 }
 
+function missingConfig(env) {
+    return ['CALLMEBOT_PHONE', 'CALLMEBOT_APIKEY', 'FIREBASE_SERVICE_ACCOUNT'].filter(name => !String(env[name] || '').trim());
+}
+
 function appUrl(req, env) {
     if (env.APP_URL) return env.APP_URL;
     const host = req.headers?.['x-forwarded-host'] || req.headers?.host;
@@ -65,17 +69,29 @@ export function createHandler(deps) {
             if (!env.CRON_SECRET || !token || !safeEqual(token, env.CRON_SECRET)) return res.status(401).json({ error: 'Non autorizzato' });
         } else {
             if (!token) return res.status(401).json({ error: 'Accesso richiesto' });
+            const missing = missingConfig(env);
+            if (missing.length) return res.status(500).json({ error: `Configurazione mancante su Vercel: ${missing.join(', ')}` });
             let user;
             try {
                 user = await deps.verifyUser(token);
-            } catch {
-                return res.status(401).json({ error: 'Sessione non valida: esci e rientra nell\'area riservata.' });
+            } catch (err) {
+                const code = String(err?.code || '');
+                // Solo gli errori auth/* riguardano il token; il resto è la chiave di servizio che non funziona.
+                if (code.startsWith('auth/')) {
+                    console.error('Riepilogo WhatsApp: token rifiutato', code, err.message);
+                    const otherProject = /\baud\b|audience|project/i.test(String(err.message || ''));
+                    return res.status(401).json({ error: otherProject
+                        ? 'La chiave FIREBASE_SERVICE_ACCOUNT su Vercel è di un altro progetto Firebase: scarica quella del progetto silvia-chinellato-hub.'
+                        : `Sessione non valida (${code}): esci e rientra nell'area riservata.` });
+                }
+                console.error('Riepilogo WhatsApp: Firebase Admin non inizializzato', err?.message);
+                return res.status(500).json({ error: 'La chiave FIREBASE_SERVICE_ACCOUNT su Vercel non è valida: incolla di nuovo l\'intero contenuto del file JSON e rifai il deploy.' });
             }
             const email = String(user?.email || '').toLowerCase();
             if (!user?.email_verified || !AUTHORIZED_EMAILS.includes(email)) return res.status(403).json({ error: 'Account non autorizzato' });
         }
 
-        const missing = ['CALLMEBOT_PHONE', 'CALLMEBOT_APIKEY', 'FIREBASE_SERVICE_ACCOUNT'].filter(name => !env[name]);
+        const missing = missingConfig(env);
         if (missing.length) return res.status(500).json({ error: `Configurazione mancante su Vercel: ${missing.join(', ')}` });
 
         const now = deps.now();
