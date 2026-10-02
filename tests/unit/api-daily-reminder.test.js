@@ -4,7 +4,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 const admin = vi.hoisted(() => ({ docs: {}, collections: {}, writes: [], tokens: {}, initCalls: 0, apps: [] }));
 vi.mock('firebase-admin/app', () => ({
     getApps: () => admin.apps,
-    cert: (json) => ({ json }),
+    cert: (json) => { if (json.private_key === 'rotta') throw new Error('Failed to parse private key'); return { json }; },
     initializeApp: (options) => { admin.initCalls += 1; const app = { options }; admin.apps.push(app); return app; }
 }));
 vi.mock('firebase-admin/firestore', () => ({
@@ -16,11 +16,12 @@ vi.mock('firebase-admin/firestore', () => ({
         })
     })
 }));
-vi.mock('firebase-admin/auth', () => ({
-    getAuth: () => ({ verifyIdToken: async (token) => { if (!admin.tokens[token]) throw new Error('token non valido'); return admin.tokens[token]; } })
-}));
+// firebase-admin/auth non va mai caricato: su Vercel si rompe (jwks-rsa → jose ESM).
+vi.mock('firebase-admin/auth', () => { throw new Error('firebase-admin/auth non deve essere importato'); });
 
-import defaultHandler, { createHandler, realDeps, sendCallMeBot, firebaseAdmin, TEST_COOLDOWN_MS } from '../../api/daily-reminder.js';
+import defaultHandler, {
+    createHandler, realDeps, sendCallMeBot, firebaseAdmin, parseServiceAccount, lookupFirebaseUser, FIREBASE_WEB_API_KEY, TEST_COOLDOWN_MS
+} from '../../api/daily-reminder.js';
 import {
     buildDigest, commitmentsForDay, parseEventStart, romeDayKey, initials, appointmentsForDay, dayLabel, addDaysToKey, normalizeWhatsAppNumber, MAX_LINES_PER_DAY
 } from '../../api/_daily-reminder-core.js';
@@ -48,7 +49,8 @@ const DATA = {
     centers: [{ id: 'c1', name: 'CMS Carate', service: 'Idrocolonterapia' }, { id: 'sport', name: 'Medicina dello Sport', isNonClinicalCalendar: true, isShiftCalendar: true }]
 };
 
-const ENV = { CRON_SECRET: 'segreto-cron', CALLMEBOT_PHONE: '+393331112222', CALLMEBOT_APIKEY: 'chiave123', FIREBASE_SERVICE_ACCOUNT: '{"project_id":"x"}', APP_URL: 'https://agenda.example' };
+const SERVICE_ACCOUNT = { project_id: 'x', client_email: 'bot@x.iam.gserviceaccount.com', private_key: 'chiave' };
+const ENV = { CRON_SECRET: 'segreto-cron', CALLMEBOT_PHONE: '+393331112222', CALLMEBOT_APIKEY: 'chiave123', FIREBASE_SERVICE_ACCOUNT: JSON.stringify(SERVICE_ACCOUNT), APP_URL: 'https://agenda.example' };
 
 function okResponse(body = 'Message queued. You will receive it in a few seconds.', status = 200) {
     return { ok: status < 400, status, text: async () => body };
@@ -331,25 +333,25 @@ describe('api/daily-reminder – prova dall\'app (POST)', () => {
         expect(expired.body.error).toBe("Sessione non valida (auth/argument-error): esci e rientra nell'area riservata.");
     });
 
-    it('distingue i problemi della chiave di servizio da quelli della sessione', async () => {
+    it('distingue configurazione, sessione e servizio di verifica', async () => {
         // chiave mancante (o vuota): lo dice prima ancora di verificare il token
         const missing = makeDeps({ env: { ...ENV, FIREBASE_SERVICE_ACCOUNT: '  ' } });
         const res1 = await call(missing, { method: 'POST', token: 'token-silvia' });
         expect(res1.statusCode).toBe(500);
         expect(res1.body.error).toBe('Configurazione mancante su Vercel: FIREBASE_SERVICE_ACCOUNT');
         expect(missing.verifyUser).not.toHaveBeenCalled();
-        // chiave incollata male: Firebase Admin non parte
-        const broken = makeDeps({ verifyUser: vi.fn(async () => { throw new SyntaxError('Unexpected token } in JSON'); }) });
-        const res2 = await call(broken, { method: 'POST', token: 'token-silvia' });
-        expect(res2.statusCode).toBe(500);
-        expect(res2.body.error).toBe("La chiave FIREBASE_SERVICE_ACCOUNT su Vercel non è valida: incolla di nuovo l'intero contenuto del file JSON e rifai il deploy.");
-        // chiave di un altro progetto: il token ha un "aud" diverso
-        const other = makeDeps({ verifyUser: vi.fn(async () => { throw Object.assign(new Error('Firebase ID token has incorrect "aud" (audience) claim.'), { code: 'auth/argument-error' }); }) });
-        const res3 = await call(other, { method: 'POST', token: 'token-silvia' });
-        expect(res3.statusCode).toBe(401);
-        expect(res3.body.error).toBe('La chiave FIREBASE_SERVICE_ACCOUNT su Vercel è di un altro progetto Firebase: scarica quella del progetto silvia-chinellato-hub.');
+        // il servizio di verifica non risponde: non è colpa della sessione
+        const down = makeDeps({ verifyUser: vi.fn(async () => { throw new Error('Identity Toolkit non raggiungibile'); }) });
+        const res2 = await call(down, { method: 'POST', token: 'token-silvia' });
+        expect(res2.statusCode).toBe(502);
+        expect(res2.body.error).toBe("Verifica dell'accesso non riuscita: riprova tra qualche minuto.");
         const noCode = makeDeps({ verifyUser: vi.fn(async () => { throw null; }) });
-        expect((await call(noCode, { method: 'POST', token: 'token-silvia' })).statusCode).toBe(500);
+        expect((await call(noCode, { method: 'POST', token: 'token-silvia' })).statusCode).toBe(502);
+        // chiave di servizio rotta: lo dice la lettura dei dati, con il motivo
+        const broken = makeDeps({ loadData: vi.fn(async () => { throw Object.assign(new Error('La chiave FIREBASE_SERVICE_ACCOUNT su Vercel non è un JSON valido: …'), { code: 'config/service-account' }); }) });
+        const res3 = await call(broken, { method: 'POST', token: 'token-silvia' });
+        expect(res3.statusCode).toBe(500);
+        expect(res3.body.error).toBe('La chiave FIREBASE_SERVICE_ACCOUNT su Vercel non è un JSON valido: …');
     });
 
     it('al massimo una prova al minuto', async () => {
@@ -369,6 +371,40 @@ describe('api/daily-reminder – prova dall\'app (POST)', () => {
         expect(res.statusCode).toBe(502);
         expect(res.body.error).toBe('CallMeBot non raggiungibile (errore di rete)');
         expect(deps.saveStatus).toHaveBeenCalledWith({ lastErrorAt: SEVEN_AM.toISOString(), lastError: res.body.error, lastTestAt: SEVEN_AM.toISOString() });
+    });
+});
+
+describe('lookupFirebaseUser', () => {
+    const lookup = (response) => lookupFirebaseUser('tok', { apiKey: 'k', fetchImpl: async () => response });
+    const reply = (status, body) => ({ ok: status < 400, status, json: async () => body });
+
+    it('traduce le risposte di Google', async () => {
+        await expect(lookup(reply(200, { users: [{ email: 'a@b.it' }] }))).resolves.toEqual({ email: 'a@b.it', email_verified: false });
+        await expect(lookup(reply(200, { users: [{}] }))).resolves.toEqual({ email: '', email_verified: false });
+        await expect(lookup(reply(200, {}))).rejects.toMatchObject({ code: 'auth/user-not-found' });
+        await expect(lookup(reply(400, { error: { message: 'INVALID_ID_TOKEN' } }))).rejects.toMatchObject({ code: 'auth/invalid-id-token' });
+        await expect(lookup(reply(400, { error: { message: 'TOKEN_EXPIRED' } }))).rejects.toMatchObject({ code: 'auth/token-expired' });
+        const other = await lookup(reply(400, { error: { message: 'API key not valid' } })).catch(e => e);
+        expect(other.code).toBeUndefined();
+        expect(other.message).toBe('Identity Toolkit HTTP 400 API key not valid');
+        const down = await lookup({ ok: false, status: 503, json: async () => { throw new Error('html'); } }).catch(e => e);
+        expect(down.message).toBe('Identity Toolkit HTTP 503');
+        await expect(lookupFirebaseUser('tok', { apiKey: 'k', fetchImpl: async () => { throw new TypeError('fetch failed'); } }))
+            .rejects.toThrow('Identity Toolkit non raggiungibile');
+    });
+});
+
+describe('parseServiceAccount', () => {
+    it('accetta la chiave completa, anche con spazi intorno', () => {
+        expect(parseServiceAccount(`  ${JSON.stringify(SERVICE_ACCOUNT)}\n`)).toEqual(SERVICE_ACCOUNT);
+    });
+    it('spiega cosa non va senza mostrare la chiave', () => {
+        const err = (raw) => { try { parseServiceAccount(raw); } catch (e) { return e; } };
+        expect(err('{"private_key":"SEGRETO"')).toMatchObject({ code: 'config/service-account', message: "La chiave FIREBASE_SERVICE_ACCOUNT su Vercel non è un JSON valido: incolla di nuovo l'intero contenuto del file JSON e rifai il deploy." });
+        expect(err('{"private_key":"SEGRETO"').message).not.toContain('SEGRETO');
+        expect(err(undefined).message).toContain('non è un JSON valido');
+        expect(err('null').message).toContain('non contiene project_id, client_email, private_key');
+        expect(err(JSON.stringify({ private_key: 'SEGRETO' })).message).toContain('non contiene project_id, client_email:');
     });
 });
 
@@ -392,6 +428,16 @@ describe('api/daily-reminder – Firebase Admin', () => {
         Object.assign(admin, { docs: {}, collections: {}, writes: [], tokens: {}, initCalls: 0, apps: [] });
     });
 
+    // primo test del gruppo: Firebase Admin non è ancora inizializzato
+    it('una chiave con private_key rotta dà un errore chiaro e si può riprovare', async () => {
+        const broken = JSON.stringify({ ...SERVICE_ACCOUNT, private_key: 'rotta' });
+        await expect(realDeps({ ...ENV, FIREBASE_SERVICE_ACCOUNT: broken }).loadData())
+            .rejects.toMatchObject({ code: 'config/service-account', message: expect.stringContaining('ha una private_key non valida') });
+        await expect(realDeps({ ...ENV, FIREBASE_SERVICE_ACCOUNT: 'non json' }).saveStatus({}))
+            .rejects.toMatchObject({ code: 'config/service-account' });
+        expect(admin.initCalls).toBe(0);
+    });
+
     it('legge pazienti, appuntamenti, sedi e impostazioni condivise', async () => {
         admin.collections[`${ROOT}/studio_events`] = [['a', DATA.events[0]]];
         admin.collections[`${ROOT}/patients_list`] = [['doc-p1', { name: 'Maria Rossi' }], ['doc-x', { id: 'p2', name: 'Anna' }]];
@@ -405,7 +451,7 @@ describe('api/daily-reminder – Firebase Admin', () => {
             messagingSettings: { dailyDigestEnabled: true },
             status: null
         });
-        expect(admin.apps[0].options.credential).toEqual({ json: { project_id: 'x' } });
+        expect(admin.apps[0].options.credential).toEqual({ json: SERVICE_ACCOUNT });
     });
 
     it('salva lo stato nel documento condiviso (APP_ID configurabile)', async () => {
@@ -414,15 +460,23 @@ describe('api/daily-reminder – Firebase Admin', () => {
         expect(admin.docs['artifacts/altra-app/shared/data/settings/daily_reminder'].lastSentDay).toBe('2026-10-01');
     });
 
-    it('verifica i token Firebase e inizializza Admin una sola volta', async () => {
-        admin.tokens.buono = { email: 'silviachine@gmail.com', email_verified: true };
-        const deps = realDeps({ ...ENV });
-        await expect(deps.verifyUser('buono')).resolves.toMatchObject({ email: 'silviachine@gmail.com' });
-        await expect(deps.verifyUser('falso')).rejects.toThrow('token non valido');
-        await firebaseAdmin();
+    it('inizializza Admin una sola volta e solo con app e Firestore', async () => {
+        await firebaseAdmin({ ...ENV });
+        await firebaseAdmin({ ...ENV });
         expect(admin.initCalls).toBeLessThanOrEqual(1);
     });
 
+    it('verifica il token con Identity Toolkit e la chiave web pubblica', async () => {
+        const fetchMock = vi.fn(async () => ({ ok: true, status: 200, json: async () => ({ users: [{ email: 'silviachine@gmail.com', emailVerified: true }] }) }));
+        vi.stubGlobal('fetch', fetchMock);
+        await expect(realDeps({ ...ENV }).verifyUser('tok')).resolves.toEqual({ email: 'silviachine@gmail.com', email_verified: true });
+        const [url, init] = fetchMock.mock.calls[0];
+        expect(url).toBe(`https://identitytoolkit.googleapis.com/v1/accounts:lookup?key=${FIREBASE_WEB_API_KEY}`);
+        expect(init).toMatchObject({ method: 'POST', body: JSON.stringify({ idToken: 'tok' }) });
+        await realDeps({ ...ENV, FIREBASE_WEB_API_KEY: 'altra' }).verifyUser('tok');
+        expect(fetchMock.mock.calls[1][0]).toContain('key=altra');
+        vi.unstubAllGlobals();
+    });
     it('dipendenze reali: orologio e fetch', async () => {
         const deps = realDeps({});
         expect(Math.abs(deps.now() - Date.now())).toBeLessThan(1000);
