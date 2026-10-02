@@ -63,7 +63,7 @@ function makeDeps(overrides = {}) {
             if (token === 'token-silvia') return { email: 'SilviaChine@gmail.com', email_verified: true };
             if (token === 'token-intruso') return { email: 'intruso@example.com', email_verified: true };
             if (token === 'token-non-verificato') return { email: 'silviachine@gmail.com', email_verified: false };
-            throw new Error('token non valido');
+            throw Object.assign(new Error('Decoding Firebase ID token failed.'), { code: 'auth/argument-error' });
         }),
         loadData: vi.fn(async () => ({ ...DATA, messagingSettings: { dailyDigestEnabled: true }, status: null })),
         saveStatus: vi.fn(async () => {}),
@@ -327,6 +327,29 @@ describe('api/daily-reminder – prova dall\'app (POST)', () => {
         expect((await call(makeDeps(), { method: 'POST', token: 'token-non-verificato' })).statusCode).toBe(403);
         // il segreto del cron non vale come accesso dall'app
         expect((await call(makeDeps(), { method: 'POST', token: 'segreto-cron' })).statusCode).toBe(401);
+        const expired = await call(makeDeps(), { method: 'POST', token: 'scaduto' });
+        expect(expired.body.error).toBe("Sessione non valida (auth/argument-error): esci e rientra nell'area riservata.");
+    });
+
+    it('distingue i problemi della chiave di servizio da quelli della sessione', async () => {
+        // chiave mancante (o vuota): lo dice prima ancora di verificare il token
+        const missing = makeDeps({ env: { ...ENV, FIREBASE_SERVICE_ACCOUNT: '  ' } });
+        const res1 = await call(missing, { method: 'POST', token: 'token-silvia' });
+        expect(res1.statusCode).toBe(500);
+        expect(res1.body.error).toBe('Configurazione mancante su Vercel: FIREBASE_SERVICE_ACCOUNT');
+        expect(missing.verifyUser).not.toHaveBeenCalled();
+        // chiave incollata male: Firebase Admin non parte
+        const broken = makeDeps({ verifyUser: vi.fn(async () => { throw new SyntaxError('Unexpected token } in JSON'); }) });
+        const res2 = await call(broken, { method: 'POST', token: 'token-silvia' });
+        expect(res2.statusCode).toBe(500);
+        expect(res2.body.error).toBe("La chiave FIREBASE_SERVICE_ACCOUNT su Vercel non è valida: incolla di nuovo l'intero contenuto del file JSON e rifai il deploy.");
+        // chiave di un altro progetto: il token ha un "aud" diverso
+        const other = makeDeps({ verifyUser: vi.fn(async () => { throw Object.assign(new Error('Firebase ID token has incorrect "aud" (audience) claim.'), { code: 'auth/argument-error' }); }) });
+        const res3 = await call(other, { method: 'POST', token: 'token-silvia' });
+        expect(res3.statusCode).toBe(401);
+        expect(res3.body.error).toBe('La chiave FIREBASE_SERVICE_ACCOUNT su Vercel è di un altro progetto Firebase: scarica quella del progetto silvia-chinellato-hub.');
+        const noCode = makeDeps({ verifyUser: vi.fn(async () => { throw null; }) });
+        expect((await call(noCode, { method: 'POST', token: 'token-silvia' })).statusCode).toBe(500);
     });
 
     it('al massimo una prova al minuto', async () => {
