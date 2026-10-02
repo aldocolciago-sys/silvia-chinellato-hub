@@ -76,6 +76,45 @@ describe('modulo pubblico di richiesta appuntamento', () => {
         expect(app.mock.list(REQUESTS)).toHaveLength(1);
     });
 
+    it('senza consenso il pulsante di invio resta disattivato', async () => {
+        await publicSite();
+        const button = app.byId('request-submit');
+        expect(button.disabled).toBe(true);
+        expect(app.isHidden('request-consent-hint')).toBe(false);
+        expect(app.byId('request-consent').required).toBe(true);
+        fillRequest({ consent: false });
+        app.window.updateRequestSubmitState();
+        expect(button.disabled).toBe(true);
+        app.byId('request-consent').checked = true;
+        app.window.updateRequestSubmitState(); // nel browser lo chiama onchange (verificato nell'E2E)
+        expect(button.disabled).toBe(false);
+        expect(app.isHidden('request-consent-hint')).toBe(true);
+        await app.submit('appointment-request-form');
+        expect(app.mock.list(REQUESTS)).toHaveLength(1);
+        // dopo l'invio il modulo si svuota e il consenso va dato di nuovo
+        expect(app.byId('request-consent').checked).toBe(false);
+        expect(button.disabled).toBe(true);
+        expect(app.isHidden('request-consent-hint')).toBe(false);
+    });
+
+    it('anche aggirando il pulsante, senza consenso non salva nulla', async () => {
+        await publicSite();
+        fillRequest({ consent: false });
+        await app.submit('appointment-request-form');
+        expect(app.text('request-feedback')).toBe('Per inviare la richiesta serve il consenso al trattamento dei dati.');
+        expect(app.mock.list(REQUESTS)).toHaveLength(0);
+    });
+
+    it('informativa privacy con titolare, contatto e conservazione', async () => {
+        await publicSite();
+        const text = app.text('request-privacy');
+        expect(text).toContain('Titolare del trattamento: Silvia Chinellato, Carate Brianza (MB), email silviachine@gmail.com');
+        expect(text).toContain('conservati per 12 mesi e poi cancellati');
+        expect(text).toContain('art. 6.1.a e 9.2.a del Regolamento UE 2016/679');
+        expect(app.$('#request-privacy a[href="mailto:silviachine@gmail.com"]')).not.toBeNull();
+        expect(app.$('label:has(#request-consent)').textContent).toContain("Ho letto l'informativa privacy e acconsento");
+    });
+
     it('segnala un errore di invio', async () => {
         await publicSite();
         fillRequest();
@@ -107,6 +146,20 @@ describe('richieste nell\'area riservata', () => {
         app.byId('requests-show-archived').checked = true;
         app.window.renderRequestsList();
         expect(cards().map(c => c.dataset.requestId)).toEqual(['r2', 'r1', 'r3']);
+    });
+
+    it('all\'accesso cancella le richieste più vecchie di 12 mesi', async () => {
+        const old = new Date(); old.setMonth(old.getMonth() - 13);
+        const recent = new Date(); recent.setMonth(recent.getMonth() - 11);
+        await loggedIn({ requests: [
+            request('vecchia', { createdAt: old.toISOString(), status: 'converted' }),
+            request('recente', { createdAt: recent.toISOString() }),
+            request('senza-data', { createdAt: 'boh' })
+        ] });
+        expect(app.mock.get(`${REQUESTS}/vecchia`)).toBeUndefined();
+        expect(app.mock.get(`${REQUESTS}/recente`)).toBeDefined();
+        expect(app.mock.get(`${REQUESTS}/senza-data`)).toBeDefined();
+        expect(app.state.requests.map(r => r.id).sort()).toEqual(['recente', 'senza-data']);
     });
 
     it('archivia ed elimina', async () => {
