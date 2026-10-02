@@ -123,3 +123,66 @@ describe('promemoria di oggi e domani', () => {
         expect(app.text('reminders-list')).toContain('Nessun appuntamento con pazienti domani.');
     });
 });
+
+describe('riepilogo automatico su WhatsApp alle 7:00', () => {
+    const STATUS = `${SHARED}/settings/daily_reminder`;
+    const MESSAGING = `${SHARED}/settings/messaging`;
+
+    it('è disattivato finché non lo si attiva, poi salva la scelta', async () => {
+        await loggedIn();
+        expect(app.byId('daily-digest-enabled').checked).toBe(false);
+        expect(app.text('daily-digest-status')).toBe('Disattivato.');
+        app.byId('daily-digest-enabled').checked = true;
+        await app.window.saveDailyDigestEnabled(true);
+        await app.flush();
+        expect(app.mock.get(MESSAGING)).toMatchObject({ dailyDigestEnabled: true });
+        expect(app.toast()).toBe('Riepilogo delle 7:00 attivato.');
+        expect(app.text('daily-digest-status')).toBe('Attivo: il primo riepilogo arriverà domattina alle 7.');
+    });
+
+    it('mantiene il link delle recensioni quando si cambia l\'impostazione', async () => {
+        await loggedIn({ extra: { [MESSAGING]: { googleReviewUrl: 'https://g.page/r/silvia' } } });
+        await app.window.saveDailyDigestEnabled(true);
+        await app.flush();
+        expect(app.mock.get(MESSAGING)).toMatchObject({ googleReviewUrl: 'https://g.page/r/silvia', dailyDigestEnabled: true });
+    });
+
+    it('mostra l\'ultimo invio e l\'ultimo errore scritti dal server', async () => {
+        await loggedIn({ extra: {
+            [MESSAGING]: { dailyDigestEnabled: true },
+            [STATUS]: { lastSentAt: '2030-03-04T06:00:00.000Z', lastErrorAt: '2030-03-04T07:00:00.000Z', lastError: 'CallMeBot non raggiungibile (errore di rete)' }
+        } });
+        expect(app.byId('daily-digest-enabled').checked).toBe(true);
+        const status = app.text('daily-digest-status');
+        expect(status).toMatch(/^Ultimo riepilogo inviato il 4 mar alle 07:00\./);
+        expect(status).toContain('Ultimo invio non riuscito il 4 mar alle 08:00: CallMeBot non raggiungibile (errore di rete)');
+        expect(app.byId('daily-digest-status').classList.contains('text-rose-700')).toBe(true);
+    });
+
+    it('la prova chiama il server con il token dell\'account', async () => {
+        const calls = [];
+        opened = [];
+        app = await bootApp({
+            docs: seedDocs({ events }),
+            fetch: async (url, init) => { calls.push({ url, init }); return { ok: true, status: 200, json: async () => ({ status: 'sent' }) }; },
+            beforeScript: fixClock
+        });
+        await app.login();
+        await app.window.sendDailyDigestTest();
+        expect(calls.at(-1).url).toBe('/api/daily-reminder');
+        expect(calls.at(-1).init).toMatchObject({ method: 'POST', headers: { Authorization: 'Bearer mock-id-token:silviachine@gmail.com' } });
+        expect(app.toast()).toBe('Prova inviata: controlla WhatsApp.');
+        expect(app.byId('daily-digest-test').disabled).toBe(false);
+    });
+
+    it('riporta l\'errore del server se la prova non parte', async () => {
+        app = await bootApp({
+            docs: seedDocs({ events }),
+            fetch: async () => ({ ok: false, status: 500, json: async () => ({ error: 'Configurazione mancante su Vercel: CALLMEBOT_APIKEY' }) }),
+            beforeScript: fixClock
+        });
+        await app.login();
+        await app.window.sendDailyDigestTest();
+        expect(app.toast()).toBe('Prova non inviata: Configurazione mancante su Vercel: CALLMEBOT_APIKEY');
+    });
+});

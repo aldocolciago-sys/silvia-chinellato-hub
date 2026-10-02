@@ -1,5 +1,9 @@
 {
   "rewrites": [
     { "source": "/api/ical", "destination": "/api/ical.js" }
+  ],
+  "crons": [
+    { "path": "/api/daily-reminder", "schedule": "0 5 * * *" },
+    { "path": "/api/daily-reminder", "schedule": "0 6 * * *" }
   ]
 }

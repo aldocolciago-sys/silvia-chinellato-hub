@@ -167,6 +167,7 @@ export async function signInWithPopup() {
         throw err;
     }
     const user = { uid: state.popupUser.uid || `uid-${state.popupUser.email}`, email: state.popupUser.email, isAnonymous: false, displayName: state.popupUser.displayName || null };
+    Object.defineProperty(user, 'getIdToken', { value: async () => `mock-id-token:${user.email}`, enumerable: false });
     setUser(user);
     return { user };
 }

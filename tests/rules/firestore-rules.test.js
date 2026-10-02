@@ -91,7 +91,7 @@ describe('dati condivisi (pazienti, agenda, compensi, impostazioni)', () => {
         expect(paths).toEqual([
             `${SHARED}/_meta/test-doc`, `${SHARED}/centers_list/test-doc`, `${SHARED}/clinical_sessions/test-doc`,
             `${SHARED}/manual_revenue/test-doc`, `${SHARED}/patients_list/test-doc`,
-            `${SHARED}/settings/agenda`, `${SHARED}/settings/finance`, `${SHARED}/settings/messaging`,
+            `${SHARED}/settings/agenda`, `${SHARED}/settings/daily_reminder`, `${SHARED}/settings/finance`, `${SHARED}/settings/messaging`,
             `${SHARED}/studio_events/test-doc`, `${SHARED}/tax_profile/default`
         ]);
     });
