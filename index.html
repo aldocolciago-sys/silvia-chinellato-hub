@@ -404,9 +404,20 @@
                         <div class="space-y-1"><label for="request-days" class="block text-xs font-bold text-slate-700">Giorni preferiti</label><input type="text" id="request-days" maxlength="100" placeholder="Es. martedì o giovedì" class="w-full px-4 py-3 bg-white border border-slate-200 rounded-2xl text-sm"></div>
                         <div class="space-y-1"><label for="request-message" class="block text-xs font-bold text-slate-700">Messaggio (facoltativo)</label><textarea id="request-message" maxlength="1000" rows="3" placeholder="Motivo della visita, domande o altre informazioni utili" class="w-full px-4 py-3 bg-white border border-slate-200 rounded-2xl text-sm"></textarea></div>
                         <div aria-hidden="true" style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden"><label for="request-website">Lasciare vuoto</label><input type="text" id="request-website" tabindex="-1" autocomplete="off"></div>
-                        <label class="flex items-start gap-2 text-xs text-slate-700"><input type="checkbox" id="request-consent" class="mt-0.5 w-4 h-4 flex-shrink-0"><span>Acconsento al trattamento dei miei dati personali, ai sensi del Regolamento UE 2016/679, al solo fine di essere ricontattato/a in merito a questa richiesta. *</span></label>
+                        <details id="request-privacy" class="text-xs text-slate-700 bg-white/70 border border-slate-200 rounded-2xl px-4 py-3">
+                            <summary class="font-bold text-slate-800 cursor-pointer">Informativa privacy</summary>
+                            <div class="mt-2 space-y-2 leading-relaxed">
+                                <p><strong>Titolare del trattamento</strong>: Silvia Chinellato, Carate Brianza (MB), email <a href="mailto:silviachine@gmail.com" class="underline">silviachine@gmail.com</a>.</p>
+                                <p><strong>Quali dati e perché</strong>: nome, telefono, email, trattamento di interesse, preferenze di orario e il messaggio, compresi eventuali dati sulla salute che decide di scrivere. Servono solo a rispondere a questa richiesta e a ricontattarla.</p>
+                                <p><strong>Base giuridica</strong>: il suo consenso esplicito (art. 6.1.a e 9.2.a del Regolamento UE 2016/679), che può revocare in qualsiasi momento.</p>
+                                <p><strong>Destinatari e conservazione</strong>: i dati non sono ceduti né diffusi; sono conservati per 12 mesi e poi cancellati, salvo che la richiesta dia inizio a un rapporto professionale. Per la conservazione sono usati servizi cloud di Google (Firebase).</p>
+                                <p><strong>I suoi diritti</strong>: può chiedere accesso, rettifica, cancellazione, limitazione o portabilità dei dati e revocare il consenso scrivendo a <a href="mailto:silviachine@gmail.com" class="underline">silviachine@gmail.com</a>; può inoltre presentare reclamo al Garante per la protezione dei dati personali (<a href="https://www.garanteprivacy.it" target="_blank" rel="noopener" class="underline">garanteprivacy.it</a>).</p>
+                            </div>
+                        </details>
+                        <label class="flex items-start gap-2 text-xs text-slate-700"><input type="checkbox" id="request-consent" required aria-describedby="request-consent-hint" onchange="updateRequestSubmitState()" class="mt-0.5 w-4 h-4 flex-shrink-0"><span>Ho letto l'informativa privacy e acconsento al trattamento dei miei dati personali, compresi eventuali dati sulla salute indicati nel messaggio, al solo fine di essere ricontattato/a in merito a questa richiesta. *</span></label>
                         <p id="request-feedback" role="status" aria-live="polite" class="hidden text-sm font-semibold rounded-2xl px-4 py-3"></p>
-                        <button type="submit" id="request-submit" class="w-full sm:w-auto px-6 py-3 bg-nature-700 hover:bg-nature-800 text-white font-bold rounded-2xl text-sm shadow-sm">Invia la richiesta</button>
+                        <p id="request-consent-hint" class="text-xs text-slate-600">Per inviare la richiesta spunti la casella del consenso.</p>
+                        <button type="submit" id="request-submit" disabled class="w-full sm:w-auto px-6 py-3 bg-nature-700 hover:bg-nature-800 text-white font-bold rounded-2xl text-sm shadow-sm disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-nature-700">Invia la richiesta</button>
                     </form>
                 </div>
             </section>
@@ -1603,6 +1614,7 @@
                     try {
                         const requestsSnap = await getDocs(requestsCollection());
                         appState.requests = requestsSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+                        await purgeExpiredRequests();
                     } catch (err) {
                         // se le regole non consentono ancora le richieste, il resto dell'area riservata funziona comunque
                         console.error('Richieste non disponibili:', err);
@@ -1627,6 +1639,7 @@
         document.addEventListener('DOMContentLoaded', () => {
             loadPublicDataFromFirestore();
             if (!appState.isLoggedIn) showPublicView();
+            updateRequestSubmitState(); // il browser può ripristinare la spunta tornando indietro
             populateTimeSelects();
         });
 
@@ -4809,6 +4822,14 @@
             const started = Number(startedAt);
             return !(started > 0) || now - started < REQUEST_MIN_FILL_MS;
         }
+        /** Senza consenso il pulsante resta disattivato (il consenso è comunque verificato anche all'invio e dalle regole Firestore). */
+        window.updateRequestSubmitState = function() {
+            const consent = document.getElementById('request-consent');
+            const button = document.getElementById('request-submit');
+            if (!consent || !button) return;
+            button.disabled = !consent.checked;
+            document.getElementById('request-consent-hint')?.classList.toggle('hidden', consent.checked);
+        };
         window.markRequestFormStarted = function() {
             const form = document.getElementById('appointment-request-form');
             if (form && !form.dataset.startedAt) form.dataset.startedAt = String(Date.now());
@@ -4821,6 +4842,31 @@
             box.classList.toggle('bg-rose-50', !ok); box.classList.toggle('text-rose-900', !ok);
         }
         function lastRequestSentAt() { try { return Number(localStorage.getItem('appointmentRequestSentAt') || 0); } catch (err) { return 0; } }
+        /** Mesi di conservazione delle richieste dal sito, come dichiarato nell'informativa privacy. */
+        const REQUEST_RETENTION_MONTHS = 12;
+        function expiredRequests(requests, now = new Date()) {
+            const limit = new Date(now.getFullYear(), now.getMonth() - REQUEST_RETENTION_MONTHS, now.getDate(), now.getHours(), now.getMinutes());
+            return (requests || []).filter(r => {
+                const created = new Date(r?.createdAt);
+                return !Number.isNaN(created.getTime()) && created < limit;
+            });
+        }
+        /** Cancella le richieste più vecchie di 12 mesi (i pazienti creati da una richiesta restano nella loro scheda). */
+        async function purgeExpiredRequests(now = new Date()) {
+            const expired = expiredRequests(appState.requests, now);
+            if (!expired.length) return 0;
+            const deleted = new Set();
+            for (const request of expired) {
+                try {
+                    await deleteDoc(doc(db, 'artifacts', appId, 'requests', request.id));
+                    deleted.add(request.id);
+                } catch (err) {
+                    console.error('Richiesta scaduta non cancellata:', err);
+                }
+            }
+            appState.requests = appState.requests.filter(r => !deleted.has(r.id));
+            return deleted.size;
+        }
         window.submitAppointmentRequest = async function(event) {
             event?.preventDefault?.();
             const form = document.getElementById('appointment-request-form');
@@ -4836,7 +4882,7 @@
             const thanks = 'Grazie! La richiesta è stata inviata: Silvia la ricontatterà al più presto.';
             if (isLikelySpam({ honeypot: document.getElementById('request-website').value, startedAt: form.dataset.startedAt })) {
                 // ai robot si mostra lo stesso messaggio, senza salvare nulla
-                form.reset(); showRequestFeedback(thanks, true); return;
+                form.reset(); updateRequestSubmitState(); showRequestFeedback(thanks, true); return;
             }
             if (Date.now() - lastRequestSentAt() < REQUEST_RESEND_MS) { showRequestFeedback('Richiesta già inviata: attenda un minuto prima di inviarne un\'altra.', false); return; }
             const record = { name: data.name, phone: data.phone, treatment: data.treatment, consent: true, createdAt: new Date().toISOString(), status: 'new' };
@@ -4854,7 +4900,7 @@
                 console.error('Invio richiesta non riuscito:', err);
                 showRequestFeedback('Invio non riuscito. La preghiamo di riprovare o di scrivere a silviachine@gmail.com.', false);
             } finally {
-                button.disabled = false;
+                updateRequestSubmitState();
             }
         };
 

@@ -29,10 +29,20 @@ test('un visitatore invia una richiesta e Silvia la trasforma in appuntamento', 
     await form.getByLabel('Giorni preferiti').fill('martedì');
     await form.getByLabel('Fascia preferita').selectOption('pomeriggio');
     await form.getByLabel('Messaggio (facoltativo)').fill('Mal di schiena da due settimane');
-    await form.getByRole('button', { name: 'Invia la richiesta' }).click();
-    await expect(page.locator('#request-feedback')).toContainText('serve il consenso');
+    // senza consenso il pulsante è disattivato
+    const submit = form.getByRole('button', { name: 'Invia la richiesta' });
+    await expect(submit).toBeDisabled();
+    await expect(page.locator('#request-consent-hint')).toBeVisible();
+    await page.locator('#request-privacy summary').click();
+    await expect(page.locator('#request-privacy')).toContainText('conservati per 12 mesi');
 
-    await form.getByLabel(/Acconsento al trattamento dei miei dati/).check();
+    const consent = form.getByLabel(/Ho letto l'informativa privacy e acconsento/);
+    await consent.check();
+    await expect(submit).toBeEnabled();
+    await expect(page.locator('#request-consent-hint')).toBeHidden();
+    await consent.uncheck();
+    await expect(submit).toBeDisabled();
+    await consent.check();
     await page.waitForTimeout(3100); // chi compila davvero impiega più di 3 secondi (antispam)
     await form.getByRole('button', { name: 'Invia la richiesta' }).click();
     await expect(page.locator('#request-feedback')).toHaveText('Grazie! La richiesta è stata inviata: Silvia la ricontatterà al più presto.');
