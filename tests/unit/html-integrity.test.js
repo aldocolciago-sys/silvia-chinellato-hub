@@ -86,8 +86,8 @@ describe('integrità di index.html', () => {
         expect(document.title).toContain('Silvia Chinellato');
     });
 
-    it('usa versioni fissate per le librerie da CDN', () => {
-        expect(html).toContain('fullcalendar@6.1.8');
+    it('usa una sola versione fissata di Firebase; FullCalendar è un file del sito', () => {
+        expect(html).toContain('<script src="/assets/vendor/fullcalendar.min.js"></script>');
         const firebaseVersions = new Set([...script.matchAll(/firebasejs\/([\d.]+)\//g)].map(m => m[1]));
         expect(firebaseVersions.size).toBe(1);
     });
@@ -102,9 +102,9 @@ describe('integrità di index.html', () => {
         }
     });
 
-    it('i link esterni aperti in nuova scheda nel markup statico sono sicuri', () => {
+    it('i link aperti in nuova scheda nel markup statico sono sicuri (https o pagine del sito)', () => {
         const links = [...document.querySelectorAll('a[target="_blank"]')];
-        for (const a of links) expect(a.getAttribute('href')).toMatch(/^https:\/\//);
+        for (const a of links) expect(a.getAttribute('href')).toMatch(/^(https:\/\/|\/[a-z])/);
     });
 });
 

@@ -1,6 +1,6 @@
 import { describe, it, expect, afterEach } from 'vitest';
 import { bootApp } from '../support/jsdom-app.js';
-import { seedDocs, center } from '../fixtures/seed.js';
+import { seedDocs, center, SHARED, PUBLIC } from '../fixtures/seed.js';
 
 let app;
 afterEach(() => app?.close());
@@ -9,10 +9,26 @@ describe('sito pubblico', () => {
     it('mostra i contenuti predefiniti se Firestore è vuoto', async () => {
         app = await bootApp();
         expect(app.$$('#public-treatments-grid > div').map(d => d.querySelector('h4').textContent))
-            .toEqual(['Idrocolonterapia', 'Osteopatia', 'Prevenzione & Equilibrio']);
+            .toEqual(['Idrocolonterapia', 'Osteopatia', 'Primo colloquio']);
         expect(app.$$('#public-centers-grid > div').length).toBe(2);
         expect(app.$$('#public-news-grid > div').length).toBe(1);
         expect(app.$$('#public-preparations-grid > div').length).toBe(1);
+    });
+
+    it('all’accesso sostituisce una sola volta i vecchi testi predefiniti dei trattamenti, senza toccare quelli scritti da Silvia', async () => {
+        const docs = seedDocs({ treatments: [
+            { id: 't1', title: 'Idrocolonterapia', icon: 'fa-droplet', desc: "Depurazione profonda e delicata del colon, utile per eliminare tossine, ridurre l'infiammazione e ripristinare la vitalità dell'organismo." },
+            { id: 't3', title: 'Prevenzione & Equilibrio', icon: 'fa-heart-pulse', desc: 'Consulenze e percorsi personalizzati volti al mantenimento dello stato di salute e alla prevenzione dei disturbi cronici.' },
+            { id: 't2', title: 'Osteopatia', icon: 'fa-hands', desc: 'Testo scritto da Silvia' }
+        ] });
+        delete docs[`${SHARED}/_meta/treatment-texts-v2`];
+        app = await bootApp({ docs });
+        await app.login();
+        expect(app.mock.get(`${PUBLIC}/treatments_list/t1`)).toMatchObject({ title: 'Idrocolonterapia', desc: expect.stringMatching(/^Lavaggio del colon/) });
+        expect(app.mock.get(`${PUBLIC}/treatments_list/t3`)).toMatchObject({ title: 'Primo colloquio', icon: 'fa-heart-pulse' });
+        expect(app.mock.get(`${PUBLIC}/treatments_list/t2`).desc).toBe('Testo scritto da Silvia');
+        expect(app.mock.get(`${SHARED}/_meta/treatment-texts-v2`)).toMatchObject({ completed: true, updated: ['Idrocolonterapia', 'Primo colloquio'] });
+        expect(app.text('public-treatments-grid')).not.toContain('tossine');
     });
 
     it('carica sedi, trattamenti, news e guide pubblicate su Firestore', async () => {

@@ -21,7 +21,7 @@ function createMockState(seed = {}) {
         currentUser: null,
         popupUser: seed.popupUser ?? null,
         popupError: seed.popupError ?? null,
-        anonymousError: seed.anonymousError ?? null,
+        authInitError: seed.authInitError ?? null,
         initError: seed.initError ?? null,
         failures: [],
         calls: [],
@@ -135,7 +135,10 @@ function setUser(user) {
 }
 
 export function getAuth() { return authInstance; }
-export async function setPersistence() { record('setPersistence', 'auth'); }
+export async function setPersistence() {
+    record('setPersistence', 'auth');
+    if (getState().authInitError) throw new Error(getState().authInitError);
+}
 export async function signOut() {
     record('signOut', 'auth');
     setUser(null);
@@ -143,7 +146,7 @@ export async function signOut() {
 export async function signInAnonymously() {
     const state = getState();
     record('signInAnonymously', 'auth');
-    if (state.anonymousError) throw new Error(state.anonymousError);
+    
     state.anonCounter += 1;
     const user = { uid: `anon-${state.anonCounter}`, isAnonymous: true, email: null };
     state.currentUser = user;
@@ -267,7 +270,7 @@ export const mockControl = {
     dump() { return Object.fromEntries([...getState().docs.entries()].map(([p, d]) => [p, clone(d)])); },
     setPopupUser(user) { getState().popupUser = user; },
     setPopupError(message) { getState().popupError = message; },
-    setAnonymousError(message) { getState().anonymousError = message; },
+    setAuthInitError(message) { getState().authInitError = message; },
     /** Forza il fallimento della prossima operazione (op: setDoc|getDocs|getDoc|deleteDoc|onSnapshot|'*'). */
     failNext(op, path = '', options = {}) { getState().failures.push({ op, path, ...options }); },
     clearFailures() { getState().failures = []; },

@@ -2,7 +2,8 @@
 
 L'applicazione è composta da:
 
-- **`index.html`**: sito pubblico + area riservata (agenda, pazienti, compensi, backup), con tutta la logica in un unico `<script type="module">` che usa Firebase (Auth + Firestore), FullCalendar e Tailwind da CDN;
+- **`index.html`**: sito pubblico + area riservata (agenda, pazienti, compensi, backup), con tutta la logica in un unico `<script type="module">` che usa Firebase (Auth + Firestore); FullCalendar, font, icone e CSS Tailwind sono file del sito in `assets/`;
+- **`privacy.html`**: informativa "Privacy e cookie";
 - **`api/ical.js`**: funzione serverless Vercel che fa da proxy per scaricare i calendari iCal dei poliambulatori.
 
 L'ambiente di test **non modifica il codice dell'applicazione**: legge `index.html` e ne esegue/estrae la logica così com'è.
@@ -49,6 +50,25 @@ Nella scheda paziente la sezione "Valutazione pre-trattamento" contiene due list
 ## Scadenziario fiscale
 
 Nella dashboard compensi la sezione "Scadenze fiscali" stima i versamenti dell'anno selezionato con il metodo storico: il 30 giugno si versano il saldo dell'imposta sostitutiva dell'anno precedente e il 1° acconto (40%); il 30 novembre il 2° acconto (60%). Non c'è acconto sotto 51,65 €, e fino a 257,52 € c'è un acconto unico a novembre. Le date che cadono nel fine settimana slittano al lunedì. Per i contributi, la Gestione separata segue le stesse date (acconti 40% + 40% sui contributi dell'anno precedente); per ENPAPI o un'altra cassa si inseriscono fino a 3 scadenze (gg/mm e percentuale) nel profilo fiscale (`pensionFund`, `customDeadlines`). Nell'area riservata compare un promemoria 15 giorni prima di ogni scadenza, che si può nascondere per la sessione. Sono tutte stime da verificare con il commercialista. Logica in `buildTaxSchedule`, `taxAdvancePlan`, `businessDayOnOrAfter` e `upcomingTaxDeadline` (`index.html`). Test: `tests/unit/tax-schedule.test.js`, `tests/integration/tax-schedule.test.js`, `tests/e2e/tax-schedule.spec.js` (orologio fissato al 20 giugno 2030).
+
+## Sito pubblico: privacy, cookie e risorse locali
+
+- **Nessun servizio esterno**: CSS Tailwind, font (Cormorant Garamond, Plus Jakarta Sans), icone Font Awesome e FullCalendar sono file del sito in `assets/`, generati da `npm run build:assets` (`scripts/build-assets.mjs`, configurazione in `tailwind.config.js`). Prima arrivavano da Google Fonts, cdnjs, jsDelivr e cdn.tailwindcss.com, che ricevevano l'IP di ogni visitatore. Restano solo le librerie Firebase da www.gstatic.com, indicate nell'informativa.
+- **Dopo aver cambiato classi CSS** in `index.html` o `privacy.html` bisogna rilanciare `npm run build:assets` e includere `assets/css/tailwind.css` nel commit. Se il file non è aggiornato, `tests/unit/site-legal.test.js` e il setup degli E2E falliscono.
+- **Informativa**: `privacy.html` ("Privacy e cookie") è linkata dal footer e dall'informativa del modulo.
+- **Footer**: contiene i dati obbligatori del professionista (P.IVA: art. 35 DPR 633/1972; art. 7 D.Lgs. 70/2003).
+- **Nessun banner cookie**: il sito usa solo strumenti tecnici (Linee guida del Garante del 10 giugno 2021).
+- **Visitatori senza account**: ai visitatori non viene creato alcun account Firebase, nemmeno anonimo. Le regole permettono comunque la lettura dei contenuti pubblici e l'invio del modulo.
+- **Testi**: solo informativi, senza promesse di risultato (pubblicità sanitaria, L. 145/2018 c. 525). I vecchi testi predefiniti dei trattamenti, se rimasti identici nel database, vengono sostituiti una sola volta all'accesso (`migrateLegacyTreatmentTextsOnce`, marcatore `_meta/treatment-texts-v2`).
+- **Accessibilità**: le icone decorative hanno `aria-hidden="true"`, così il simbolo dell'icona non finisce nel nome dei pulsanti letto dai lettori di schermo.
+
+Test: `tests/unit/site-legal.test.js` controlla:
+- nessuna risorsa esterna;
+- asset presenti e CSS aggiornato;
+- segnaposto compilati, footer e informativa;
+- espressioni promozionali vietate.
+
+Altri test: `tests/integration/public-site.test.js` (sostituzione dei vecchi testi), `tests/integration/auth.test.js` (nessun account anonimo) e `tests/e2e/public-site.spec.js` (nessuna richiesta esterna nel browser).
 
 ## Sincronizzazione dei calendari (app e controllo orario)
 

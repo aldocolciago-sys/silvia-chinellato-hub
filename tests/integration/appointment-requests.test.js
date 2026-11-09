@@ -108,7 +108,9 @@ describe('modulo pubblico di richiesta appuntamento', () => {
     it('informativa privacy con titolare, contatto e conservazione', async () => {
         await publicSite();
         const text = app.text('request-privacy');
-        expect(text).toContain('Titolare del trattamento: Silvia Chinellato, Carate Brianza (MB), email silviachine@gmail.com');
+        expect(text).toMatch(/Titolare del trattamento: Silvia Chinellato, .+, email silviachine@gmail\.com/);
+        expect(text).toContain('Sono archiviati su Google Firebase');
+        expect(app.$('#request-privacy a[href="/privacy.html"]').textContent).toBe('Privacy e cookie');
         expect(text).toContain('conservati per 12 mesi e poi cancellati');
         expect(text).toContain('art. 6.1.a e 9.2.a del Regolamento UE 2016/679');
         expect(app.$('#request-privacy a[href="mailto:silviachine@gmail.com"]')).not.toBeNull();

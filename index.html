@@ -6,55 +6,11 @@
     <title>Silvia Chinellato | Osteopata & Idrocolonterapia</title>
     <meta name="app-build" content="shared-data-v31-tax-current-advance-split">
     
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        nature: {
-                            50: '#fcfaf7',
-                            100: '#f5efe6',
-                            200: '#eae0d2',
-                            500: '#527965',
-                            600: '#3f5e4e',
-                            700: '#2f473c',
-                            800: '#22332b',
-                            900: '#17221d',
-                        },
-                        water: {
-                            50: '#f4f8f9',
-                            100: '#e4edf2',
-                            500: '#4a8fa8',
-                            600: '#387085',
-                            700: '#295363',
-                        },
-                        warmth: {
-                            50: '#fdfbf7',
-                            100: '#f7f1e5',
-                            200: '#eddcd2',
-                            500: '#d5bdaf',
-                        }
-                    },
-                    fontFamily: {
-                        serif: ['"Cormorant Garamond"', 'Georgia', 'serif'],
-                        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
-                        italic: ['"Cormorant Garamond"', 'Georgia', 'serif'],
-                    }
-                }
-            }
-        }
-    </script>
-    
-    <!-- Google Fonts & FontAwesome -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600;1,700&family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
-    <!-- FullCalendar -->
-    <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.css" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
+    <!-- Font, icone e calendario serviti dal sito stesso: nessuna richiesta a Google Fonts, cdnjs o jsDelivr
+         (l'indirizzo IP dei visitatori non viene inviato a terzi). Si rigenerano con: npm run build:assets -->
+    <link rel="stylesheet" href="/assets/css/fonts.css">
+    <link rel="stylesheet" href="/assets/fontawesome/css/all.min.css">
+    <script src="/assets/vendor/fullcalendar.min.js"></script>
     
     <style>
         body { 
@@ -204,6 +160,8 @@
             #toast { left: .75rem; right: .75rem; bottom: calc(var(--mobile-nav-h) + .75rem + env(safe-area-inset-bottom)); justify-content: center; }
         }
     </style>
+    <!-- CSS Tailwind compilato (tailwind.config.js), dopo gli stili della pagina come faceva il Play CDN. -->
+    <link rel="stylesheet" href="/assets/css/tailwind.css">
 </head>
 <body class="h-full text-slate-800 flex flex-col selection:bg-nature-200 selection:text-nature-900 scroll-smooth">
 
@@ -212,7 +170,7 @@
             <div class="max-w-6xl mx-auto px-4 sm:px-6 py-3.5 flex items-center justify-between">
                 <a href="#" class="flex items-center gap-3 group">
                     <div class="w-11 h-11 sm:w-13 sm:h-13 rounded-full bg-white border border-nature-200 flex items-center justify-center shadow-md overflow-hidden flex-shrink-0 group-hover:scale-105 transition duration-300">
-                        <img src="Logo.jpeg" alt="Logo Silvia Chinellato" class="w-full h-full object-cover" onerror="this.onerror=null; this.src='https://placehold.co/120x120/3f5e4e/ffffff?text=SC'">
+                        <img src="Logo.jpeg" alt="Logo Silvia Chinellato" class="w-full h-full object-cover" onerror="this.onerror=null; this.src='/assets/img/iniziali.svg'">
                     </div>
                     <div>
                         <h1 class="font-editorial text-lg sm:text-2xl font-bold text-slate-900 leading-none tracking-tight italic">Silvia Chinellato</h1>
@@ -232,7 +190,7 @@
 
                 <div class="flex items-center gap-2">
                     <button onclick="openLoginModal()" class="px-4 py-2 bg-gradient-to-r from-nature-600 to-nature-800 hover:from-nature-700 hover:to-nature-900 text-white font-medium rounded-full text-xs shadow-md shadow-nature-200/50 transition flex items-center gap-1.5 italic-title">
-                        <i class="fa-solid fa-lock text-[10px]"></i> <span>Area Riservata</span>
+                        <i aria-hidden="true" class="fa-solid fa-lock text-[10px]"></i> <span>Area Riservata</span>
                     </button>
                     <div id="public-firebase-status" class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold text-slate-700 bg-white/95 border border-slate-200 shadow-2xs" title="Stato Firebase Firestore">
                         <span id="public-firebase-dot" class="w-2 h-2 rounded-full bg-amber-500 inline-block flex-shrink-0"></span>
@@ -257,23 +215,23 @@
                 <div class="absolute -left-20 -top-20 w-80 h-80 bg-warmth-500/15 rounded-full blur-3xl pointer-events-none"></div>
                 
                 <div class="w-56 h-56 sm:w-72 sm:h-72 rounded-[2.5rem] bg-white/10 backdrop-blur-xl p-3 border border-white/25 flex-shrink-0 shadow-2xl flex items-center justify-center overflow-hidden">
-                    <img src="Silvia Foto Profilo.jpeg" alt="Silvia Chinellato" class="w-full h-full object-cover rounded-[2rem]" onerror="this.onerror=null; this.src='https://placehold.co/280x280/3f5e4e/ffffff?text=Silvia+Chinellato'">
+                    <img src="Silvia Foto Profilo.jpeg" alt="Silvia Chinellato" class="w-full h-full object-cover rounded-[2rem]" onerror="this.onerror=null; this.src='/assets/img/iniziali.svg'">
                 </div>
 
                 <div class="space-y-4 text-center md:text-left z-10">
                     <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/15 backdrop-blur-md text-xs font-medium text-nature-100 border border-white/20 italic-title tracking-wide">
-                        <i class="fa-solid fa-seedling text-nature-200"></i> Osteopatia, Idrocolonterapia & Benessere Profondo
+                        <i aria-hidden="true" class="fa-solid fa-seedling text-nature-200"></i> Osteopatia e idrocolonterapia
                     </div>
                     <h2 class="font-editorial text-3xl sm:text-6xl font-bold tracking-tight leading-tight italic">Silvia Chinellato</h2>
                     <p class="text-nature-100 text-xs sm:text-base leading-relaxed max-w-2xl font-light font-sans opacity-95">
-                        Specialista in trattamenti osteopatici avanzati e idrocolonterapia. Forte di un passato infermieristico e di una profonda vocazione olistica, unisco rigore clinico, delicatezza e ascolto empatico per accompagnare ogni persona verso la sua armonia originaria.
+                        Osteopata, mi occupo anche di idrocolonterapia. Alle spalle ho un percorso nella professione infermieristica: in ogni seduta dedico tempo all'ascolto, alla raccolta della storia clinica e alla spiegazione di cosa faremo e perché.
                     </p>
                     <div class="pt-2 sm:pt-4 flex flex-wrap items-center justify-center md:justify-start gap-3">
                         <a href="#poliambulatori-pubblica" class="px-6 py-3.5 bg-white text-nature-900 hover:bg-nature-50 font-semibold rounded-full text-sm transition shadow-lg italic-title">
-                            <i class="fa-solid fa-hospital mr-2 text-nature-600"></i> Poliambulatori Partner
+                            <i aria-hidden="true" class="fa-solid fa-hospital mr-2 text-nature-600"></i> Poliambulatori Partner
                         </a>
                         <a href="#contatti-pubblica" class="px-6 py-3.5 bg-nature-900/40 hover:bg-nature-900/60 text-white font-medium rounded-full text-sm transition border border-white/20 backdrop-blur-sm italic-title">
-                            <i class="fa-solid fa-phone mr-2 text-nature-300"></i> Contatti & Sedi
+                            <i aria-hidden="true" class="fa-solid fa-phone mr-2 text-nature-300"></i> Contatti & Sedi
                         </a>
                     </div>
                 </div>
@@ -281,38 +239,38 @@
 
             <section id="filosofia-pubblica" class="grid grid-cols-1 md:grid-cols-2 gap-8 sm:gap-12 items-center bg-white/80 backdrop-blur-md p-6 sm:p-14 rounded-[2.5rem] sm:rounded-[3.5rem] border border-white/80 shadow-xl scroll-mt-24">
                 <div class="space-y-5">
-                    <span class="text-xs font-bold text-nature-700 uppercase tracking-widest italic-title sm:text-sm">Il Mio Metodo Olistico</span>
-                    <h3 class="font-editorial text-2xl sm:text-4xl font-bold text-slate-900 leading-tight italic">Ascoltare il Corpo, Curare con Sensibilità</h3>
+                    <span class="text-xs font-bold text-nature-700 uppercase tracking-widest italic-title sm:text-sm">Come lavoro</span>
+                    <h3 class="font-editorial text-2xl sm:text-4xl font-bold text-slate-900 leading-tight italic">Ascolto, valutazione, trattamento</h3>
                     <p class="text-xs sm:text-sm text-slate-600 leading-relaxed font-light">
-                        Ogni percorso di cura è sartoriale, studiato sulle esigenze uniche dell'individuo. L'approccio unisce la precisione dell'analisi posturale e viscerale a una cura amorevole, stimolando i naturali processi di autoguarigione del corpo per donare sollievo duraturo.
+                        Il primo incontro comincia con un colloquio e una valutazione: la storia clinica, eventuali esami e terapie in corso, le possibili controindicazioni. Il trattamento viene proposto solo se è indicato e viene spiegato prima di iniziare; quando serve, consiglio di rivolgersi al medico curante.
                     </p>
                     <ul class="space-y-3 pt-2 text-xs sm:text-sm text-slate-700 font-medium">
                         <li class="flex items-center gap-3">
-                            <i class="fa-solid fa-circle-check text-nature-600 flex-shrink-0 text-base"></i> Trattamenti osteopatici strutturali, cranio-sacrali e miofasciali
+                            <i aria-hidden="true" class="fa-solid fa-circle-check text-nature-600 flex-shrink-0 text-base"></i> Tecniche osteopatiche strutturali, cranio-sacrali e miofasciali
                         </li>
                         <li class="flex items-center gap-3">
-                            <i class="fa-solid fa-circle-check text-nature-600 flex-shrink-0 text-base"></i> Specializzazione in idrocolonterapia e benessere intestinale profondo
+                            <i aria-hidden="true" class="fa-solid fa-circle-check text-nature-600 flex-shrink-0 text-base"></i> Idrocolonterapia, dopo la verifica delle controindicazioni
                         </li>
                         <li class="flex items-center gap-3">
-                            <i class="fa-solid fa-circle-check text-nature-600 flex-shrink-0 text-base"></i> Accoglienza delicata e ambiente sicuro orientato alla salute globale
+                            <i aria-hidden="true" class="fa-solid fa-circle-check text-nature-600 flex-shrink-0 text-base"></i> Informazioni chiare prima di ogni seduta e rispetto della riservatezza
                         </li>
                     </ul>
                 </div>
                 <div class="bg-gradient-to-br from-nature-50/90 via-water-50/70 to-warmth-50/60 p-6 sm:p-10 rounded-[2rem] sm:rounded-[2.5rem] border border-nature-100 space-y-6 shadow-inner text-center flex flex-col items-center justify-center">
                     <div class="w-44 h-44 sm:w-56 sm:h-56 rounded-full bg-white border-4 border-nature-200 flex items-center justify-center shadow-2xl overflow-hidden mx-auto flex-shrink-0 hover:scale-105 transition duration-500">
-                        <img src="Logo.jpeg" alt="Logo Silvia Chinellato" class="w-full h-full object-cover" onerror="this.onerror=null; this.src='https://placehold.co/300x300/3f5e4e/ffffff?text=SC'">
+                        <img src="Logo.jpeg" alt="Logo Silvia Chinellato" class="w-full h-full object-cover" onerror="this.onerror=null; this.src='/assets/img/iniziali.svg'">
                     </div>
                     <blockquote class="text-xs sm:text-sm text-slate-700 leading-relaxed font-editorial italic text-base sm:text-lg max-w-sm">
-                        "La salute non è solo assenza di malattia, ma uno stato di profonda armonia tra corpo, mente ed energia vitale."
+                        "La salute è uno stato di completo benessere fisico, mentale e sociale e non semplicemente l'assenza di malattia o di infermità." <span class="block mt-2 text-xs not-italic font-sans text-slate-500">Costituzione dell'Organizzazione Mondiale della Sanità, 1946</span>
                     </blockquote>
                 </div>
             </section>
 
             <section id="trattamenti-pubblica" class="space-y-6 sm:space-y-8 scroll-mt-24">
                 <div class="text-center max-w-xl mx-auto space-y-2">
-                    <span class="text-xs font-bold text-nature-700 uppercase tracking-widest italic-title sm:text-sm">Trattamenti Specialistici</span>
-                    <h3 class="font-editorial text-2xl sm:text-4xl font-bold text-slate-900 tracking-tight italic">Prestazioni d'Eccellenza</h3>
-                    <p class="text-xs sm:text-sm text-slate-500 font-light">Terapie mirate al riequilibrio posturale, viscerale e al benessere psicofisico.</p>
+                    <span class="text-xs font-bold text-nature-700 uppercase tracking-widest italic-title sm:text-sm">Trattamenti</span>
+                    <h3 class="font-editorial text-2xl sm:text-4xl font-bold text-slate-900 tracking-tight italic">Cosa propongo</h3>
+                    <p class="text-xs sm:text-sm text-slate-500 font-light">Cosa sono i trattamenti e come si svolgono. Non sostituiscono la diagnosi e le cure del medico.</p>
                 </div>
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8" id="public-treatments-grid"></div>
             </section>
@@ -354,7 +312,7 @@
                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
                     <div class="bg-nature-50/80 p-6 sm:p-8 rounded-3xl border border-nature-100 flex flex-col items-center text-center space-y-3 shadow-xs">
                         <div class="w-14 h-14 rounded-2xl bg-nature-600 text-white flex items-center justify-center text-xl shadow-md">
-                            <i class="fa-brands fa-whatsapp"></i>
+                            <i aria-hidden="true" class="fa-brands fa-whatsapp"></i>
                         </div>
                         <h4 class="font-editorial text-xl font-bold text-nature-900 italic">Contatto Telefonico</h4>
                         <p class="text-xs text-slate-600 font-light leading-relaxed font-editorial italic text-sm">Contatto diretto tramite telefono o WhatsApp per urgenze e informazioni rapide.</p>
@@ -365,7 +323,7 @@
 
                     <a href="https://www.instagram.com/dott.ssasilviachinellato?stkn=eXhjemF4eG5jbW9n" target="_blank" class="bg-warmth-50/80 p-6 sm:p-8 rounded-3xl border border-warmth-100 flex flex-col items-center text-center space-y-3 shadow-xs hover:shadow-md transition group">
                         <div class="w-14 h-14 rounded-2xl bg-gradient-to-tr from-amber-500 via-rose-500 to-purple-600 text-white flex items-center justify-center text-xl shadow-md group-hover:scale-105 transition">
-                            <i class="fa-brands fa-instagram"></i>
+                            <i aria-hidden="true" class="fa-brands fa-instagram"></i>
                         </div>
                         <h4 class="font-editorial text-xl font-bold text-slate-900 italic">Instagram</h4>
                         <p class="text-xs text-slate-600 font-light leading-relaxed font-editorial italic text-sm">Segui i consigli di benessere, le storie e le ultime novità dallo studio.</p>
@@ -374,7 +332,7 @@
 
                     <a href="mailto:silviachine@gmail.com" class="bg-water-50/80 p-6 sm:p-8 rounded-3xl border border-water-100 flex flex-col items-center text-center space-y-3 shadow-xs hover:shadow-md transition group">
                         <div class="w-14 h-14 rounded-2xl bg-water-600 text-white flex items-center justify-center text-xl shadow-md group-hover:scale-105 transition">
-                            <i class="fa-solid fa-envelope"></i>
+                            <i aria-hidden="true" class="fa-solid fa-envelope"></i>
                         </div>
                         <h4 class="font-editorial text-xl font-bold text-slate-900 italic">Email per Appuntamenti</h4>
                         <p class="text-xs text-slate-600 font-light leading-relaxed font-editorial italic text-sm">Scrivi comodamente per prendere un appuntamento o per richieste dettagliate.</p>
@@ -407,11 +365,12 @@
                         <details id="request-privacy" class="text-xs text-slate-700 bg-white/70 border border-slate-200 rounded-2xl px-4 py-3">
                             <summary class="font-bold text-slate-800 cursor-pointer">Informativa privacy</summary>
                             <div class="mt-2 space-y-2 leading-relaxed">
-                                <p><strong>Titolare del trattamento</strong>: Silvia Chinellato, Carate Brianza (MB), email <a href="mailto:silviachine@gmail.com" class="underline">silviachine@gmail.com</a>.</p>
+                                <p><strong>Titolare del trattamento</strong>: Silvia Chinellato, Via San Giuseppe 25, 20841 Carate Brianza (MB), P.IVA 13070370963, email <a href="mailto:silviachine@gmail.com" class="underline">silviachine@gmail.com</a>.</p>
                                 <p><strong>Quali dati e perché</strong>: nome, telefono, email, trattamento di interesse, preferenze di orario e il messaggio, compresi eventuali dati sulla salute che decide di scrivere. Servono solo a rispondere a questa richiesta e a ricontattarla.</p>
                                 <p><strong>Base giuridica</strong>: il suo consenso esplicito (art. 6.1.a e 9.2.a del Regolamento UE 2016/679), che può revocare in qualsiasi momento.</p>
-                                <p><strong>Destinatari e conservazione</strong>: i dati non sono ceduti né diffusi; sono conservati per 12 mesi e poi cancellati, salvo che la richiesta dia inizio a un rapporto professionale. Per la conservazione sono usati servizi cloud di Google (Firebase).</p>
+                                <p><strong>Destinatari e conservazione</strong>: i dati non sono ceduti né diffusi; sono conservati per 12 mesi e poi cancellati, salvo che la richiesta dia inizio a un rapporto professionale. Sono archiviati su Google Firebase (Google Ireland Limited e Google LLC); il sito è ospitato da Vercel Inc. Questi fornitori agiscono come responsabili del trattamento e possono trasferire dati negli Stati Uniti con le garanzie previste dal GDPR (Data Privacy Framework UE-USA o clausole contrattuali standard).</p>
                                 <p><strong>I suoi diritti</strong>: può chiedere accesso, rettifica, cancellazione, limitazione o portabilità dei dati e revocare il consenso scrivendo a <a href="mailto:silviachine@gmail.com" class="underline">silviachine@gmail.com</a>; può inoltre presentare reclamo al Garante per la protezione dei dati personali (<a href="https://www.garanteprivacy.it" target="_blank" rel="noopener" class="underline">garanteprivacy.it</a>).</p>
+                                <p>Informativa completa, anche su cookie e dati di navigazione: <a href="/privacy.html" target="_blank" class="underline">Privacy e cookie</a>.</p>
                             </div>
                         </details>
                         <label class="flex items-start gap-2 text-xs text-slate-700"><input type="checkbox" id="request-consent" required aria-describedby="request-consent-hint" onchange="updateRequestSubmitState()" class="mt-0.5 w-4 h-4 flex-shrink-0"><span>Ho letto l'informativa privacy e acconsento al trattamento dei miei dati personali, compresi eventuali dati sulla salute indicati nel messaggio, al solo fine di essere ricontattato/a in merito a questa richiesta. *</span></label>
@@ -423,8 +382,13 @@
             </section>
         </main>
 
-        <footer class="bg-white/70 border-t border-nature-100/80 py-8 sm:py-10 text-center text-xs text-slate-500 mt-16 font-light italic-title text-sm px-4">
-            <p>© 2026 Silvia Chinellato • Tutti i diritti riservati • Osteopata & Idrocolon Terapista</p>
+        <footer id="site-footer" class="bg-white/70 border-t border-nature-100/80 py-8 sm:py-10 text-center text-xs text-slate-600 mt-16 px-4 space-y-2">
+            <!-- Dati obbligatori del professionista: art. 35 DPR 633/1972 e art. 7 D.Lgs. 70/2003 -->
+            <p class="font-semibold text-slate-700">Dott.ssa Silvia Chinellato – Infermiera e osteopata</p>
+            <p id="footer-legal-data">Studio: Via San Giuseppe 25, 20841 Carate Brianza (MB) • P.IVA 13070370963 • Infermiera iscritta all'OPI di Milano, Lodi, Monza e Brianza, n. 31189 • Laurea in Infermieristica (2014), Diploma in Osteopatia (2019)</p>
+            <p>Email: <a href="mailto:silviachine@gmail.com" class="underline">silviachine@gmail.com</a></p>
+            <p><a href="/privacy.html" class="underline font-semibold text-nature-800">Privacy e cookie</a> • Il sito non usa cookie di profilazione né strumenti di statistica</p>
+            <p class="text-slate-500">© 2026 Silvia Chinellato</p>
         </footer>
     </div>
 
@@ -432,7 +396,7 @@
         <header class="bg-white/95 backdrop-blur-md border-b border-nature-100 px-3 sm:px-4 py-2 flex flex-col sm:flex-row sm:items-center justify-between gap-2 z-30 shadow-xs flex-shrink-0">
             <div class="flex items-center gap-2.5">
                 <div class="w-8 h-8 rounded-full bg-white border border-nature-200 flex items-center justify-center shadow-xs overflow-hidden flex-shrink-0">
-                    <img src="Logo.jpeg" alt="Logo" class="w-full h-full object-cover" onerror="this.onerror=null; this.src='https://placehold.co/100x100/3f5e4e/ffffff?text=SC'">
+                    <img src="Logo.jpeg" alt="Logo" class="w-full h-full object-cover" onerror="this.onerror=null; this.src='/assets/img/iniziali.svg'">
                 </div>
                 <div>
                     <h2 class="font-editorial text-xs font-bold text-slate-900 leading-tight italic">Agenda Silvia Chinellato</h2>
@@ -444,9 +408,9 @@
                             <span id="firebase-dot" class="w-1.5 h-1.5 rounded-full bg-amber-500 inline-block"></span>
                             <span id="firebase-text">Connessione...</span>
                         </div>
-                        <button onclick="openLastSyncReport()" class="inline-flex items-center gap-1 bg-amber-50 hover:bg-amber-100 text-amber-800 px-2.5 py-0.5 rounded-full text-[10px] font-bold border border-amber-200"><i class="fa-solid fa-clock-rotate-left"></i><span>Ultime novità</span></button>
+                        <button onclick="openLastSyncReport()" class="inline-flex items-center gap-1 bg-amber-50 hover:bg-amber-100 text-amber-800 px-2.5 py-0.5 rounded-full text-[10px] font-bold border border-amber-200"><i aria-hidden="true" class="fa-solid fa-clock-rotate-left"></i><span>Ultime novità</span></button>
                         <button onclick="triggerIcalSync()" id="sync-ical-btn" class="inline-flex items-center gap-1 bg-water-50 hover:bg-water-100 text-water-800 px-2.5 py-0.5 rounded-full text-[10px] font-bold border border-water-200 transition shadow-2xs" title="Sincronizza Calendari Poliambulatori">
-                            <i class="fa-solid fa-rotate text-[9px]"></i> <span>Sincronizza Calendari</span>
+                            <i aria-hidden="true" class="fa-solid fa-rotate text-[9px]"></i> <span>Sincronizza Calendari</span>
                         </button>
                     </div>
                 </div>
@@ -454,54 +418,54 @@
 
             <div class="flex items-center flex-wrap gap-1">
                 <button onclick="openStudioModal()" class="px-2.5 py-1.5 bg-nature-600 hover:bg-nature-700 text-white font-semibold rounded-xl text-[10px] transition flex items-center gap-1 shadow-xs italic-title">
-                    <i class="fa-solid fa-plus text-[9px]"></i> <span>Studio</span>
+                    <i aria-hidden="true" class="fa-solid fa-plus text-[9px]"></i> <span>Studio</span>
                 </button>
                 <button onclick="openCentersModal()" class="w-7 h-7 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl transition flex items-center justify-center border border-slate-200 shadow-xs" title="Gestisci Poliambulatori">
-                    <i class="fa-solid fa-hospital text-[10px]"></i>
+                    <i aria-hidden="true" class="fa-solid fa-hospital text-[10px]"></i>
                 </button>
                 <button onclick="openAgendaSettingsModal()" class="w-7 h-7 bg-orange-50 hover:bg-orange-100 text-orange-800 rounded-xl transition flex items-center justify-center border border-orange-200 shadow-xs" title="Settimana tipo e spostamenti">
-                    <i class="fa-solid fa-calendar-week text-[10px]"></i>
+                    <i aria-hidden="true" class="fa-solid fa-calendar-week text-[10px]"></i>
                 </button>
                 <button onclick="openTreatmentsAdminModal()" class="w-7 h-7 bg-nature-50 hover:bg-nature-100 text-nature-800 rounded-xl transition flex items-center justify-center border border-slate-200 shadow-xs" title="Gestisci Trattamenti">
-                    <i class="fa-solid fa-hand-holding-medical text-[10px]"></i>
+                    <i aria-hidden="true" class="fa-solid fa-hand-holding-medical text-[10px]"></i>
                 </button>
                 <button onclick="openNewsAdminModal()" class="w-7 h-7 bg-water-50 hover:bg-water-100 text-water-800 rounded-xl transition flex items-center justify-center border border-slate-200 shadow-xs" title="Gestisci News">
-                    <i class="fa-solid fa-bullhorn text-[10px]"></i>
+                    <i aria-hidden="true" class="fa-solid fa-bullhorn text-[10px]"></i>
                 </button>
                 <button onclick="openPrepAdminModal()" class="w-7 h-7 bg-nature-50 hover:bg-nature-100 text-nature-800 rounded-xl transition flex items-center justify-center border border-slate-200 shadow-xs" title="Gestisci Preparazione">
-                    <i class="fa-solid fa-book-medical text-[10px]"></i>
+                    <i aria-hidden="true" class="fa-solid fa-book-medical text-[10px]"></i>
                 </button>
                 <button onclick="openPatientsModal()" class="px-2.5 py-1.5 bg-amber-50 hover:bg-amber-100 text-amber-800 font-semibold rounded-xl text-[10px] transition flex items-center gap-1 border border-amber-200 shadow-xs italic-title" title="Pazienti">
-                    <i class="fa-solid fa-user-group text-[9px]"></i> <span>Pazienti</span>
+                    <i aria-hidden="true" class="fa-solid fa-user-group text-[9px]"></i> <span>Pazienti</span>
                 </button>
                 <button onclick="openBusinessDashboard()" class="w-7 h-7 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 rounded-xl transition flex items-center justify-center border border-emerald-200 shadow-xs" title="Dashboard compensi">
-                    <i class="fa-solid fa-chart-line text-[10px]"></i>
+                    <i aria-hidden="true" class="fa-solid fa-chart-line text-[10px]"></i>
                 </button>
                 <button onclick="openRequestsModal()" class="relative w-7 h-7 bg-nature-50 hover:bg-nature-100 text-nature-800 rounded-xl transition flex items-center justify-center border border-nature-200 shadow-xs" title="Richieste di appuntamento">
-                    <i class="fa-solid fa-inbox text-[10px]"></i>
+                    <i aria-hidden="true" class="fa-solid fa-inbox text-[10px]"></i>
                     <span id="requests-badge" class="hidden absolute -top-1.5 -right-1.5 min-w-[16px] h-4 px-1 rounded-full bg-rose-600 text-white text-[9px] font-bold flex items-center justify-center"></span>
                 </button>
                 <button onclick="openRemindersModal()" class="w-7 h-7 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 rounded-xl transition flex items-center justify-center border border-emerald-200 shadow-xs" title="Promemoria di oggi e domani">
-                    <i class="fa-solid fa-bell text-[10px]"></i>
+                    <i aria-hidden="true" class="fa-solid fa-bell text-[10px]"></i>
                 </button>
                 <button onclick="openRecallModal()" class="w-7 h-7 bg-orange-50 hover:bg-orange-100 text-orange-800 rounded-xl transition flex items-center justify-center border border-orange-200 shadow-xs" title="Pazienti da richiamare">
-                    <i class="fa-solid fa-phone-volume text-[10px]"></i>
+                    <i aria-hidden="true" class="fa-solid fa-phone-volume text-[10px]"></i>
                 </button>
                 <button onclick="openUnassignedEventsModal()" class="w-7 h-7 bg-rose-50 hover:bg-rose-100 text-rose-700 rounded-xl transition flex items-center justify-center border border-rose-200 shadow-xs" title="Appuntamenti senza paziente">
-                    <i class="fa-solid fa-user-slash text-[10px]"></i>
+                    <i aria-hidden="true" class="fa-solid fa-user-slash text-[10px]"></i>
                 </button>
                 <button onclick="openBackupModal()" class="w-7 h-7 bg-indigo-50 hover:bg-indigo-100 text-indigo-800 rounded-xl transition flex items-center justify-center border border-indigo-200 shadow-xs" title="Backup & Ripristino">
-                    <i class="fa-solid fa-database text-[10px]"></i>
+                    <i aria-hidden="true" class="fa-solid fa-database text-[10px]"></i>
                 </button>
                 <button onclick="handleLogout()" class="w-6 h-6 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-600 flex items-center justify-center transition shadow-xs" title="Esci">
-                    <i class="fa-solid fa-right-from-bracket text-[9px]"></i>
+                    <i aria-hidden="true" class="fa-solid fa-right-from-bracket text-[9px]"></i>
                 </button>
             </div>
         </header>
 
         <div id="calendar-conflict-banner" class="hidden bg-rose-50 border-b border-rose-200 px-4 py-2 flex items-center justify-between gap-3 text-xs text-rose-800 flex-shrink-0 z-20 shadow-xs">
             <div class="flex items-center gap-2">
-                <i class="fa-solid fa-triangle-exclamation text-rose-600 text-sm animate-bounce"></i>
+                <i aria-hidden="true" class="fa-solid fa-triangle-exclamation text-rose-600 text-sm animate-bounce"></i>
                 <span id="conflict-banner-text" class="font-bold">Attenzione: Rilevate sovrapposizioni orarie in agenda!</span>
             </div>
             <button onclick="scrollToConflict()" class="px-3 py-1 bg-rose-600 text-white rounded-lg font-semibold hover:bg-rose-700 transition">Verifica</button>
@@ -516,7 +480,7 @@
             <span id="tax-deadline-banner-text" class="font-bold"></span>
             <div class="flex items-center gap-2 flex-shrink-0">
                 <button onclick="openTaxSchedule()" class="px-3 py-1 bg-sky-700 text-white rounded-lg font-semibold hover:bg-sky-800 transition">Dettagli</button>
-                <button onclick="dismissTaxDeadlineBanner()" aria-label="Nascondi promemoria scadenza" class="w-8 h-8 rounded-lg hover:bg-sky-100"><i class="fa-solid fa-xmark"></i></button>
+                <button onclick="dismissTaxDeadlineBanner()" aria-label="Nascondi promemoria scadenza" class="w-8 h-8 rounded-lg hover:bg-sky-100"><i aria-hidden="true" class="fa-solid fa-xmark"></i></button>
             </div>
         </div>
 
@@ -529,32 +493,32 @@
 
     <!-- MOBILE ADMIN NAVIGATION: mirrors every desktop admin function -->
     <nav id="mobile-admin-nav" aria-label="Navigazione amministrazione mobile">
-        <button type="button" onclick="mobileCalendarToday()"><i class="fa-regular fa-calendar"></i><span>Agenda</span></button>
-        <button type="button" onclick="openPatientsModal()"><i class="fa-solid fa-user-group"></i><span>Pazienti</span></button>
-        <button type="button" class="mobile-primary" onclick="openStudioModal()"><i class="fa-solid fa-plus"></i><span>Appuntamento</span></button>
-        <button type="button" onclick="triggerIcalSync()"><i class="fa-solid fa-rotate"></i><span>Sincronizza</span></button>
-        <button type="button" onclick="toggleMobileAdminMore(true)"><i class="fa-solid fa-ellipsis"></i><span>Altro</span></button>
+        <button type="button" onclick="mobileCalendarToday()"><i aria-hidden="true" class="fa-regular fa-calendar"></i><span>Agenda</span></button>
+        <button type="button" onclick="openPatientsModal()"><i aria-hidden="true" class="fa-solid fa-user-group"></i><span>Pazienti</span></button>
+        <button type="button" class="mobile-primary" onclick="openStudioModal()"><i aria-hidden="true" class="fa-solid fa-plus"></i><span>Appuntamento</span></button>
+        <button type="button" onclick="triggerIcalSync()"><i aria-hidden="true" class="fa-solid fa-rotate"></i><span>Sincronizza</span></button>
+        <button type="button" onclick="toggleMobileAdminMore(true)"><i aria-hidden="true" class="fa-solid fa-ellipsis"></i><span>Altro</span></button>
     </nav>
     <div id="mobile-admin-more" role="dialog" aria-modal="true" aria-labelledby="mobile-more-title" onclick="if(event.target===this) toggleMobileAdminMore(false)">
         <div id="mobile-admin-more-panel">
             <div class="flex items-center justify-between mb-3 px-1">
                 <h3 id="mobile-more-title" class="font-editorial text-xl font-bold italic text-slate-900">Gestione contenuti</h3>
-                <button type="button" onclick="toggleMobileAdminMore(false)" class="w-11 h-11 rounded-full bg-slate-100" aria-label="Chiudi"><i class="fa-solid fa-xmark"></i></button>
+                <button type="button" onclick="toggleMobileAdminMore(false)" class="w-11 h-11 rounded-full bg-slate-100" aria-label="Chiudi"><i aria-hidden="true" class="fa-solid fa-xmark"></i></button>
             </div>
             <div class="mobile-menu-grid">
-                <button type="button" onclick="mobileOpenAdmin(openCentersModal)"><i class="fa-solid fa-hospital"></i>Poliambulatori</button>
-                <button type="button" onclick="mobileOpenAdmin(openAgendaSettingsModal)"><i class="fa-solid fa-calendar-week"></i>Settimana tipo</button>
-                <button type="button" onclick="mobileOpenAdmin(openTreatmentsAdminModal)"><i class="fa-solid fa-hand-holding-medical"></i>Trattamenti</button>
-                <button type="button" onclick="mobileOpenAdmin(openNewsAdminModal)"><i class="fa-solid fa-bullhorn"></i>News e offerte</button>
-                <button type="button" onclick="mobileOpenAdmin(openPrepAdminModal)"><i class="fa-solid fa-book-medical"></i>Preparazione</button>
-                <button type="button" onclick="mobileOpenAdmin(openBusinessDashboard)"><i class="fa-solid fa-chart-line"></i>Compensi</button>
-                <button type="button" onclick="mobileOpenAdmin(openRequestsModal)"><i class="fa-solid fa-inbox"></i>Richieste<span id="requests-badge-mobile" class="hidden ml-1 px-1.5 rounded-full bg-rose-600 text-white text-[10px] font-bold"></span></button>
-                <button type="button" onclick="mobileOpenAdmin(openRemindersModal)"><i class="fa-solid fa-bell"></i>Promemoria</button>
-                <button type="button" onclick="mobileOpenAdmin(openRecallModal)"><i class="fa-solid fa-phone-volume"></i>Richiami</button>
-                <button type="button" onclick="mobileOpenAdmin(openLastSyncReport)"><i class="fa-solid fa-clock-rotate-left"></i>Ultime novità</button>
-                <button type="button" onclick="mobileOpenAdmin(openUnassignedEventsModal)"><i class="fa-solid fa-user-slash"></i>Senza paziente</button>
-                <button type="button" onclick="mobileOpenAdmin(openBackupModal)"><i class="fa-solid fa-database"></i>Backup e ripristino</button>
-                <button type="button" onclick="handleLogout()"><i class="fa-solid fa-right-from-bracket text-rose-600"></i>Esci</button>
+                <button type="button" onclick="mobileOpenAdmin(openCentersModal)"><i aria-hidden="true" class="fa-solid fa-hospital"></i>Poliambulatori</button>
+                <button type="button" onclick="mobileOpenAdmin(openAgendaSettingsModal)"><i aria-hidden="true" class="fa-solid fa-calendar-week"></i>Settimana tipo</button>
+                <button type="button" onclick="mobileOpenAdmin(openTreatmentsAdminModal)"><i aria-hidden="true" class="fa-solid fa-hand-holding-medical"></i>Trattamenti</button>
+                <button type="button" onclick="mobileOpenAdmin(openNewsAdminModal)"><i aria-hidden="true" class="fa-solid fa-bullhorn"></i>News e offerte</button>
+                <button type="button" onclick="mobileOpenAdmin(openPrepAdminModal)"><i aria-hidden="true" class="fa-solid fa-book-medical"></i>Preparazione</button>
+                <button type="button" onclick="mobileOpenAdmin(openBusinessDashboard)"><i aria-hidden="true" class="fa-solid fa-chart-line"></i>Compensi</button>
+                <button type="button" onclick="mobileOpenAdmin(openRequestsModal)"><i aria-hidden="true" class="fa-solid fa-inbox"></i>Richieste<span id="requests-badge-mobile" class="hidden ml-1 px-1.5 rounded-full bg-rose-600 text-white text-[10px] font-bold"></span></button>
+                <button type="button" onclick="mobileOpenAdmin(openRemindersModal)"><i aria-hidden="true" class="fa-solid fa-bell"></i>Promemoria</button>
+                <button type="button" onclick="mobileOpenAdmin(openRecallModal)"><i aria-hidden="true" class="fa-solid fa-phone-volume"></i>Richiami</button>
+                <button type="button" onclick="mobileOpenAdmin(openLastSyncReport)"><i aria-hidden="true" class="fa-solid fa-clock-rotate-left"></i>Ultime novità</button>
+                <button type="button" onclick="mobileOpenAdmin(openUnassignedEventsModal)"><i aria-hidden="true" class="fa-solid fa-user-slash"></i>Senza paziente</button>
+                <button type="button" onclick="mobileOpenAdmin(openBackupModal)"><i aria-hidden="true" class="fa-solid fa-database"></i>Backup e ripristino</button>
+                <button type="button" onclick="handleLogout()"><i aria-hidden="true" class="fa-solid fa-right-from-bracket text-rose-600"></i>Esci</button>
             </div>
         </div>
     </div>
@@ -562,11 +526,11 @@
         <div class="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-sm overflow-hidden flex flex-col border border-nature-100">
             <div class="px-6 py-5 border-b border-slate-100 flex items-center justify-between bg-nature-50/50">
                 <h3 class="font-editorial text-lg font-bold text-slate-900 italic">Area Riservata</h3>
-                <button aria-label="Chiudi" type="button" onclick="closeLoginModal()" class="text-slate-400 hover:text-slate-600 w-8 h-8 rounded-full flex items-center justify-center hover:bg-slate-200/60 transition"><i class="fa-solid fa-xmark"></i></button>
+                <button aria-label="Chiudi" type="button" onclick="closeLoginModal()" class="text-slate-400 hover:text-slate-600 w-8 h-8 rounded-full flex items-center justify-center hover:bg-slate-200/60 transition"><i aria-hidden="true" class="fa-solid fa-xmark"></i></button>
             </div>
             <div class="p-6 sm:p-8 space-y-5 text-center">
                 <div class="w-16 h-16 rounded-full bg-nature-100 text-nature-700 flex items-center justify-center mx-auto text-2xl shadow-inner">
-                    <i class="fa-solid fa-shield-halved"></i>
+                    <i aria-hidden="true" class="fa-solid fa-shield-halved"></i>
                 </div>
                 <p class="text-xs text-slate-600 leading-relaxed font-light">Accesso protetto riservato ad amministratori autorizzati tramite Google Workspace.</p>
                 
@@ -584,14 +548,14 @@
         <div class="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-md overflow-hidden flex flex-col border border-nature-100 max-h-[90vh]">
             <div class="px-5 sm:px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-nature-50/50">
                 <h3 id="studio-modal-title" class="font-editorial text-base sm:text-lg font-bold text-slate-900 italic">Nuovo Appuntamento Studio</h3>
-                <button aria-label="Chiudi" type="button" onclick="closeStudioModal()" class="text-slate-400 hover:text-slate-600 w-8 h-8 rounded-full flex items-center justify-center"><i class="fa-solid fa-xmark"></i></button>
+                <button aria-label="Chiudi" type="button" onclick="closeStudioModal()" class="text-slate-400 hover:text-slate-600 w-8 h-8 rounded-full flex items-center justify-center"><i aria-hidden="true" class="fa-solid fa-xmark"></i></button>
             </div>
             <form id="studio-event-form" class="p-5 sm:p-6 space-y-4 overflow-y-auto" onsubmit="handleStudioEventSubmit(event)">
                 <input type="hidden" id="studio-edit-event-id">
                 <input type="hidden" id="studio-event-is-external" value="false">
-                <div id="non-clinical-event-banner" class="hidden p-3.5 bg-sky-50 border border-sky-300 rounded-2xl text-sky-950"><div class="flex items-start gap-2.5"><i class="fa-solid fa-house mt-0.5 text-sky-700"></i><div><p class="text-xs font-bold">Evento da Calendario non Clinico</p><p class="text-[10px] mt-1">Occupa l’agenda e segnala sovrapposizioni, ma è escluso dalla gestione professionale.</p></div></div></div>
-                <div id="external-pending-banner" class="hidden p-3.5 bg-rose-50 border border-rose-300 rounded-2xl text-rose-950"><div class="flex items-start gap-2.5"><i class="fa-solid fa-calendar-xmark mt-0.5 text-rose-700"></i><div class="space-y-2"><p class="text-xs font-bold">Cancellato dal calendario originale</p><p class="text-[11px] leading-relaxed">Il poliambulatorio ha tolto questo appuntamento dal suo calendario. Resta nella tua agenda finché non scegli se tenerlo o toglierlo.</p><button type="button" onclick="openExternalRemovalDecision()" class="px-3 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs font-bold">Scegli ora</button></div></div></div>
-                <div id="external-detached-banner" class="hidden p-3.5 bg-amber-50 border border-amber-300 rounded-2xl text-amber-950"><div class="flex items-start gap-2.5"><i class="fa-solid fa-thumbtack mt-0.5 text-amber-700"></i><div class="space-y-1"><p class="text-xs font-bold">Appuntamento mantenuto manualmente</p><p class="text-[11px] leading-relaxed">Questo appuntamento è stato cancellato dal calendario originale del poliambulatorio, ma è stato mantenuto nella tua agenda personale.</p><p id="external-detached-date" class="text-[10px] font-semibold text-amber-800"></p></div></div></div>
+                <div id="non-clinical-event-banner" class="hidden p-3.5 bg-sky-50 border border-sky-300 rounded-2xl text-sky-950"><div class="flex items-start gap-2.5"><i aria-hidden="true" class="fa-solid fa-house mt-0.5 text-sky-700"></i><div><p class="text-xs font-bold">Evento da Calendario non Clinico</p><p class="text-[10px] mt-1">Occupa l’agenda e segnala sovrapposizioni, ma è escluso dalla gestione professionale.</p></div></div></div>
+                <div id="external-pending-banner" class="hidden p-3.5 bg-rose-50 border border-rose-300 rounded-2xl text-rose-950"><div class="flex items-start gap-2.5"><i aria-hidden="true" class="fa-solid fa-calendar-xmark mt-0.5 text-rose-700"></i><div class="space-y-2"><p class="text-xs font-bold">Cancellato dal calendario originale</p><p class="text-[11px] leading-relaxed">Il poliambulatorio ha tolto questo appuntamento dal suo calendario. Resta nella tua agenda finché non scegli se tenerlo o toglierlo.</p><button type="button" onclick="openExternalRemovalDecision()" class="px-3 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs font-bold">Scegli ora</button></div></div></div>
+                <div id="external-detached-banner" class="hidden p-3.5 bg-amber-50 border border-amber-300 rounded-2xl text-amber-950"><div class="flex items-start gap-2.5"><i aria-hidden="true" class="fa-solid fa-thumbtack mt-0.5 text-amber-700"></i><div class="space-y-1"><p class="text-xs font-bold">Appuntamento mantenuto manualmente</p><p class="text-[11px] leading-relaxed">Questo appuntamento è stato cancellato dal calendario originale del poliambulatorio, ma è stato mantenuto nella tua agenda personale.</p><p id="external-detached-date" class="text-[10px] font-semibold text-amber-800"></p></div></div></div>
                 <div class="space-y-1">
                     <label for="studio-center-select" class="text-[11px] font-bold text-slate-600">Sede / Poliambulatorio</label>
                     <select id="studio-center-select" onchange="onStudioCenterChange()" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-2xl text-xs">
@@ -603,14 +567,14 @@
                     <label class="text-[11px] font-bold text-slate-600 flex items-center justify-between">
                         <span>Associa Paziente in Anagrafica</span>
                         <button type="button" onclick="openNewPatientFromAppointment()" class="text-[10px] text-nature-700 hover:underline font-bold flex items-center gap-1">
-                            <i class="fa-solid fa-user-plus"></i> Nuovo Paziente
+                            <i aria-hidden="true" class="fa-solid fa-user-plus"></i> Nuovo Paziente
                         </button>
                     </label>
                     <select id="studio-patient-select" aria-label="Associa paziente in anagrafica" onchange="onPatientSelectChange()" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-2xl text-xs">
                         <option value="">-- Seleziona Paziente --</option>
                     </select>
                     <div id="patient-match-suggestions" class="hidden mt-2 p-3 bg-water-50 border border-water-200 rounded-2xl text-xs"></div>
-                    <button type="button" id="create-patient-from-event-btn" onclick="createPatientFromImportedEvent()" class="hidden mt-2 w-full px-3 py-2.5 bg-amber-100 text-amber-900 rounded-xl font-bold text-xs"><i class="fa-solid fa-user-plus mr-1"></i>Crea paziente dai dati dell'evento</button>
+                    <button type="button" id="create-patient-from-event-btn" onclick="createPatientFromImportedEvent()" class="hidden mt-2 w-full px-3 py-2.5 bg-amber-100 text-amber-900 rounded-xl font-bold text-xs"><i aria-hidden="true" class="fa-solid fa-user-plus mr-1"></i>Crea paziente dai dati dell'evento</button>
                 </div>
 
                 <div id="patient-contact-info-container" class="grid grid-cols-2 gap-3 hidden">
@@ -668,7 +632,7 @@
 
                 <div id="live-patient-notes-container" class="space-y-2 hidden bg-amber-50/60 p-3.5 rounded-2xl border border-amber-200">
                     <div class="flex items-center justify-between gap-2">
-                        <span class="text-[11px] font-bold text-amber-900"><i class="fa-solid fa-notes-medical mr-1"></i> Sintesi scheda paziente</span>
+                        <span class="text-[11px] font-bold text-amber-900"><i aria-hidden="true" class="fa-solid fa-notes-medical mr-1"></i> Sintesi scheda paziente</span>
                         <button type="button" onclick="editSelectedPatientFromAppointment()" class="px-2.5 py-1.5 bg-white border border-amber-200 rounded-xl text-[10px] font-bold text-amber-900">Apri scheda completa</button>
                     </div>
                     <div id="live-patient-summary" class="bg-white border border-amber-200 rounded-xl p-3 text-xs text-slate-700 space-y-1"></div>
@@ -695,7 +659,7 @@
                     </div>
                 </div>
                 <div id="studio-clinical-section" class="space-y-2 bg-water-50/60 p-3.5 rounded-2xl border border-water-200">
-                    <label for="studio-clinical-note" class="text-[11px] font-bold text-water-900"><i class="fa-solid fa-notes-medical mr-1"></i>Nota clinica della seduta</label>
+                    <label for="studio-clinical-note" class="text-[11px] font-bold text-water-900"><i aria-hidden="true" class="fa-solid fa-notes-medical mr-1"></i>Nota clinica della seduta</label>
                     <textarea id="studio-clinical-note" placeholder="Valutazione, trattamento eseguito, risposta del paziente..." class="w-full px-3 py-2.5 bg-white border border-water-200 rounded-xl text-xs h-24 resize-y"></textarea>
                     <input type="text" id="studio-clinical-outcome" aria-label="Esito / indicazioni successive" placeholder="Esito / indicazioni successive" class="w-full px-3 py-2.5 bg-white border border-water-200 rounded-xl text-xs">
                 </div>
@@ -713,13 +677,13 @@
             <div class="px-5 sm:px-6 py-4 border-b border-amber-100 flex items-center justify-between bg-amber-50/50">
                 <h3 class="font-editorial text-base sm:text-lg font-bold text-slate-900 italic">Anagrafe & Anamnesi Pazienti</h3>
                 <div class="flex items-center gap-2">
-                    <button onclick="openNewPatientFromRegistry()" class="px-3 py-2 bg-amber-600 hover:bg-amber-700 text-white font-semibold rounded-xl text-xs transition">Nuovo Paziente</button><button onclick="openMergePatientsModal()" class="px-3 py-2 bg-purple-600 hover:bg-purple-700 text-white font-semibold rounded-xl text-xs transition"><i class="fa-solid fa-code-merge mr-1"></i>Unisci duplicati</button>
-                    <button aria-label="Chiudi" type="button" onclick="closePatientsModal()" class="text-slate-400 hover:text-slate-600 w-8 h-8 rounded-full flex items-center justify-center"><i class="fa-solid fa-xmark"></i></button>
+                    <button onclick="openNewPatientFromRegistry()" class="px-3 py-2 bg-amber-600 hover:bg-amber-700 text-white font-semibold rounded-xl text-xs transition">Nuovo Paziente</button><button onclick="openMergePatientsModal()" class="px-3 py-2 bg-purple-600 hover:bg-purple-700 text-white font-semibold rounded-xl text-xs transition"><i aria-hidden="true" class="fa-solid fa-code-merge mr-1"></i>Unisci duplicati</button>
+                    <button aria-label="Chiudi" type="button" onclick="closePatientsModal()" class="text-slate-400 hover:text-slate-600 w-8 h-8 rounded-full flex items-center justify-center"><i aria-hidden="true" class="fa-solid fa-xmark"></i></button>
                 </div>
             </div>
             <div class="p-4 sm:p-6 overflow-y-auto space-y-4 flex-1">
                 <div class="relative">
-                    <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400"><i class="fa-solid fa-magnifying-glass text-xs"></i></span>
+                    <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400"><i aria-hidden="true" class="fa-solid fa-magnifying-glass text-xs"></i></span>
                     <input type="text" id="patient-search-input" oninput="filterPatientsList()" placeholder="Cerca paziente per nome, telefono o email..." class="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-2xl text-xs focus:outline-none focus:ring-2 focus:ring-amber-500">
                 </div>
                 <div id="patients-alphabetical-list" class="space-y-2.5"></div>
@@ -734,7 +698,7 @@
         <div class="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-3xl overflow-hidden flex flex-col border border-amber-100 max-h-[90vh]">
             <div class="px-5 sm:px-6 py-4 border-b border-amber-100 flex items-center justify-between bg-amber-50/50">
                 <h3 id="patient-edit-modal-title" class="font-editorial text-base sm:text-lg font-bold text-slate-900 italic">Scheda Paziente</h3>
-                <button aria-label="Chiudi" type="button" onclick="closePatientEditModal()" class="text-slate-400 hover:text-slate-600 w-8 h-8 rounded-full flex items-center justify-center"><i class="fa-solid fa-xmark"></i></button>
+                <button aria-label="Chiudi" type="button" onclick="closePatientEditModal()" class="text-slate-400 hover:text-slate-600 w-8 h-8 rounded-full flex items-center justify-center"><i aria-hidden="true" class="fa-solid fa-xmark"></i></button>
             </div>
             <form id="patient-form" class="p-5 sm:p-6 space-y-4 overflow-y-auto" onsubmit="handlePatientSubmit(event)">
                 <input type="hidden" id="patient-edit-id">
@@ -767,14 +731,14 @@
                 </div>
                 <section id="patient-assessments-panel" class="space-y-2 p-4 bg-rose-50/40 border border-rose-200 rounded-2xl">
                     <div>
-                        <h4 class="font-editorial font-bold italic text-base text-rose-900"><i class="fa-solid fa-clipboard-check mr-1"></i>Valutazione pre-trattamento</h4>
+                        <h4 class="font-editorial font-bold italic text-base text-rose-900"><i aria-hidden="true" class="fa-solid fa-clipboard-check mr-1"></i>Valutazione pre-trattamento</h4>
                         <p class="text-[10px] text-slate-600">Controindicazioni e segni d'allarme da verificare prima del trattamento. Nel modulo appuntamento compare un avviso se la valutazione manca o ha voci da verificare.</p>
                     </div>
                     <div id="patient-assessments-container" class="space-y-2"></div>
                 </section>
                 <section id="patient-clinical-archive-panel" class="hidden space-y-3 p-4 bg-water-50/60 border border-water-200 rounded-2xl">
                     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                        <div><h4 class="font-editorial font-bold italic text-base text-water-900"><i class="fa-solid fa-notes-medical mr-1"></i>Archivio Clinico</h4><p class="text-[10px] text-slate-500">Sedute ordinate dalla più recente.</p></div>
+                        <div><h4 class="font-editorial font-bold italic text-base text-water-900"><i aria-hidden="true" class="fa-solid fa-notes-medical mr-1"></i>Archivio Clinico</h4><p class="text-[10px] text-slate-500">Sedute ordinate dalla più recente.</p></div>
                         <div id="patient-clinical-archive-summary" class="text-[10px] font-bold text-water-800 bg-white border border-water-200 px-3 py-1.5 rounded-full"></div>
                     </div>
                     <div id="patient-clinical-archive-list" class="space-y-2 max-h-72 overflow-y-auto pr-1"></div>
@@ -791,10 +755,10 @@
         <div class="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-2xl overflow-hidden flex flex-col max-h-[90vh]">
             <div class="px-5 sm:px-6 py-4 border-b border-amber-100 flex items-center justify-between bg-amber-50/50">
                 <div class="flex items-center gap-2">
-                    <div class="w-8 h-8 rounded-full bg-amber-100 text-amber-800 flex items-center justify-center font-bold text-xs"><i class="fa-solid fa-calendar-days"></i></div>
+                    <div class="w-8 h-8 rounded-full bg-amber-100 text-amber-800 flex items-center justify-center font-bold text-xs"><i aria-hidden="true" class="fa-solid fa-calendar-days"></i></div>
                     <h3 id="patient-history-title" class="font-editorial text-base sm:text-lg font-bold text-slate-900 italic">Storico Appuntamenti Paziente</h3>
                 </div>
-                <button aria-label="Chiudi" type="button" onclick="closePatientHistoryModal()" class="text-slate-400 hover:text-slate-600 w-8 h-8 rounded-full flex items-center justify-center"><i class="fa-solid fa-xmark"></i></button>
+                <button aria-label="Chiudi" type="button" onclick="closePatientHistoryModal()" class="text-slate-400 hover:text-slate-600 w-8 h-8 rounded-full flex items-center justify-center"><i aria-hidden="true" class="fa-solid fa-xmark"></i></button>
             </div>
             <div class="p-4 sm:p-6 overflow-y-auto space-y-3 flex-1" id="patient-history-list"></div>
             <div class="px-5 sm:px-6 py-4 border-t border-slate-100 bg-slate-50 flex justify-end">
@@ -808,7 +772,7 @@
         <div class="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-xl overflow-hidden flex flex-col border border-water-100 max-h-[90vh]">
             <div class="px-6 py-4 border-b border-water-100 flex items-center justify-between bg-water-50/50">
                 <div class="flex items-center gap-2.5">
-                    <div class="w-8 h-8 rounded-full bg-water-100 text-water-700 flex items-center justify-center font-bold text-xs"><i class="fa-solid fa-rotate animate-spin" id="sync-spinner"></i></div>
+                    <div class="w-8 h-8 rounded-full bg-water-100 text-water-700 flex items-center justify-center font-bold text-xs"><i aria-hidden="true" class="fa-solid fa-rotate animate-spin" id="sync-spinner"></i></div>
                     <h3 id="sync-modal-title" class="font-editorial text-base font-bold text-slate-900 italic">Sincronizzazione Calendari in corso...</h3>
                 </div>
             </div>
@@ -824,10 +788,10 @@
         <div class="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-2xl overflow-hidden flex flex-col max-h-[90vh]">
             <div class="px-5 sm:px-6 py-4 sm:py-5 border-b border-orange-100 flex items-center justify-between bg-orange-50/50">
                 <div class="flex items-center gap-3">
-                    <div class="w-9 h-9 rounded-2xl bg-orange-100 text-orange-800 flex items-center justify-center"><i class="fa-solid fa-calendar-week text-sm"></i></div>
+                    <div class="w-9 h-9 rounded-2xl bg-orange-100 text-orange-800 flex items-center justify-center"><i aria-hidden="true" class="fa-solid fa-calendar-week text-sm"></i></div>
                     <h3 class="font-editorial text-base sm:text-lg font-bold text-slate-900 italic">Settimana tipo e spostamenti</h3>
                 </div>
-                <button aria-label="Chiudi" type="button" onclick="closeAgendaSettingsModal()" class="text-slate-400 hover:text-slate-600 w-8 h-8 rounded-full flex items-center justify-center hover:bg-slate-200/60 transition"><i class="fa-solid fa-xmark"></i></button>
+                <button aria-label="Chiudi" type="button" onclick="closeAgendaSettingsModal()" class="text-slate-400 hover:text-slate-600 w-8 h-8 rounded-full flex items-center justify-center hover:bg-slate-200/60 transition"><i aria-hidden="true" class="fa-solid fa-xmark"></i></button>
             </div>
             <form id="agenda-settings-form" onsubmit="saveAgendaSettings(event)" class="p-4 sm:p-6 overflow-y-auto space-y-5 flex-1">
                 <section class="space-y-3">
@@ -836,7 +800,7 @@
                         <p class="text-[11px] text-slate-600">Le fasce compaiono come sfondo colorato nella vista settimana e giorno. Se prendi un appuntamento in una fascia di un'altra sede, il modulo te lo segnala.</p>
                     </div>
                     <div id="weekly-template-list" class="space-y-2"></div>
-                    <button type="button" onclick="addTemplateSlot()" class="w-full sm:w-auto px-4 py-2.5 bg-orange-50 hover:bg-orange-100 text-orange-900 border border-orange-200 rounded-2xl text-xs font-semibold"><i class="fa-solid fa-plus mr-1"></i>Aggiungi fascia</button>
+                    <button type="button" onclick="addTemplateSlot()" class="w-full sm:w-auto px-4 py-2.5 bg-orange-50 hover:bg-orange-100 text-orange-900 border border-orange-200 rounded-2xl text-xs font-semibold"><i aria-hidden="true" class="fa-solid fa-plus mr-1"></i>Aggiungi fascia</button>
                 </section>
                 <section class="space-y-2 p-4 bg-slate-50 rounded-3xl border border-slate-200">
                     <label for="agenda-travel-minutes" class="block font-editorial font-bold text-sm text-slate-900 italic">Tempo minimo per spostarti tra due sedi (minuti)</label>
@@ -856,10 +820,10 @@
         <div class="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-2xl overflow-hidden flex flex-col max-h-[90vh]">
             <div class="px-5 sm:px-6 py-4 sm:py-5 border-b border-nature-100 flex items-center justify-between bg-nature-50/50">
                 <div class="flex items-center gap-3">
-                    <div class="w-9 h-9 rounded-2xl bg-nature-100 text-nature-700 flex items-center justify-center"><i class="fa-solid fa-hand-holding-medical text-sm"></i></div>
+                    <div class="w-9 h-9 rounded-2xl bg-nature-100 text-nature-700 flex items-center justify-center"><i aria-hidden="true" class="fa-solid fa-hand-holding-medical text-sm"></i></div>
                     <h3 class="font-editorial text-base sm:text-lg font-bold text-slate-900 italic">Gestione Trattamenti Specialistici</h3>
                 </div>
-                <button aria-label="Chiudi" type="button" onclick="closeTreatmentsAdminModal()" class="text-slate-400 hover:text-slate-600 w-8 h-8 rounded-full flex items-center justify-center hover:bg-slate-200/60 transition"><i class="fa-solid fa-xmark"></i></button>
+                <button aria-label="Chiudi" type="button" onclick="closeTreatmentsAdminModal()" class="text-slate-400 hover:text-slate-600 w-8 h-8 rounded-full flex items-center justify-center hover:bg-slate-200/60 transition"><i aria-hidden="true" class="fa-solid fa-xmark"></i></button>
             </div>
             <div class="p-4 sm:p-6 overflow-y-auto space-y-6 flex-1">
                 <form id="treatment-form" class="bg-nature-50/40 p-4 sm:p-5 rounded-3xl border border-nature-100 space-y-3" onsubmit="handleTreatmentSubmit(event)">
@@ -900,10 +864,10 @@
         <div class="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-2xl overflow-hidden flex flex-col max-h-[90vh]">
             <div class="px-5 sm:px-6 py-4 sm:py-5 border-b border-nature-100 flex items-center justify-between bg-nature-50/50">
                 <div class="flex items-center gap-3">
-                    <div class="w-9 h-9 rounded-2xl bg-nature-100 text-nature-700 flex items-center justify-center"><i class="fa-solid fa-hospital text-sm"></i></div>
+                    <div class="w-9 h-9 rounded-2xl bg-nature-100 text-nature-700 flex items-center justify-center"><i aria-hidden="true" class="fa-solid fa-hospital text-sm"></i></div>
                     <h3 class="font-editorial text-base sm:text-lg font-bold text-slate-900 italic">Gestione Poliambulatori</h3>
                 </div>
-                <button aria-label="Chiudi" type="button" onclick="closeCentersModal()" class="text-slate-400 hover:text-slate-600 w-8 h-8 rounded-full flex items-center justify-center hover:bg-slate-200/60 transition"><i class="fa-solid fa-xmark"></i></button>
+                <button aria-label="Chiudi" type="button" onclick="closeCentersModal()" class="text-slate-400 hover:text-slate-600 w-8 h-8 rounded-full flex items-center justify-center hover:bg-slate-200/60 transition"><i aria-hidden="true" class="fa-solid fa-xmark"></i></button>
             </div>
             <div class="p-4 sm:p-6 overflow-y-auto space-y-6 flex-1">
                 <form id="private-rates-form" onsubmit="savePrivateRates(event)" class="p-4 sm:p-5 bg-white rounded-3xl border border-nature-100 space-y-3">
@@ -1001,7 +965,7 @@
         <div class="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-2xl overflow-hidden flex flex-col max-h-[90vh]">
             <div class="px-5 sm:px-6 py-4 sm:py-5 border-b border-nature-100 flex items-center justify-between bg-water-50/50">
                 <h3 class="font-editorial text-base sm:text-lg font-bold text-slate-900 italic">Gestione News & Offerte</h3>
-                <button aria-label="Chiudi" type="button" onclick="closeNewsAdminModal()" class="text-slate-400 hover:text-slate-600 w-8 h-8 rounded-full flex items-center justify-center hover:bg-slate-200/60 transition"><i class="fa-solid fa-xmark"></i></button>
+                <button aria-label="Chiudi" type="button" onclick="closeNewsAdminModal()" class="text-slate-400 hover:text-slate-600 w-8 h-8 rounded-full flex items-center justify-center hover:bg-slate-200/60 transition"><i aria-hidden="true" class="fa-solid fa-xmark"></i></button>
             </div>
             <div class="p-4 sm:p-6 overflow-y-auto space-y-6 flex-1">
                 <form id="news-form" class="bg-water-50/40 p-4 sm:p-5 rounded-3xl border border-water-100 space-y-3" onsubmit="handleNewsSubmit(event)">
@@ -1033,7 +997,7 @@
         <div class="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-2xl overflow-hidden flex flex-col max-h-[90vh]">
             <div class="px-5 sm:px-6 py-4 border-b border-nature-100 flex items-center justify-between bg-nature-50/50">
                 <h3 class="font-editorial text-base sm:text-lg font-bold text-slate-900 italic">Gestione Preparazione ai Trattamenti</h3>
-                <button aria-label="Chiudi" type="button" onclick="closePrepAdminModal()" class="text-slate-400 hover:text-slate-600 w-8 h-8 rounded-full flex items-center justify-center hover:bg-slate-200/60 transition"><i class="fa-solid fa-xmark"></i></button>
+                <button aria-label="Chiudi" type="button" onclick="closePrepAdminModal()" class="text-slate-400 hover:text-slate-600 w-8 h-8 rounded-full flex items-center justify-center hover:bg-slate-200/60 transition"><i aria-hidden="true" class="fa-solid fa-xmark"></i></button>
             </div>
             <div class="p-4 sm:p-6 overflow-y-auto space-y-6 flex-1">
                 <form id="prep-form" class="bg-nature-50/40 p-4 sm:p-5 rounded-3xl border border-nature-100 space-y-3" onsubmit="handlePrepSubmit(event)">
@@ -1061,7 +1025,7 @@
       <div class="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-3xl overflow-hidden flex flex-col max-h-[92vh]">
         <div class="px-5 py-4 border-b border-purple-100 bg-purple-50 flex items-center justify-between">
           <div><h3 class="font-editorial text-lg font-bold italic">Unisci pazienti duplicati</h3><p class="text-[10px] text-slate-500">Confronta i dati e scegli esplicitamente cosa conservare</p></div>
-          <button aria-label="Chiudi" onclick="closeMergePatientsModal()" class="w-10 h-10 rounded-full bg-white"><i class="fa-solid fa-xmark"></i></button>
+          <button aria-label="Chiudi" onclick="closeMergePatientsModal()" class="w-10 h-10 rounded-full bg-white"><i aria-hidden="true" class="fa-solid fa-xmark"></i></button>
         </div>
         <div class="p-5 space-y-4 overflow-y-auto flex-1">
           <div id="merge-suggestions" class="space-y-2"></div>
@@ -1080,7 +1044,7 @@
       <div class="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-5xl overflow-hidden flex flex-col max-h-[92vh]">
         <div class="px-5 sm:px-6 py-4 border-b border-emerald-100 flex items-center justify-between bg-emerald-50/60">
           <div><h3 class="font-editorial text-lg font-bold text-slate-900 italic">Compensi e attività</h3><p class="text-[10px] text-slate-500">Riepilogo mensile per sede</p></div>
-          <button aria-label="Chiudi" onclick="closeBusinessDashboard()" class="w-10 h-10 rounded-full bg-white"><i class="fa-solid fa-xmark"></i></button>
+          <button aria-label="Chiudi" onclick="closeBusinessDashboard()" class="w-10 h-10 rounded-full bg-white"><i aria-hidden="true" class="fa-solid fa-xmark"></i></button>
         </div>
         <div class="p-4 sm:p-6 overflow-y-auto space-y-5 flex-1">
           <div class="flex flex-wrap items-end gap-3">
@@ -1089,22 +1053,22 @@
           </div>
           <section class="space-y-3"><div><h4 class="font-editorial text-lg font-bold italic text-slate-900">Riepilogo mensile</h4><p class="text-[10px] text-slate-500">Calcolato dagli appuntamenti clinici del mese selezionato.</p></div><div id="business-kpis" class="grid grid-cols-2 lg:grid-cols-4 gap-3"></div></section>
           <div class="bg-slate-50 rounded-3xl border border-slate-200 overflow-hidden"><div class="px-4 py-3 font-bold text-sm text-slate-700">Dettaglio mensile per poliambulatorio</div><div id="business-by-center" class="overflow-x-auto"></div></div>
-          <section id="business-shifts-section" class="hidden space-y-3 p-4 bg-slate-50 border border-slate-200 rounded-3xl"><div><h4 class="font-editorial text-lg font-bold italic text-slate-900"><i class="fa-solid fa-user-nurse mr-1"></i>Turni retribuiti</h4><p class="text-[10px] text-slate-600">Ore e compensi dei turni a ore (es. Medicina dello Sport), inclusi nel fatturato.</p></div><div id="business-shifts" class="overflow-x-auto"></div></section>
+          <section id="business-shifts-section" class="hidden space-y-3 p-4 bg-slate-50 border border-slate-200 rounded-3xl"><div><h4 class="font-editorial text-lg font-bold italic text-slate-900"><i aria-hidden="true" class="fa-solid fa-user-nurse mr-1"></i>Turni retribuiti</h4><p class="text-[10px] text-slate-600">Ore e compensi dei turni a ore (es. Medicina dello Sport), inclusi nel fatturato.</p></div><div id="business-shifts" class="overflow-x-auto"></div></section>
           <section class="space-y-3 p-4 bg-indigo-50/60 border border-indigo-200 rounded-3xl"><div><h4 class="font-editorial text-lg font-bold italic text-indigo-950">Totale annuale</h4><p class="text-[10px] text-indigo-800">Riepilogo dell'anno selezionato, senza includere calendari non clinici o appuntamenti annullati.</p></div><div id="business-year-kpis" class="grid grid-cols-2 lg:grid-cols-5 gap-3"></div><div class="bg-white rounded-2xl border border-indigo-100 overflow-hidden"><div class="px-4 py-3 font-bold text-sm text-indigo-900 bg-indigo-50">Dettaglio annuale per poliambulatorio</div><div id="business-year-by-center" class="overflow-x-auto"></div></div></section>
           <section class="space-y-4 p-4 bg-emerald-50/70 border border-emerald-200 rounded-3xl">
-            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2"><div><h4 class="font-editorial text-lg font-bold italic text-emerald-950"><i class="fa-solid fa-file-invoice-dollar mr-1"></i>Entrate manuali</h4><p class="text-[10px] text-emerald-800">Entrate fatturate non registrate tramite appuntamenti. Sono incluse nei totali dell'anno selezionato.</p></div><span id="manual-revenue-year-total" class="px-3 py-1.5 rounded-full bg-white border border-emerald-200 text-xs font-bold text-emerald-900"></span></div>
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2"><div><h4 class="font-editorial text-lg font-bold italic text-emerald-950"><i aria-hidden="true" class="fa-solid fa-file-invoice-dollar mr-1"></i>Entrate manuali</h4><p class="text-[10px] text-emerald-800">Entrate fatturate non registrate tramite appuntamenti. Sono incluse nei totali dell'anno selezionato.</p></div><span id="manual-revenue-year-total" class="px-3 py-1.5 rounded-full bg-white border border-emerald-200 text-xs font-bold text-emerald-900"></span></div>
             <form id="manual-revenue-form" onsubmit="handleManualRevenueSubmit(event)" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 p-4 bg-white border border-emerald-200 rounded-2xl">
               <input type="hidden" id="manual-revenue-edit-id">
               <div><label class="block text-[10px] font-bold text-slate-500 mb-1">DATA *</label><input type="date" id="manual-revenue-date" required class="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs"></div>
               <div><label class="block text-[10px] font-bold text-slate-500 mb-1">IMPORTO (€) *</label><input type="number" id="manual-revenue-amount" min="0.01" step="0.01" required placeholder="0,00" class="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs"></div>
               <div><label class="block text-[10px] font-bold text-slate-500 mb-1">CATEGORIA *</label><select id="manual-revenue-category" required class="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs"><option value="Fatturato storico">Fatturato storico</option><option value="Prestazioni esterne">Prestazioni esterne</option><option value="Rettifica contabile">Rettifica contabile</option><option value="Altro">Altro</option></select></div>
               <div><label class="block text-[10px] font-bold text-slate-500 mb-1">DESCRIZIONE *</label><input type="text" id="manual-revenue-description" required maxlength="160" placeholder="Es. Fatturato gennaio-agosto" class="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs"></div>
-              <div class="sm:col-span-2 lg:col-span-4 flex justify-end gap-2"><button type="button" id="manual-revenue-cancel" onclick="resetManualRevenueForm()" class="hidden px-4 py-2.5 bg-slate-100 text-slate-700 font-bold rounded-xl text-xs">Annulla modifica</button><button type="submit" class="px-4 py-2.5 bg-emerald-700 hover:bg-emerald-800 text-white font-bold rounded-xl text-xs"><i class="fa-solid fa-plus mr-1"></i><span id="manual-revenue-submit-label">Aggiungi entrata</span></button></div>
+              <div class="sm:col-span-2 lg:col-span-4 flex justify-end gap-2"><button type="button" id="manual-revenue-cancel" onclick="resetManualRevenueForm()" class="hidden px-4 py-2.5 bg-slate-100 text-slate-700 font-bold rounded-xl text-xs">Annulla modifica</button><button type="submit" class="px-4 py-2.5 bg-emerald-700 hover:bg-emerald-800 text-white font-bold rounded-xl text-xs"><i aria-hidden="true" class="fa-solid fa-plus mr-1"></i><span id="manual-revenue-submit-label">Aggiungi entrata</span></button></div>
             </form>
             <div id="manual-revenue-list" class="space-y-2"></div>
           </section>
           <section class="space-y-4 p-4 bg-violet-50/70 border border-violet-200 rounded-3xl">
-            <div class="flex flex-col sm:flex-row sm:items-start justify-between gap-3"><div><h4 class="font-editorial text-lg font-bold italic text-violet-950"><i class="fa-solid fa-calculator mr-1"></i>Simulatore fiscale forfettario</h4><p class="text-[10px] text-violet-800">Stima gestionale sull'anno selezionato. I parametri sono configurabili e salvati nel profilo fiscale.</p></div><span id="tax-profile-status" class="px-3 py-1.5 rounded-full bg-white border border-violet-200 text-[10px] font-bold text-violet-900">Profilo da salvare</span></div>
+            <div class="flex flex-col sm:flex-row sm:items-start justify-between gap-3"><div><h4 class="font-editorial text-lg font-bold italic text-violet-950"><i aria-hidden="true" class="fa-solid fa-calculator mr-1"></i>Simulatore fiscale forfettario</h4><p class="text-[10px] text-violet-800">Stima gestionale sull'anno selezionato. I parametri sono configurabili e salvati nel profilo fiscale.</p></div><span id="tax-profile-status" class="px-3 py-1.5 rounded-full bg-white border border-violet-200 text-[10px] font-bold text-violet-900">Profilo da salvare</span></div>
             <div class="p-3 bg-amber-50 border border-amber-200 rounded-2xl text-[10px] leading-relaxed text-amber-950"><strong>Avvertenza:</strong> il risultato è una simulazione orientativa, non sostituisce il calcolo del commercialista. Acconti, saldi, minimali, gestione previdenziale, crediti e situazioni personali possono modificare gli importi effettivi.</div>
             <form id="tax-profile-form" onsubmit="handleTaxProfileSubmit(event)" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 p-4 bg-white border border-violet-200 rounded-2xl">
               <div><label class="block text-[10px] font-bold text-slate-500 mb-1">FATTURATO ANNO PRECEDENTE (€)</label><input type="number" min="0" step="0.01" id="tax-previous-revenue" class="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs"></div>
@@ -1125,16 +1089,16 @@
                   <div class="grid grid-cols-[1fr_5.5rem_5rem] gap-2"><input type="text" id="tax-custom-2-label" aria-label="Descrizione scadenza 3" class="px-3 py-2 bg-white border border-slate-200 rounded-lg text-xs"><input type="text" id="tax-custom-2-day" aria-label="Data scadenza 3 (gg/mm)" placeholder="gg/mm" maxlength="5" class="px-3 py-2 bg-white border border-slate-200 rounded-lg text-xs"><input type="number" min="0" max="100" step="0.01" id="tax-custom-2-percent" aria-label="Percentuale scadenza 3" class="px-3 py-2 bg-white border border-slate-200 rounded-lg text-xs"></div>
                 </div>
               </div>
-              <div class="sm:col-span-2 lg:col-span-5 flex justify-end"><button type="submit" class="px-4 py-2.5 bg-violet-700 hover:bg-violet-800 text-white font-bold rounded-xl text-xs"><i class="fa-solid fa-floppy-disk mr-1"></i>Salva profilo fiscale</button></div>
+              <div class="sm:col-span-2 lg:col-span-5 flex justify-end"><button type="submit" class="px-4 py-2.5 bg-violet-700 hover:bg-violet-800 text-white font-bold rounded-xl text-xs"><i aria-hidden="true" class="fa-solid fa-floppy-disk mr-1"></i>Salva profilo fiscale</button></div>
             </form>
             <div id="tax-simulator-kpis" class="grid grid-cols-2 lg:grid-cols-5 gap-3"></div>
             <div id="tax-simulator-detail" class="p-4 bg-white border border-violet-200 rounded-2xl text-xs space-y-2"></div>
           </section>
           <section id="tax-schedule-section" class="space-y-3 p-4 bg-sky-50/70 border border-sky-200 rounded-3xl">
-            <div><h4 id="tax-schedule-title" class="font-editorial text-lg font-bold italic text-sky-950"><i class="fa-solid fa-calendar-check mr-1"></i>Scadenze fiscali</h4><p class="text-[10px] text-sky-800">Importi stimati con il metodo storico a partire dal fatturato registrato: da verificare sempre con il commercialista. Il versamento di giugno si può rinviare al 30 luglio con la maggiorazione dello 0,40%.</p></div>
+            <div><h4 id="tax-schedule-title" class="font-editorial text-lg font-bold italic text-sky-950"><i aria-hidden="true" class="fa-solid fa-calendar-check mr-1"></i>Scadenze fiscali</h4><p class="text-[10px] text-sky-800">Importi stimati con il metodo storico a partire dal fatturato registrato: da verificare sempre con il commercialista. Il versamento di giugno si può rinviare al 30 luglio con la maggiorazione dello 0,40%.</p></div>
             <div id="tax-schedule" class="space-y-2"></div>
           </section>
-          <section class="space-y-3 p-4 bg-amber-50/70 border border-amber-200 rounded-3xl"><div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2"><div><h4 class="font-editorial text-lg font-bold italic text-amber-950"><i class="fa-solid fa-triangle-exclamation mr-1"></i>Appuntamenti clinici senza tariffa</h4><p class="text-[10px] text-amber-800">Appuntamenti dell'anno selezionato con compenso assente o pari a zero.</p></div><div class="flex items-center gap-2 flex-wrap"><span id="business-missing-fee-count" class="px-3 py-1.5 rounded-full bg-white border border-amber-200 text-xs font-bold text-amber-900"></span><button type="button" id="fill-missing-fees-btn" onclick="fillMissingFees()" class="hidden px-3 py-1.5 rounded-full bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold">Compila con le tariffe</button></div></div><div id="business-missing-fee-list" class="space-y-2"></div></section>
+          <section class="space-y-3 p-4 bg-amber-50/70 border border-amber-200 rounded-3xl"><div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2"><div><h4 class="font-editorial text-lg font-bold italic text-amber-950"><i aria-hidden="true" class="fa-solid fa-triangle-exclamation mr-1"></i>Appuntamenti clinici senza tariffa</h4><p class="text-[10px] text-amber-800">Appuntamenti dell'anno selezionato con compenso assente o pari a zero.</p></div><div class="flex items-center gap-2 flex-wrap"><span id="business-missing-fee-count" class="px-3 py-1.5 rounded-full bg-white border border-amber-200 text-xs font-bold text-amber-900"></span><button type="button" id="fill-missing-fees-btn" onclick="fillMissingFees()" class="hidden px-3 py-1.5 rounded-full bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold">Compila con le tariffe</button></div></div><div id="business-missing-fee-list" class="space-y-2"></div></section>
         </div>
       </div>
     </div>
@@ -1143,7 +1107,7 @@
       <div class="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-4xl overflow-hidden flex flex-col max-h-[92vh]">
         <div class="px-5 sm:px-6 py-4 border-b border-orange-100 flex items-center justify-between bg-orange-50/60">
           <div><h3 class="font-editorial text-lg font-bold text-slate-900 italic">Pazienti da richiamare</h3><p class="text-[10px] text-slate-500">Calcolato dall'ultima seduta registrata</p></div>
-          <button aria-label="Chiudi" onclick="closeRecallModal()" class="w-10 h-10 rounded-full bg-white"><i class="fa-solid fa-xmark"></i></button>
+          <button aria-label="Chiudi" onclick="closeRecallModal()" class="w-10 h-10 rounded-full bg-white"><i aria-hidden="true" class="fa-solid fa-xmark"></i></button>
         </div>
         <div class="p-4 sm:p-6 overflow-y-auto space-y-4 flex-1">
           <div class="flex items-center gap-3"><label class="text-xs font-bold text-slate-600">Mostra inattivi da almeno</label><select id="recall-threshold" onchange="renderRecallList()" class="px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-2xl text-xs"><option value="60">60 giorni</option><option value="90">90 giorni</option><option value="120" selected>120 giorni</option><option value="180">180 giorni</option><option value="365">1 anno</option></select></div>
@@ -1159,7 +1123,7 @@
             <h3 id="patient-message-title" class="font-editorial text-lg font-bold text-slate-900 italic truncate">Messaggio WhatsApp</h3>
             <p id="patient-message-subtitle" class="text-[10px] text-slate-600"></p>
           </div>
-          <button type="button" aria-label="Chiudi" onclick="closePatientMessageModal()" class="w-10 h-10 rounded-full bg-white flex-shrink-0"><i class="fa-solid fa-xmark"></i></button>
+          <button type="button" aria-label="Chiudi" onclick="closePatientMessageModal()" class="w-10 h-10 rounded-full bg-white flex-shrink-0"><i aria-hidden="true" class="fa-solid fa-xmark"></i></button>
         </div>
         <div class="p-4 sm:p-6 overflow-y-auto space-y-4 flex-1">
           <div class="space-y-1.5">
@@ -1177,7 +1141,7 @@
             <p class="text-[10px] text-slate-600">Puoi modificare il testo prima di aprire WhatsApp.</p>
             <div class="flex gap-2">
               <button type="button" onclick="backToMessageTypes()" class="px-4 py-2.5 bg-slate-100 text-slate-700 font-bold rounded-xl text-xs">Indietro</button>
-              <button type="button" id="message-send-btn" onclick="sendPatientWhatsApp()" class="flex-1 px-4 py-2.5 bg-emerald-700 hover:bg-emerald-800 text-white font-bold rounded-xl text-xs"><i class="fa-brands fa-whatsapp mr-1"></i>Apri WhatsApp</button>
+              <button type="button" id="message-send-btn" onclick="sendPatientWhatsApp()" class="flex-1 px-4 py-2.5 bg-emerald-700 hover:bg-emerald-800 text-white font-bold rounded-xl text-xs"><i aria-hidden="true" class="fa-brands fa-whatsapp mr-1"></i>Apri WhatsApp</button>
             </div>
           </div>
           <details id="messaging-settings" class="p-3 bg-slate-50 border border-slate-200 rounded-2xl text-xs">
@@ -1197,19 +1161,19 @@
         <div class="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-xl overflow-hidden flex flex-col max-h-[90vh] border border-emerald-100">
             <div class="px-5 sm:px-6 py-4 sm:py-5 border-b border-emerald-100 flex items-center justify-between gap-3 bg-emerald-50/60">
                 <div class="flex items-center gap-3 min-w-0">
-                    <div class="w-9 h-9 rounded-2xl bg-emerald-100 text-emerald-800 flex items-center justify-center flex-shrink-0"><i class="fa-solid fa-bell text-sm"></i></div>
+                    <div class="w-9 h-9 rounded-2xl bg-emerald-100 text-emerald-800 flex items-center justify-center flex-shrink-0"><i aria-hidden="true" class="fa-solid fa-bell text-sm"></i></div>
                     <div class="min-w-0">
                         <h3 class="font-editorial text-base sm:text-lg font-bold text-slate-900 italic">Promemoria di oggi e domani</h3>
                         <p id="reminders-summary" class="text-[11px] text-slate-600"></p>
                     </div>
                 </div>
-                <button aria-label="Chiudi" type="button" onclick="closeRemindersModal()" class="text-slate-400 hover:text-slate-600 w-8 h-8 rounded-full flex items-center justify-center hover:bg-slate-200/60 transition flex-shrink-0"><i class="fa-solid fa-xmark"></i></button>
+                <button aria-label="Chiudi" type="button" onclick="closeRemindersModal()" class="text-slate-400 hover:text-slate-600 w-8 h-8 rounded-full flex items-center justify-center hover:bg-slate-200/60 transition flex-shrink-0"><i aria-hidden="true" class="fa-solid fa-xmark"></i></button>
             </div>
             <div class="p-4 sm:p-6 overflow-y-auto space-y-2 flex-1">
                 <p class="text-[11px] text-slate-600">Per ogni appuntamento si apre il messaggio "Promemoria appuntamento" già compilato con data, ora e sede: puoi modificarlo prima di inviarlo.</p>
                 <div id="reminders-list" class="space-y-4"></div>
                 <section id="daily-digest-panel" aria-labelledby="daily-digest-title" class="mt-4 p-3 sm:p-4 bg-emerald-50/60 border border-emerald-200 rounded-2xl space-y-2">
-                    <h4 id="daily-digest-title" class="text-xs font-bold text-slate-800 uppercase tracking-wide"><i class="fa-brands fa-whatsapp mr-1"></i>Riepilogo automatico alle 7:00</h4>
+                    <h4 id="daily-digest-title" class="text-xs font-bold text-slate-800 uppercase tracking-wide"><i aria-hidden="true" class="fa-brands fa-whatsapp mr-1"></i>Riepilogo automatico alle 7:00</h4>
                     <label class="flex items-start gap-2 text-xs font-semibold text-slate-800 cursor-pointer">
                         <input type="checkbox" id="daily-digest-enabled" onchange="saveDailyDigestEnabled(this.checked)" class="mt-0.5 w-4 h-4 accent-emerald-700">
                         <span>Ogni mattina invia questo promemoria sul WhatsApp di Silvia</span>
@@ -1222,7 +1186,7 @@
                     </label>
                     <p class="text-[11px] text-slate-600">Ogni ora i calendari vengono sincronizzati anche se l'app è chiusa. Gli appuntamenti cancellati dal calendario originale restano in agenda finché Silvia non sceglie se tenerli o toglierli.</p>
                     <p id="sync-alerts-status" class="text-[11px] text-slate-700" aria-live="polite"></p>
-                    <button type="button" id="daily-digest-test" onclick="sendDailyDigestTest()" class="inline-flex items-center gap-1.5 px-3 py-2 bg-white border border-emerald-300 text-emerald-800 hover:bg-emerald-50 rounded-xl text-xs font-bold"><i class="fa-solid fa-paper-plane"></i>Invia una prova ora</button>
+                    <button type="button" id="daily-digest-test" onclick="sendDailyDigestTest()" class="inline-flex items-center gap-1.5 px-3 py-2 bg-white border border-emerald-300 text-emerald-800 hover:bg-emerald-50 rounded-xl text-xs font-bold"><i aria-hidden="true" class="fa-solid fa-paper-plane"></i>Invia una prova ora</button>
                 </section>
             </div>
         </div>
@@ -1233,13 +1197,13 @@
         <div class="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-2xl overflow-hidden flex flex-col max-h-[90vh] border border-nature-100">
             <div class="px-5 sm:px-6 py-4 sm:py-5 border-b border-nature-100 flex items-center justify-between gap-3 bg-nature-50/60">
                 <div class="flex items-center gap-3 min-w-0">
-                    <div class="w-9 h-9 rounded-2xl bg-nature-100 text-nature-800 flex items-center justify-center flex-shrink-0"><i class="fa-solid fa-inbox text-sm"></i></div>
+                    <div class="w-9 h-9 rounded-2xl bg-nature-100 text-nature-800 flex items-center justify-center flex-shrink-0"><i aria-hidden="true" class="fa-solid fa-inbox text-sm"></i></div>
                     <div class="min-w-0">
                         <h3 class="font-editorial text-base sm:text-lg font-bold text-slate-900 italic">Richieste di appuntamento</h3>
                         <p id="requests-summary" class="text-[11px] text-slate-600"></p>
                     </div>
                 </div>
-                <button aria-label="Chiudi" type="button" onclick="closeRequestsModal()" class="text-slate-400 hover:text-slate-600 w-8 h-8 rounded-full flex items-center justify-center hover:bg-slate-200/60 transition flex-shrink-0"><i class="fa-solid fa-xmark"></i></button>
+                <button aria-label="Chiudi" type="button" onclick="closeRequestsModal()" class="text-slate-400 hover:text-slate-600 w-8 h-8 rounded-full flex items-center justify-center hover:bg-slate-200/60 transition flex-shrink-0"><i aria-hidden="true" class="fa-solid fa-xmark"></i></button>
             </div>
             <div class="p-4 sm:p-6 overflow-y-auto space-y-3 flex-1">
                 <label class="inline-flex items-center gap-2 text-xs font-semibold text-slate-700"><input type="checkbox" id="requests-show-archived" onchange="renderRequestsList()">Mostra anche le richieste gestite e archiviate</label>
@@ -1252,8 +1216,8 @@
     <div id="unassigned-events-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-md hidden z-[75] flex items-center justify-center p-4">
       <div class="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-5xl overflow-hidden flex flex-col max-h-[92vh]">
         <div class="px-5 sm:px-6 py-4 border-b border-rose-100 flex items-center justify-between bg-rose-50/60">
-          <div><h3 class="font-editorial text-lg font-bold text-slate-900 italic"><i class="fa-solid fa-user-slash mr-2 text-rose-700"></i>Appuntamenti senza paziente</h3><p class="text-[10px] text-slate-500">Eventi privi di un’associazione esplicita in anagrafica</p></div>
-          <button aria-label="Chiudi" type="button" onclick="closeUnassignedEventsModal()" class="w-10 h-10 rounded-full bg-white"><i class="fa-solid fa-xmark"></i></button>
+          <div><h3 class="font-editorial text-lg font-bold text-slate-900 italic"><i aria-hidden="true" class="fa-solid fa-user-slash mr-2 text-rose-700"></i>Appuntamenti senza paziente</h3><p class="text-[10px] text-slate-500">Eventi privi di un’associazione esplicita in anagrafica</p></div>
+          <button aria-label="Chiudi" type="button" onclick="closeUnassignedEventsModal()" class="w-10 h-10 rounded-full bg-white"><i aria-hidden="true" class="fa-solid fa-xmark"></i></button>
         </div>
         <div class="p-4 sm:p-6 overflow-y-auto space-y-4 flex-1">
           <div class="flex flex-col sm:flex-row gap-3 sm:items-center justify-between">
@@ -1270,8 +1234,8 @@
     <div id="backup-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-md hidden z-[85] flex items-center justify-center p-4">
       <div class="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-4xl overflow-hidden flex flex-col max-h-[92vh]">
         <div class="px-5 sm:px-6 py-4 border-b border-indigo-100 flex items-center justify-between bg-indigo-50/60">
-          <div><h3 class="font-editorial text-lg font-bold text-slate-900 italic"><i class="fa-solid fa-database mr-2 text-indigo-700"></i>Backup & Ripristino</h3><p class="text-[10px] text-slate-500">Copia completa dei dati del gestionale</p></div>
-          <button aria-label="Chiudi" type="button" onclick="closeBackupModal()" class="w-10 h-10 rounded-full bg-white"><i class="fa-solid fa-xmark"></i></button>
+          <div><h3 class="font-editorial text-lg font-bold text-slate-900 italic"><i aria-hidden="true" class="fa-solid fa-database mr-2 text-indigo-700"></i>Backup & Ripristino</h3><p class="text-[10px] text-slate-500">Copia completa dei dati del gestionale</p></div>
+          <button aria-label="Chiudi" type="button" onclick="closeBackupModal()" class="w-10 h-10 rounded-full bg-white"><i aria-hidden="true" class="fa-solid fa-xmark"></i></button>
         </div>
         <div class="p-4 sm:p-6 overflow-y-auto space-y-5 flex-1">
           <div id="backup-kpis" class="grid grid-cols-2 lg:grid-cols-4 gap-3"></div>
@@ -1279,7 +1243,7 @@
             <section class="p-5 bg-emerald-50 border border-emerald-200 rounded-3xl space-y-3">
               <h4 class="font-editorial text-lg font-bold italic text-emerald-900">Esporta backup</h4>
               <p class="text-xs text-slate-600">Scarica un file JSON completo. Conservalo in una posizione protetta perché contiene dati clinici e personali.</p>
-              <button type="button" onclick="exportCompleteBackup()" class="w-full py-3 bg-emerald-700 hover:bg-emerald-800 text-white font-bold rounded-2xl text-xs"><i class="fa-solid fa-download mr-2"></i>Esporta backup completo</button>
+              <button type="button" onclick="exportCompleteBackup()" class="w-full py-3 bg-emerald-700 hover:bg-emerald-800 text-white font-bold rounded-2xl text-xs"><i aria-hidden="true" class="fa-solid fa-download mr-2"></i>Esporta backup completo</button>
               <p id="backup-last-export" class="text-[10px] text-emerald-800"></p>
             </section>
             <section class="p-5 bg-amber-50 border border-amber-200 rounded-3xl space-y-3">
@@ -1287,7 +1251,7 @@
               <p class="text-xs text-slate-600">Il file viene analizzato prima di qualsiasi scrittura. Il ripristino può aggiungere o sovrascrivere record con lo stesso ID, senza eliminare automaticamente gli altri dati.</p>
               <input type="file" id="backup-file-input" accept="application/json,.json" onchange="analyzeBackupFile(event)" class="w-full px-3 py-3 bg-white border border-amber-200 rounded-2xl text-xs">
               <div id="backup-analysis" class="hidden p-3 bg-white border border-amber-200 rounded-2xl text-xs"></div>
-              <button id="backup-restore-btn" type="button" onclick="requestBackupRestore()" disabled class="w-full py-3 bg-amber-700 text-white font-bold rounded-2xl text-xs opacity-50 cursor-not-allowed"><i class="fa-solid fa-upload mr-2"></i>Ripristina dati analizzati</button>
+              <button id="backup-restore-btn" type="button" onclick="requestBackupRestore()" disabled class="w-full py-3 bg-amber-700 text-white font-bold rounded-2xl text-xs opacity-50 cursor-not-allowed"><i aria-hidden="true" class="fa-solid fa-upload mr-2"></i>Ripristina dati analizzati</button>
             </section>
           </div>
           <div class="p-4 bg-rose-50 border border-rose-200 rounded-2xl text-xs text-rose-900"><strong>Importante:</strong> il backup non è cifrato. Non inviarlo tramite canali non protetti e non conservarlo su dispositivi condivisi.</div>
@@ -1299,7 +1263,7 @@
     <div id="confirm-modal" class="fixed inset-0 bg-slate-950/65 backdrop-blur-md hidden z-[120] flex items-center justify-center p-4">
         <div class="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-sm overflow-hidden flex flex-col border border-nature-100 p-6 text-center space-y-4">
             <div class="w-14 h-14 rounded-full bg-rose-50 text-rose-600 flex items-center justify-center mx-auto text-xl shadow-inner">
-                <i class="fa-solid fa-triangle-exclamation"></i>
+                <i aria-hidden="true" class="fa-solid fa-triangle-exclamation"></i>
             </div>
             <h3 id="confirm-title" class="font-editorial text-lg font-bold text-slate-900 italic">Conferma Eliminazione</h3>
             <p id="confirm-text" class="text-xs text-slate-600 leading-relaxed font-light">Sei sicura di voler procedere con l'eliminazione?</p>
@@ -1312,13 +1276,13 @@
 
     <!-- TOAST NOTIFICATION -->
     <div id="toast" class="fixed bottom-6 right-6 z-50 bg-slate-900 text-white px-5 py-3 rounded-2xl shadow-2xl text-xs font-bold flex items-center gap-3 transition-all duration-300 transform translate-y-20 opacity-0 pointer-events-none">
-        <i class="fa-solid fa-circle-check text-nature-400 text-sm"></i>
+        <i aria-hidden="true" class="fa-solid fa-circle-check text-nature-400 text-sm"></i>
         <span id="toast-message">Operazione completata</span>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged, signInAnonymously, signInWithCustomToken, setPersistence, inMemoryPersistence } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged, signInWithCustomToken, setPersistence, inMemoryPersistence } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, collection, addDoc, getDocs, getDoc, deleteDoc, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         const AUTHORIZED_EMAILS = ['silviachine@gmail.com', 'aldo.colciago@gmail.com'];
@@ -1332,6 +1296,29 @@
         };
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'silvia-chinellato-app';
 
+        /**
+         * Testi dei trattamenti predefiniti: solo informativi, senza promesse di risultato
+         * (pubblicità sanitaria, L. 145/2018 c. 525). `legacy` sono i vecchi testi: se nel database
+         * sono rimasti identici, all'accesso vengono sostituiti (migrateLegacyTreatmentTextsOnce).
+         */
+        const DEFAULT_TREATMENT_TEXTS = {
+            t1: {
+                title: 'Idrocolonterapia',
+                desc: "Lavaggio del colon con acqua tiepida introdotta a bassa pressione. Prima di ogni seduta si verificano le controindicazioni con un breve colloquio. Il trattamento non sostituisce le cure del medico.",
+                legacy: { desc: "Depurazione profonda e delicata del colon, utile per eliminare tossine, ridurre l'infiammazione e ripristinare la vitalità dell'organismo." }
+            },
+            t2: {
+                title: 'Osteopatia',
+                desc: "Valutazione e trattamento manuale dell'apparato muscoloscheletrico, con tecniche adattate alla persona. Si rivolge per esempio a chi ha disturbi posturali, cervicali o lombari; non sostituisce la diagnosi del medico.",
+                legacy: { desc: 'Trattamenti manipolativi mirati a risolvere dolori muscoloscheletrici, cervicalgie, lombalgie e disturbi posturali con tecniche dolci.' }
+            },
+            t3: {
+                title: 'Primo colloquio',
+                desc: "Un incontro per raccogliere la storia clinica, capire le esigenze e valutare insieme se un trattamento è indicato.",
+                legacy: { title: 'Prevenzione & Equilibrio', desc: 'Consulenze e percorsi personalizzati volti al mantenimento dello stato di salute e alla prevenzione dei disturbi cronici.' }
+            }
+        };
+
         let appState = {
             isLoggedIn: false,
             currentUserEmail: null,
@@ -1340,9 +1327,9 @@
                 { id: '2', name: 'Poliambulatorio San Benedetto', service: 'Idrocolonterapia', color: '#4a8fa8', icon: 'fa-clinic-medical', icalUrl: '', showPublic: true, address: 'Corso Italia 45, Monza', phone: '039 7654321', siteUrl: 'https://example.com', bookingUrl: 'https://example.com/book' }
             ],
             treatments: [
-                { id: 't1', title: 'Idrocolonterapia', icon: 'fa-droplet', desc: "Depurazione profonda e delicata del colon, utile per eliminare tossine, ridurre l'infiammazione e ripristinare la vitalità dell'organismo." },
-                { id: 't2', title: 'Osteopatia', icon: 'fa-hands-holding-child', desc: 'Trattamenti manipolativi mirati a risolvere dolori muscoloscheletrici, cervicalgie, lombalgie e disturbi posturali con tecniche dolci.' },
-                { id: 't3', title: 'Prevenzione & Equilibrio', icon: 'fa-heart-pulse', desc: 'Consulenze e percorsi personalizzati volti al mantenimento dello stato di salute e alla prevenzione dei disturbi cronici.' }
+                { id: 't1', title: 'Idrocolonterapia', icon: 'fa-droplet', desc: DEFAULT_TREATMENT_TEXTS.t1.desc },
+                { id: 't2', title: 'Osteopatia', icon: 'fa-hands-holding-child', desc: DEFAULT_TREATMENT_TEXTS.t2.desc },
+                { id: 't3', title: DEFAULT_TREATMENT_TEXTS.t3.title, icon: 'fa-heart-pulse', desc: DEFAULT_TREATMENT_TEXTS.t3.desc }
             ],
             news: [
                 { id: 'n1', title: 'Chiusura Estiva Studio', date: '2026-08-10', content: 'Si avvisano i gentili pazienti che lo studio rimarrà chiuso per ferie estive dal 10 al 25 agosto. Le prenotazioni online restano attive.', link: '' }
@@ -1520,8 +1507,9 @@
                     // Nessuna sessione amministrativa sopravvive alla chiusura o al riavvio della pagina.
                     await setPersistence(auth, inMemoryPersistence);
                     await signOut(auth);
-                    await signInAnonymously(auth);
-                    userId = auth.currentUser?.uid || 'anonymous-user';
+                    // I visitatori non hanno bisogno di alcun account (nemmeno anonimo): le regole Firestore
+                    // permettono a tutti di leggere i contenuti pubblici e di inviare il modulo di contatto.
+                    userId = 'visitatore';
                     authGateReady = true;
                     updateFirebaseStatus(true, 'Connesso');
                     await applyAuthenticatedState(auth.currentUser);
@@ -1588,6 +1576,26 @@
             }
         }
 
+        /**
+         * Sostituisce una sola volta i vecchi testi predefiniti dei trattamenti (con promesse di risultato)
+         * con quelli nuovi, ma solo se nel database sono rimasti identici: i testi scritti da Silvia non si toccano.
+         */
+        async function migrateLegacyTreatmentTextsOnce() {
+            const markerRef = sharedDocument('_meta', 'treatment-texts-v2');
+            if ((await getDoc(markerRef)).exists()) return;
+            const updated = [];
+            for (const treatment of appState.treatments) {
+                const defaults = Object.values(DEFAULT_TREATMENT_TEXTS).find(d => d.legacy.desc === treatment.desc);
+                if (!defaults) continue;
+                const next = { ...treatment, desc: defaults.desc };
+                if (defaults.legacy.title && treatment.title === defaults.legacy.title) next.title = defaults.title;
+                await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'treatments_list', String(treatment.id)), next);
+                Object.assign(treatment, next);
+                updated.push(next.title);
+            }
+            await setDoc(markerRef, { completed: true, updated, completedAt: new Date().toISOString() });
+        }
+
         /** Esegue una migrazione una-tantum senza interrompere il caricamento dei dati se fallisce (verrà ritentata al prossimo accesso). */
         async function runMigrationSafely(label, migration) {
             try { await migration(); } catch (err) { console.error(`Migrazione non completata (${label}):`, err); }
@@ -1599,6 +1607,7 @@
                 await loadPublicDataFromFirestore();
                 if (appState.isLoggedIn) {
                     await runMigrationSafely('dati legacy utente', migrateCurrentUserDataToSharedOnce);
+                    await runMigrationSafely('testi dei trattamenti', migrateLegacyTreatmentTextsOnce);
 
                     const centersSnap = await getDocs(sharedCollection('centers_list'));
                     if (!centersSnap.empty) appState.centers = centersSnap.docs.map(d => d.data());
@@ -1716,16 +1725,16 @@
                         <div class="flex items-center justify-between">
                             <span class="px-4 py-1.5 rounded-full text-xs font-bold bg-nature-50 text-nature-800 italic-title">${escapeHtml(center.service)}</span>
                             <div class="w-8 h-8 rounded-xl flex items-center justify-center text-white text-xs shadow-sm" style="background-color: ${safeColor(center.color)};">
-                                <i class="fa-solid ${safeIcon(center.icon, 'fa-hospital')}"></i>
+                                <i aria-hidden="true" class="fa-solid ${safeIcon(center.icon, 'fa-hospital')}"></i>
                             </div>
                         </div>
                         <h4 class="font-editorial text-xl sm:text-2xl font-bold text-slate-900 italic">${escapeHtml(center.name)}</h4>
-                        ${center.address ? `<p class="text-xs sm:text-sm text-slate-500 font-light flex items-center gap-2"><i class="fa-solid fa-location-dot text-nature-600"></i> ${escapeHtml(center.address)}</p>` : ''}
-                        ${center.phone ? `<p class="text-xs sm:text-sm text-slate-500 font-light flex items-center gap-2"><i class="fa-solid fa-phone text-nature-600"></i> ${escapeHtml(center.phone)}</p>` : ''}
+                        ${center.address ? `<p class="text-xs sm:text-sm text-slate-500 font-light flex items-center gap-2"><i aria-hidden="true" class="fa-solid fa-location-dot text-nature-600"></i> ${escapeHtml(center.address)}</p>` : ''}
+                        ${center.phone ? `<p class="text-xs sm:text-sm text-slate-500 font-light flex items-center gap-2"><i aria-hidden="true" class="fa-solid fa-phone text-nature-600"></i> ${escapeHtml(center.phone)}</p>` : ''}
                     </div>
                     <div class="flex flex-wrap items-center gap-3 pt-2">
-                        ${siteUrl ? `<a href="${siteUrl}" target="_blank" rel="noopener noreferrer" class="px-4 py-2 bg-water-50 hover:bg-water-100 text-water-800 font-semibold rounded-xl text-xs transition flex items-center gap-1.5 shadow-2xs"><i class="fa-solid fa-globe"></i> <span>Sito Web</span></a>` : ''}
-                        ${bookingUrl ? `<a href="${bookingUrl}" target="_blank" rel="noopener noreferrer" class="px-4 py-2 bg-nature-600 hover:bg-nature-700 text-white font-semibold rounded-xl text-xs transition flex items-center gap-1.5 shadow-md"><i class="fa-solid fa-calendar-check"></i> <span>Prenota Online</span></a>` : ''}
+                        ${siteUrl ? `<a href="${siteUrl}" target="_blank" rel="noopener noreferrer" class="px-4 py-2 bg-water-50 hover:bg-water-100 text-water-800 font-semibold rounded-xl text-xs transition flex items-center gap-1.5 shadow-2xs"><i aria-hidden="true" class="fa-solid fa-globe"></i> <span>Sito Web</span></a>` : ''}
+                        ${bookingUrl ? `<a href="${bookingUrl}" target="_blank" rel="noopener noreferrer" class="px-4 py-2 bg-nature-600 hover:bg-nature-700 text-white font-semibold rounded-xl text-xs transition flex items-center gap-1.5 shadow-md"><i aria-hidden="true" class="fa-solid fa-calendar-check"></i> <span>Prenota Online</span></a>` : ''}
                     </div>
                 </div>
             `;
@@ -1737,7 +1746,7 @@
             if (!grid) return;
             grid.innerHTML = appState.treatments.map(t => `
                 <div class="bg-white/90 backdrop-blur-md p-6 sm:p-8 rounded-[2.5rem] border border-white/80 shadow-lg space-y-4 flex flex-col items-center text-center">
-                    <div class="w-16 h-16 rounded-2xl bg-nature-50 text-nature-600 flex items-center justify-center font-bold text-2xl shadow-inner mx-auto"><i class="fa-solid ${safeIcon(t.icon, 'fa-spa')}"></i></div>
+                    <div class="w-16 h-16 rounded-2xl bg-nature-50 text-nature-600 flex items-center justify-center font-bold text-2xl shadow-inner mx-auto"><i aria-hidden="true" class="fa-solid ${safeIcon(t.icon, 'fa-spa')}"></i></div>
                     <h4 class="font-editorial text-xl font-bold text-slate-900 italic">${escapeHtml(t.title)}</h4>
                     <p class="text-xs sm:text-sm text-slate-500 font-light">${escapeHtml(t.desc)}</p>
                 </div>
@@ -1766,7 +1775,7 @@
                         <div class="space-y-2">
                             <div class="flex items-center justify-between">
                                 <span class="text-[10px] font-bold text-water-700 uppercase tracking-widest italic-title">Aggiornamento Studio</span>
-                                ${formattedDate ? `<span class="text-xs font-semibold text-slate-600 bg-water-50 px-2.5 py-0.5 rounded-full"><i class="fa-regular fa-calendar-days text-water-600 mr-1"></i> ${escapeHtml(formattedDate)}</span>` : ''}
+                                ${formattedDate ? `<span class="text-xs font-semibold text-slate-600 bg-water-50 px-2.5 py-0.5 rounded-full"><i aria-hidden="true" class="fa-regular fa-calendar-days text-water-600 mr-1"></i> ${escapeHtml(formattedDate)}</span>` : ''}
                             </div>
                             <h4 class="font-editorial text-xl font-bold text-slate-900 italic">${escapeHtml(item.title)}</h4>
                             <div class="text-xs sm:text-sm text-slate-600 font-light leading-relaxed" id="news-content-${idx}">
@@ -1775,9 +1784,9 @@
                         </div>
                         <div class="flex items-center justify-between pt-2 border-t border-slate-100">
                             <button onclick="toggleNewsExpand(${idx})" id="news-btn-${idx}" class="text-xs font-bold text-water-700 hover:text-water-900 transition flex items-center gap-1 italic-title">
-                                <span>Leggi tutto</span> <i class="fa-solid fa-chevron-down text-[10px]"></i>
+                                <span>Leggi tutto</span> <i aria-hidden="true" class="fa-solid fa-chevron-down text-[10px]"></i>
                             </button>
-                            ${safeUrl(item.link) ? `<a href="${safeUrl(item.link)}" target="_blank" rel="noopener noreferrer" class="px-3 py-1.5 bg-water-50 hover:bg-water-100 text-water-800 rounded-xl text-xs font-semibold transition"><i class="fa-solid fa-arrow-up-right-from-square"></i> Approfondisci</a>` : ''}
+                            ${safeUrl(item.link) ? `<a href="${safeUrl(item.link)}" target="_blank" rel="noopener noreferrer" class="px-3 py-1.5 bg-water-50 hover:bg-water-100 text-water-800 rounded-xl text-xs font-semibold transition"><i aria-hidden="true" class="fa-solid fa-arrow-up-right-from-square"></i> Approfondisci</a>` : ''}
                         </div>
                     </div>
                 `;
@@ -1793,11 +1802,11 @@
             if (container.classList.contains('expanded')) {
                 container.classList.remove('expanded');
                 container.innerHTML = `<p class="line-clamp-2">${escapeHtml(item.content)}</p>`;
-                btn.innerHTML = `<span>Leggi tutto</span> <i class="fa-solid fa-chevron-down text-[10px]"></i>`;
+                btn.innerHTML = `<span>Leggi tutto</span> <i aria-hidden="true" class="fa-solid fa-chevron-down text-[10px]"></i>`;
             } else {
                 container.classList.add('expanded');
                 container.innerHTML = `<p>${escapeHtml(item.content)}</p>`;
-                btn.innerHTML = `<span>Riduci</span> <i class="fa-solid fa-chevron-up text-[10px]"></i>`;
+                btn.innerHTML = `<span>Riduci</span> <i aria-hidden="true" class="fa-solid fa-chevron-up text-[10px]"></i>`;
             }
         }
 
@@ -1823,7 +1832,7 @@
             legend.innerHTML = appState.centers.filter(center => center.isNonClinicalCalendar !== true).map(center => `
                 <div class="inline-flex items-center gap-1.5 px-2.5 py-0.5 bg-white/90 rounded-full border border-nature-200 shadow-2xs flex-shrink-0">
                     <span class="w-2 h-2 rounded-full flex-shrink-0" style="background-color: ${safeColor(center.color)};"></span>
-                    <i class="fa-solid ${safeIcon(center.icon, 'fa-hospital')} text-[10px]" style="color: ${safeColor(center.color)};"></i>
+                    <i aria-hidden="true" class="fa-solid ${safeIcon(center.icon, 'fa-hospital')} text-[10px]" style="color: ${safeColor(center.color)};"></i>
                     <span class="font-bold text-slate-700 text-[10px] truncate max-w-[110px] italic-title">${escapeHtml(center.name)}</span>
                 </div>
             `).join('');
@@ -2409,7 +2418,7 @@
             list.innerHTML=sessions.length?sessions.map(session=>{
                 const d=session.start?new Date(session.start):null;
                 const when=d&&!Number.isNaN(d.getTime())?d.toLocaleString('it-IT',{dateStyle:'medium',timeStyle:'short'}):'Data non disponibile';
-                return `<article class="p-3 bg-white border border-water-200 rounded-xl text-xs"><div class="flex flex-col sm:flex-row sm:items-start justify-between gap-1"><strong class="font-editorial italic text-sm text-slate-900">${escapePatientText(session.title||'Seduta clinica')}</strong><span class="text-[10px] font-semibold text-water-700">${escapePatientText(when)}</span></div><p class="text-[10px] text-slate-500 mt-1"><i class="fa-solid fa-location-dot mr-1"></i>${escapePatientText(session.centerName||'Studio Privato')}</p>${session.clinicalNote?`<div class="mt-2 p-2 bg-water-50 rounded-lg whitespace-pre-wrap"><b>Nota seduta:</b> ${escapePatientText(session.clinicalNote)}</div>`:''}${session.clinicalOutcome?`<p class="mt-2 text-slate-700"><b>Esito:</b> ${escapePatientText(session.clinicalOutcome)}</p>`:''}</article>`;
+                return `<article class="p-3 bg-white border border-water-200 rounded-xl text-xs"><div class="flex flex-col sm:flex-row sm:items-start justify-between gap-1"><strong class="font-editorial italic text-sm text-slate-900">${escapePatientText(session.title||'Seduta clinica')}</strong><span class="text-[10px] font-semibold text-water-700">${escapePatientText(when)}</span></div><p class="text-[10px] text-slate-500 mt-1"><i aria-hidden="true" class="fa-solid fa-location-dot mr-1"></i>${escapePatientText(session.centerName||'Studio Privato')}</p>${session.clinicalNote?`<div class="mt-2 p-2 bg-water-50 rounded-lg whitespace-pre-wrap"><b>Nota seduta:</b> ${escapePatientText(session.clinicalNote)}</div>`:''}${session.clinicalOutcome?`<p class="mt-2 text-slate-700"><b>Esito:</b> ${escapePatientText(session.clinicalOutcome)}</p>`:''}</article>`;
             }).join(''):'<p class="p-4 text-center text-slate-400 italic bg-white rounded-xl border">Nessuna seduta clinica archiviata.</p>';
         }
 
@@ -2896,12 +2905,12 @@
                                     <strong class="font-editorial text-slate-900 text-sm italic">${escapePatientText(ev.title)}</strong><span class="text-[10px] text-purple-700 font-bold">Associato a: ${escapePatientText(pat.name)}</span>
                                     <span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${isPast ? 'bg-slate-200 text-slate-700' : 'bg-emerald-100 text-emerald-800'}">${isPast ? 'Passato' : 'Futuro'}</span>
                                 </div>
-                                <p class="text-slate-500"><i class="fa-regular fa-calendar text-nature-600 mr-1"></i> ${dateStr} alle ${timeStr} • <span class="font-medium text-slate-700">${escapeHtml(ev.extendedProps?.centerName || 'Studio Privato')}</span></p>
+                                <p class="text-slate-500"><i aria-hidden="true" class="fa-regular fa-calendar text-nature-600 mr-1"></i> ${dateStr} alle ${timeStr} • <span class="font-medium text-slate-700">${escapeHtml(ev.extendedProps?.centerName || 'Studio Privato')}</span></p>
                                 ${clinicalNote ? `<p class="mt-2 p-2 bg-water-50 rounded-xl text-slate-700"><strong>Nota seduta:</strong> ${escapePatientText(clinicalNote)}</p>` : ''}
                                 ${clinicalOutcome ? `<p class="text-slate-600"><strong>Esito:</strong> ${escapePatientText(clinicalOutcome)}</p>` : ''}
                                 ${Number(ev.extendedProps?.fee || 0) > 0 ? `<p class="text-emerald-700 font-bold">€ ${Number(ev.extendedProps.fee).toFixed(2)} • ${ev.extendedProps?.paymentStatus === 'unpaid' ? 'Da incassare' : 'Pagato'}</p>` : ''}
                             </div>
-                            <span class="flex-shrink-0 px-3 py-2 bg-amber-100 text-amber-900 rounded-xl font-bold"><i class="fa-solid fa-pen-to-square mr-1"></i>Apri</span>
+                            <span class="flex-shrink-0 px-3 py-2 bg-amber-100 text-amber-900 rounded-xl font-bold"><i aria-hidden="true" class="fa-solid fa-pen-to-square mr-1"></i>Apri</span>
                         </button>
                     `;
                 }).join('');
@@ -3029,15 +3038,15 @@
                 return `<div class="bg-white border border-slate-200 rounded-2xl shadow-2xs overflow-hidden">
                     <div class="p-3 sm:p-4 flex items-center gap-3">
                         <button type="button" onclick="togglePatientCard('${p.id}')" class="flex-1 min-w-0 text-left flex items-center gap-3" aria-expanded="${expanded}">
-                            <span class="w-9 h-9 rounded-full bg-amber-50 text-amber-800 flex items-center justify-center flex-shrink-0"><i class="fa-solid fa-user"></i></span>
+                            <span class="w-9 h-9 rounded-full bg-amber-50 text-amber-800 flex items-center justify-center flex-shrink-0"><i aria-hidden="true" class="fa-solid fa-user"></i></span>
                             <span class="min-w-0 flex-1">
-                                <span class="flex items-center gap-2 flex-wrap"><strong class="font-editorial text-slate-900 text-base italic truncate">${escapePatientText(p.name)}</strong><span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${badge.classes}"><i class="fa-solid ${badge.icon} mr-1"></i>${badge.label}</span></span>
-                                <span class="mt-1 flex flex-wrap gap-x-3 gap-y-1 text-[10px] text-slate-500">${p.phone?`<span><i class="fa-solid fa-phone text-nature-600 mr-1"></i>${escapePatientText(p.phone)}</span>`:''}${p.email?`<span><i class="fa-solid fa-envelope text-water-600 mr-1"></i>${escapePatientText(p.email)}</span>`:''}</span>
-                                <span class="mt-1 block text-[10px] text-slate-500"><i class="fa-regular fa-clock mr-1"></i>${escapePatientText(badge.detail)}</span>
+                                <span class="flex items-center gap-2 flex-wrap"><strong class="font-editorial text-slate-900 text-base italic truncate">${escapePatientText(p.name)}</strong><span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${badge.classes}"><i aria-hidden="true" class="fa-solid ${badge.icon} mr-1"></i>${badge.label}</span></span>
+                                <span class="mt-1 flex flex-wrap gap-x-3 gap-y-1 text-[10px] text-slate-500">${p.phone?`<span><i aria-hidden="true" class="fa-solid fa-phone text-nature-600 mr-1"></i>${escapePatientText(p.phone)}</span>`:''}${p.email?`<span><i aria-hidden="true" class="fa-solid fa-envelope text-water-600 mr-1"></i>${escapePatientText(p.email)}</span>`:''}</span>
+                                <span class="mt-1 block text-[10px] text-slate-500"><i aria-hidden="true" class="fa-regular fa-clock mr-1"></i>${escapePatientText(badge.detail)}</span>
                             </span>
-                            <i class="fa-solid fa-chevron-${expanded?'up':'down'} text-slate-400"></i>
+                            <i aria-hidden="true" class="fa-solid fa-chevron-${expanded?'up':'down'} text-slate-400"></i>
                         </button>
-                        ${normalizeWhatsAppNumber(p.phone) ? `<button type="button" onclick="openPatientMessageModal('${escapeHtml(p.id)}')" title="Messaggio WhatsApp" aria-label="Messaggio WhatsApp a ${escapeHtml(p.name)}" class="h-10 px-3 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white flex items-center justify-center gap-1.5 flex-shrink-0 shadow-sm"><i class="fa-brands fa-whatsapp text-base"></i><span class="hidden sm:inline text-xs font-bold">WhatsApp</span></button>` : ''}
+                        ${normalizeWhatsAppNumber(p.phone) ? `<button type="button" onclick="openPatientMessageModal('${escapeHtml(p.id)}')" title="Messaggio WhatsApp" aria-label="Messaggio WhatsApp a ${escapeHtml(p.name)}" class="h-10 px-3 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white flex items-center justify-center gap-1.5 flex-shrink-0 shadow-sm"><i aria-hidden="true" class="fa-brands fa-whatsapp text-base"></i><span class="hidden sm:inline text-xs font-bold">WhatsApp</span></button>` : ''}
                         <div class="hidden sm:flex items-center gap-1.5 flex-shrink-0">
                             <button onclick="openPatientHistoryModal('${p.id}')" class="px-3 py-1.5 bg-amber-50 text-amber-800 font-semibold rounded-xl">Storico</button>
                             <button type="button" onclick="editPatientById('${p.id}')" class="px-3 py-1.5 bg-nature-50 text-nature-700 font-semibold rounded-xl">Modifica</button>
@@ -3050,7 +3059,7 @@
                             ${details || '<p class="sm:col-span-2 text-xs text-slate-400 italic">Nessun dettaglio clinico aggiuntivo.</p>'}
                         </div>
                         <div class="flex flex-wrap justify-end gap-2">
-                            <button onclick="openPatientHistoryModal('${p.id}')" class="px-3 py-2 bg-amber-100 text-amber-900 font-bold rounded-xl text-xs"><i class="fa-solid fa-calendar-days mr-1"></i>Storico</button>
+                            <button onclick="openPatientHistoryModal('${p.id}')" class="px-3 py-2 bg-amber-100 text-amber-900 font-bold rounded-xl text-xs"><i aria-hidden="true" class="fa-solid fa-calendar-days mr-1"></i>Storico</button>
                             <button type="button" onclick="editPatientById('${p.id}')" class="px-3 py-2 bg-nature-100 text-nature-800 font-bold rounded-xl text-xs">Modifica</button>
                             <button onclick="confirmDeletePatient('${p.id}')" class="px-3 py-2 bg-rose-50 text-rose-600 font-bold rounded-xl text-xs">Elimina</button>
                         </div>
@@ -3109,7 +3118,7 @@
             list.innerHTML = appState.treatments.map(t => `
                 <div class="p-3 bg-white border border-slate-200 rounded-2xl flex items-center justify-between text-xs">
                     <div class="flex items-center gap-3">
-                        <div class="w-8 h-8 rounded-xl bg-nature-50 text-nature-700 flex items-center justify-center font-bold"><i class="fa-solid ${safeIcon(t.icon, 'fa-spa')}"></i></div>
+                        <div class="w-8 h-8 rounded-xl bg-nature-50 text-nature-700 flex items-center justify-center font-bold"><i aria-hidden="true" class="fa-solid ${safeIcon(t.icon, 'fa-spa')}"></i></div>
                         <div>
                             <strong class="text-slate-900 font-editorial italic text-sm">${escapeHtml(t.title)}</strong>
                             <p class="text-slate-500 text-[11px] line-clamp-1">${escapeHtml(t.desc)}</p>
@@ -3236,7 +3245,7 @@
                 <div class="p-3 bg-white border border-slate-200 rounded-2xl flex items-center justify-between text-xs">
                     <div class="flex items-center gap-3">
                         <div class="w-8 h-8 rounded-xl flex items-center justify-center text-white text-xs font-bold shadow-xs" style="background-color: ${safeColor(c.color)}">
-                            <i class="fa-solid ${safeIcon(c.icon, 'fa-hospital')}"></i>
+                            <i aria-hidden="true" class="fa-solid ${safeIcon(c.icon, 'fa-hospital')}"></i>
                         </div>
                         <div>
                             <strong class="text-slate-900 font-editorial italic text-sm">${escapeHtml(c.name)}</strong>
@@ -3545,7 +3554,7 @@
                 progressHtml += `
                     <div id="sync-step-${center.id}" class="p-3 bg-slate-50 border border-slate-200 rounded-2xl flex items-center justify-between text-xs">
                         <div class="flex items-center gap-2.5">
-                            <i class="fa-solid fa-spinner animate-spin text-water-600" id="sync-icon-${center.id}"></i>
+                            <i aria-hidden="true" class="fa-solid fa-spinner animate-spin text-water-600" id="sync-icon-${center.id}"></i>
                             <div>
                                 <strong class="text-slate-900 font-editorial italic text-sm">${escapeHtml(center.name)}</strong>
                                 <p class="text-slate-500 text-[10px]" id="sync-status-${center.id}">In attesa...</p>
@@ -3585,7 +3594,7 @@
                     if (statusEl) statusEl.textContent = 'Errore connessione iCal';
                     if (badgeEl) {
                         badgeEl.className = 'px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-rose-100 text-rose-800';
-                        badgeEl.innerHTML = '<i class="fa-solid fa-circle text-[6px] mr-1 text-rose-600"></i> Errore';
+                        badgeEl.innerHTML = '<i aria-hidden="true" class="fa-solid fa-circle text-[6px] mr-1 text-rose-600"></i> Errore';
                     }
                     if (iconEl) iconEl.className = 'fa-solid fa-triangle-exclamation text-rose-600';
                 }
@@ -3608,7 +3617,7 @@
                 if (statusEl) statusEl.textContent = `Completato (${item.added} aggiunti, ${item.modified} mod.)`;
                 if (badgeEl) {
                     badgeEl.className = 'px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800';
-                    badgeEl.innerHTML = '<i class="fa-solid fa-circle text-[6px] mr-1 text-emerald-600"></i> Sincronizzato';
+                    badgeEl.innerHTML = '<i aria-hidden="true" class="fa-solid fa-circle text-[6px] mr-1 text-emerald-600"></i> Sincronizzato';
                 }
                 if (iconEl) iconEl.className = 'fa-solid fa-circle-check text-emerald-600';
             }
@@ -3724,7 +3733,7 @@
                     ${buildChangeSection('Modificati',m,'bg-amber-50')}
                     ${buildChangeSection('Di nuovo nel calendario originale',r,'bg-sky-50')}
                     ${buildDeletedSection(d)}
-                    ${centerFailed?'<p class="text-xs text-rose-700 mt-3"><i class="fa-solid fa-triangle-exclamation mr-1"></i>Calendario non sincronizzato: impossibile scaricarlo. Riprova più tardi o verifica il link iCal.</p>':(!total?'<p class="text-xs text-slate-400 mt-3"><i class="fa-solid fa-circle-check text-emerald-600 mr-1"></i>Nessun appuntamento aggiunto, modificato o rimosso.</p>':'')}
+                    ${centerFailed?'<p class="text-xs text-rose-700 mt-3"><i aria-hidden="true" class="fa-solid fa-triangle-exclamation mr-1"></i>Calendario non sincronizzato: impossibile scaricarlo. Riprova più tardi o verifica il link iCal.</p>':(!total?'<p class="text-xs text-slate-400 mt-3"><i aria-hidden="true" class="fa-solid fa-circle-check text-emerald-600 mr-1"></i>Nessun appuntamento aggiunto, modificato o rimosso.</p>':'')}
                 </section>`;
             }).join('');
             return `<div class="space-y-4">${failureWarning}${warning}${summary}<div class="space-y-3">${centers}</div></div>`;
@@ -3996,7 +4005,7 @@
         function renderTaxSchedule(year, profile) {
             const box = document.getElementById('tax-schedule');
             if (!box) return;
-            document.getElementById('tax-schedule-title').innerHTML = `<i class="fa-solid fa-calendar-check mr-1"></i>Scadenze fiscali ${year}`;
+            document.getElementById('tax-schedule-title').innerHTML = `<i aria-hidden="true" class="fa-solid fa-calendar-check mr-1"></i>Scadenze fiscali ${year}`;
             const schedule = buildTaxSchedule(year, profile, revenueByYearForSchedule(year, profile));
             if (schedule.missingRevenue) {
                 box.innerHTML = `<p class="p-3 bg-white border border-dashed border-sky-200 rounded-2xl text-xs text-slate-600">Nessun fatturato registrato per il ${schedule.missingRevenue}: inseriscilo nel profilo fiscale ("Fatturato anno precedente") o come entrata manuale per stimare le scadenze.</p>`;
@@ -4095,7 +4104,7 @@
             const reserveRate=revenue>0?nextYearCashNeed/revenue*100:0;
             const priorDelta=revenue-p.previousYearRevenue;
             const nextYear=String(Number(year)+1);
-            target.innerHTML=[['Fatturato '+year,financeEuro(revenue),'fa-euro-sign'],['Contributi '+year,financeEuro(contributions),'fa-shield-heart'],['Imposta '+year,financeEuro(substituteTax),'fa-landmark'],['Acconto imposta '+nextYear,financeEuro(indicativeAdvance),'fa-forward'],['Totale da accantonare',financeEuro(nextYearCashNeed),'fa-piggy-bank']].map(k=>`<div class="p-3 bg-white border border-violet-200 rounded-2xl"><i class="fa-solid ${k[2]} text-violet-700"></i><p class="text-[10px] uppercase text-slate-500 mt-1">${k[0]}</p><strong class="text-base">${k[1]}</strong></div>`).join('');
+            target.innerHTML=[['Fatturato '+year,financeEuro(revenue),'fa-euro-sign'],['Contributi '+year,financeEuro(contributions),'fa-shield-heart'],['Imposta '+year,financeEuro(substituteTax),'fa-landmark'],['Acconto imposta '+nextYear,financeEuro(indicativeAdvance),'fa-forward'],['Totale da accantonare',financeEuro(nextYearCashNeed),'fa-piggy-bank']].map(k=>`<div class="p-3 bg-white border border-violet-200 rounded-2xl"><i aria-hidden="true" class="fa-solid ${k[2]} text-violet-700"></i><p class="text-[10px] uppercase text-slate-500 mt-1">${k[0]}</p><strong class="text-base">${k[1]}</strong></div>`).join('');
             const tone=reserveRate<=25?'emerald':reserveRate<=35?'amber':'rose';
             document.getElementById('tax-simulator-detail').innerHTML=`<div class="grid grid-cols-1 lg:grid-cols-2 gap-3"><section class="p-4 bg-violet-50 border border-violet-200 rounded-2xl"><p class="text-[10px] uppercase font-bold text-violet-700">Debito stimato ${year}</p><div class="mt-2 space-y-2"><div class="flex justify-between gap-3"><span>Contributi previdenziali ${year}</span><b>${financeEuro(contributions)}</b></div><div class="flex justify-between gap-3"><span>Imposta sostitutiva ${year}</span><b>${financeEuro(substituteTax)}</b></div><div class="flex justify-between gap-3 pt-2 border-t border-violet-200 text-violet-950"><strong>Totale competenza ${year}</strong><strong>${financeEuro(currentLiability)}</strong></div></div></section><section class="p-4 bg-sky-50 border border-sky-200 rounded-2xl"><p class="text-[10px] uppercase font-bold text-sky-700">Anticipo sull'anno ${nextYear}</p><div class="mt-2 space-y-2"><div class="flex justify-between gap-3"><span>Acconto imposta ${nextYear}</span><b>${financeEuro(indicativeAdvance)}</b></div><p class="text-[10px] text-sky-800">Calcolato applicando il ${p.advanceRate.toFixed(0)}% all'imposta stimata ${year}.</p></div></section></div><div class="mt-3 p-4 bg-white border border-violet-200 rounded-2xl"><div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2"><div><strong class="text-violet-950">Totale prudenziale da accantonare</strong><p class="text-[10px] text-slate-500">Debito stimato ${year} più acconto imposta ${nextYear}.</p></div><div class="text-right"><strong class="block text-lg text-violet-950">${financeEuro(nextYearCashNeed)}</strong><span class="inline-block mt-1 px-3 py-1 rounded-full bg-${tone}-100 text-${tone}-800 font-bold">${reserveRate.toFixed(1).replace('.',',')}% del fatturato</span></div></div><div class="grid grid-cols-1 sm:grid-cols-3 gap-2 pt-3 mt-3 border-t border-violet-100"><p><b>Reddito forfettario:</b> ${financeEuro(grossTaxable)}</p><p><b>Base imposta dopo contributi:</b> ${financeEuro(substituteBase)}</p><p><b>Confronto anno precedente:</b> ${priorDelta>=0?'+':''}${financeEuro(priorDelta)}</p></div></div>`;
             renderTaxSchedule(Number(year), p);
@@ -4248,14 +4257,14 @@
             document.getElementById('business-kpis').innerHTML = [
               ['Appuntamenti',monthSummary.count,'fa-calendar-check','text-water-700'],['Fatturato totale',financeEuro(monthSummary.total+monthManualTotal),'fa-euro-sign','text-emerald-700'],
               ['Incassato / fatturato',financeEuro(monthSummary.paid+monthManualTotal),'fa-circle-check','text-nature-700'],['Da incassare',financeEuro(monthSummary.unpaid),'fa-clock','text-orange-700']
-            ].map(k=>`<div class="p-4 bg-white border border-slate-200 rounded-2xl shadow-sm"><i class="fa-solid ${k[2]} ${k[3]}"></i><p class="text-[10px] uppercase text-slate-500 mt-2">${k[0]}</p><strong class="text-lg text-slate-900">${k[1]}</strong></div>`).join('');
+            ].map(k=>`<div class="p-4 bg-white border border-slate-200 rounded-2xl shadow-sm"><i aria-hidden="true" class="fa-solid ${k[2]} ${k[3]}"></i><p class="text-[10px] uppercase text-slate-500 mt-2">${k[0]}</p><strong class="text-lg text-slate-900">${k[1]}</strong></div>`).join('');
             const groups={};
             monthEvents.forEach(ev=>{const name=ev.extendedProps?.centerName||'Studio Privato';groups[name]||={count:0,total:0,paid:0,unpaid:0};groups[name].count++;const f=Number(ev.extendedProps?.fee||0);groups[name].total+=f;if(ev.extendedProps?.paymentStatus==='unpaid')groups[name].unpaid+=f;else groups[name].paid+=f;});
             const rows=Object.entries(groups).sort((a,b)=>b[1].total-a[1].total).map(([name,g])=>`<tr class="border-t border-slate-200"><td class="p-3 font-bold">${escapePatientText(name)}</td><td class="p-3 text-center">${g.count}</td><td class="p-3 text-right">${financeEuro(g.paid)}</td><td class="p-3 text-right text-orange-700">${financeEuro(g.unpaid)}</td><td class="p-3 text-right font-bold">${financeEuro(g.total)}</td></tr>`).join('');
             document.getElementById('business-by-center').innerHTML=`<table class="w-full text-xs min-w-[560px]"><thead><tr class="text-slate-500"><th class="p-3 text-left">Sede</th><th>Visite</th><th class="text-right">Incassato</th><th class="text-right">Da incassare</th><th class="p-3 text-right">Totale</th></tr></thead><tbody>${rows||'<tr><td colspan="5" class="p-8 text-center text-slate-400">Nessun compenso registrato nel mese.</td></tr>'}</tbody></table>`;
             document.getElementById('business-year-kpis').innerHTML=[
               ['Anno',year,'fa-calendar'],['Appuntamenti',yearSummary.count,'fa-calendar-check'],['Da appuntamenti',financeEuro(yearSummary.total),'fa-stethoscope'],['Entrate manuali',financeEuro(yearManualTotal),'fa-file-invoice-dollar'],['Fatturato totale',financeEuro(yearSummary.total+yearManualTotal),'fa-euro-sign']
-            ].map(k=>`<div class="p-3 bg-white border border-indigo-100 rounded-2xl"><i class="fa-solid ${k[2]} text-indigo-700"></i><p class="text-[10px] uppercase text-slate-500 mt-1">${k[0]}</p><strong class="text-base">${k[1]}</strong></div>`).join('');
+            ].map(k=>`<div class="p-3 bg-white border border-indigo-100 rounded-2xl"><i aria-hidden="true" class="fa-solid ${k[2]} text-indigo-700"></i><p class="text-[10px] uppercase text-slate-500 mt-1">${k[0]}</p><strong class="text-base">${k[1]}</strong></div>`).join('');
             const yearGroups={};
             yearEvents.forEach(ev=>{
                 const name=ev.extendedProps?.centerName||'Studio Privato';
@@ -4277,7 +4286,7 @@
             if (fillButton) { fillButton.classList.toggle('hidden', !fillable); fillButton.textContent = `Compila ${fillable} con le tariffe`; }
             const missingFee=yearEvents.filter(ev=>Number(ev.extendedProps?.fee || 0)<=0).sort((a,b)=>new Date(b.start)-new Date(a.start));
             document.getElementById('business-missing-fee-count').textContent=`${missingFee.length} da completare`;
-            document.getElementById('business-missing-fee-list').innerHTML=missingFee.length?missingFee.map(ev=>{const d=new Date(ev.start);const when=Number.isNaN(d.getTime())?String(ev.start||''):d.toLocaleString('it-IT',{dateStyle:'medium',timeStyle:'short'});const patient=appState.patients.find(p=>String(p.id)===String(ev.extendedProps?.patientId||''));return `<button type="button" onclick="openFinanceEvent('${encodeURIComponent(ev.id)}')" class="w-full p-3 bg-white hover:bg-amber-100 border border-amber-200 rounded-2xl text-left flex flex-col sm:flex-row sm:items-center justify-between gap-2 transition"><div><strong class="font-editorial italic text-sm text-slate-900">${escapePatientText(ev.title||'Appuntamento')}</strong><p class="text-[10px] text-slate-500 mt-1">${escapePatientText(when)} • ${escapePatientText(ev.extendedProps?.centerName||'Studio Privato')}${patient?' • '+escapePatientText(patient.name):''}</p></div><span class="px-3 py-2 bg-amber-100 text-amber-900 rounded-xl text-xs font-bold"><i class="fa-solid fa-pen-to-square mr-1"></i>Imposta tariffa</span></button>`;}).join(''):'<p class="p-5 bg-white border border-amber-100 rounded-2xl text-center text-xs text-slate-500"><i class="fa-solid fa-circle-check text-emerald-600 mr-1"></i>Nessun appuntamento clinico senza tariffa nell’anno selezionato.</p>';
+            document.getElementById('business-missing-fee-list').innerHTML=missingFee.length?missingFee.map(ev=>{const d=new Date(ev.start);const when=Number.isNaN(d.getTime())?String(ev.start||''):d.toLocaleString('it-IT',{dateStyle:'medium',timeStyle:'short'});const patient=appState.patients.find(p=>String(p.id)===String(ev.extendedProps?.patientId||''));return `<button type="button" onclick="openFinanceEvent('${encodeURIComponent(ev.id)}')" class="w-full p-3 bg-white hover:bg-amber-100 border border-amber-200 rounded-2xl text-left flex flex-col sm:flex-row sm:items-center justify-between gap-2 transition"><div><strong class="font-editorial italic text-sm text-slate-900">${escapePatientText(ev.title||'Appuntamento')}</strong><p class="text-[10px] text-slate-500 mt-1">${escapePatientText(when)} • ${escapePatientText(ev.extendedProps?.centerName||'Studio Privato')}${patient?' • '+escapePatientText(patient.name):''}</p></div><span class="px-3 py-2 bg-amber-100 text-amber-900 rounded-xl text-xs font-bold"><i aria-hidden="true" class="fa-solid fa-pen-to-square mr-1"></i>Imposta tariffa</span></button>`;}).join(''):'<p class="p-5 bg-white border border-amber-100 rounded-2xl text-center text-xs text-slate-500"><i aria-hidden="true" class="fa-solid fa-circle-check text-emerald-600 mr-1"></i>Nessun appuntamento clinico senza tariffa nell’anno selezionato.</p>';
         }
         function getPatientRecallStatus(patient) {
             const now = new Date();
@@ -4477,7 +4486,7 @@
                     else { note = 'Nessun appuntamento futuro registrato'; disabled = true; }
                 }
                 if (type.id === 'review' && !hasReviewLink) { note = 'Imposta prima il link recensioni (in fondo)'; disabled = true; }
-                return `<button type="button" onclick="selectMessageType('${type.id}')" ${disabled ? 'disabled' : ''} class="w-full p-3 bg-white hover:bg-emerald-50 border border-slate-200 rounded-2xl text-left flex items-center gap-3 transition disabled:opacity-50 disabled:cursor-not-allowed"><span class="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center flex-shrink-0"><i class="fa-solid ${type.icon}"></i></span><span class="min-w-0"><strong class="block text-xs text-slate-900">${escapeHtml(type.label)}</strong><span class="block text-[10px] text-slate-600">${escapeHtml(note)}</span></span></button>`;
+                return `<button type="button" onclick="selectMessageType('${type.id}')" ${disabled ? 'disabled' : ''} class="w-full p-3 bg-white hover:bg-emerald-50 border border-slate-200 rounded-2xl text-left flex items-center gap-3 transition disabled:opacity-50 disabled:cursor-not-allowed"><span class="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center flex-shrink-0"><i aria-hidden="true" class="fa-solid ${type.icon}"></i></span><span class="min-w-0"><strong class="block text-xs text-slate-900">${escapeHtml(type.label)}</strong><span class="block text-[10px] text-slate-600">${escapeHtml(note)}</span></span></button>`;
             }).join('');
         };
         function refreshMessagePreview() {
@@ -4603,7 +4612,7 @@
                 action = `<button type="button" onclick="openReminderPatient('${escapeHtml(patient.id)}')" class="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-xl text-xs font-bold">Aggiungi telefono</button>`;
             } else {
                 if (sentAt) status = `<span class="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-bold">${escapeHtml(reminderSentLabel(sentAt, now))}</span>`;
-                action = `<button type="button" onclick="sendTomorrowReminder('${escapeHtml(event.id)}')" aria-label="${sentAt ? 'Invia di nuovo il promemoria' : 'Promemoria WhatsApp'} a ${escapeHtml(name)} (${time})" class="inline-flex items-center gap-1.5 px-3 py-2 ${sentAt ? 'bg-white border border-emerald-300 text-emerald-800 hover:bg-emerald-50' : 'bg-emerald-700 hover:bg-emerald-800 text-white'} rounded-xl text-xs font-bold"><i class="fa-brands fa-whatsapp"></i>${sentAt ? 'Invia di nuovo' : 'WhatsApp'}</button>`;
+                action = `<button type="button" onclick="sendTomorrowReminder('${escapeHtml(event.id)}')" aria-label="${sentAt ? 'Invia di nuovo il promemoria' : 'Promemoria WhatsApp'} a ${escapeHtml(name)} (${time})" class="inline-flex items-center gap-1.5 px-3 py-2 ${sentAt ? 'bg-white border border-emerald-300 text-emerald-800 hover:bg-emerald-50' : 'bg-emerald-700 hover:bg-emerald-800 text-white'} rounded-xl text-xs font-bold"><i aria-hidden="true" class="fa-brands fa-whatsapp"></i>${sentAt ? 'Invia di nuovo' : 'WhatsApp'}</button>`;
             }
             return `<div data-reminder-id="${escapeHtml(event.id)}" class="p-3 sm:p-4 bg-white border ${removalPending || !patient || !hasPhone ? 'border-rose-200' : 'border-slate-200'} rounded-2xl flex flex-col sm:flex-row sm:items-center gap-3">
                 <div class="flex items-center gap-3 min-w-0 flex-1">
@@ -4906,8 +4915,8 @@
                     <dl class="text-xs text-slate-800 space-y-0.5">${details}</dl>
                     ${r.message ? `<p class="text-xs text-slate-700 bg-slate-50 border border-slate-100 rounded-xl p-2.5 whitespace-pre-line">${escapeHtml(r.message)}</p>` : ''}
                     <div class="flex flex-wrap gap-2 pt-1">
-                        <button type="button" onclick="convertRequest('${id}')" class="px-3 py-2 bg-nature-700 hover:bg-nature-800 text-white rounded-xl text-xs font-bold"><i class="fa-solid fa-calendar-plus mr-1"></i>${existing ? 'Crea appuntamento' : 'Crea paziente e appuntamento'}</button>
-                        ${hasWhatsApp ? `<button type="button" onclick="replyToRequest('${id}')" aria-label="Rispondi su WhatsApp a ${escapeHtml(r.name)}" class="px-3 py-2 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl text-xs font-bold"><i class="fa-brands fa-whatsapp mr-1"></i>Rispondi su WhatsApp</button>` : ''}
+                        <button type="button" onclick="convertRequest('${id}')" class="px-3 py-2 bg-nature-700 hover:bg-nature-800 text-white rounded-xl text-xs font-bold"><i aria-hidden="true" class="fa-solid fa-calendar-plus mr-1"></i>${existing ? 'Crea appuntamento' : 'Crea paziente e appuntamento'}</button>
+                        ${hasWhatsApp ? `<button type="button" onclick="replyToRequest('${id}')" aria-label="Rispondi su WhatsApp a ${escapeHtml(r.name)}" class="px-3 py-2 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl text-xs font-bold"><i aria-hidden="true" class="fa-brands fa-whatsapp mr-1"></i>Rispondi su WhatsApp</button>` : ''}
                         ${r.status === 'new' ? `<button type="button" onclick="archiveRequest('${id}')" class="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-xl text-xs font-bold">Archivia</button>` : ''}
                         <button type="button" onclick="confirmDeleteRequest('${id}')" class="px-3 py-2 bg-rose-50 hover:bg-rose-100 text-rose-700 rounded-xl text-xs font-bold">Elimina</button>
                     </div>
@@ -5031,8 +5040,8 @@
                             </div>
                         </div>
                         <div class="flex flex-wrap gap-2 lg:justify-end">
-                            ${whatsappUrl ? `<a target="_blank" rel="noopener noreferrer" href="${whatsappUrl}" class="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold"><i class="fa-brands fa-whatsapp"></i>WhatsApp</a>` : '<span class="px-3 py-2 bg-slate-100 text-slate-400 rounded-xl text-xs">WhatsApp non disponibile</span>'}
-                            ${emailUrl ? `<a href="${emailUrl}" class="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-water-600 hover:bg-water-700 text-white rounded-xl text-xs font-bold"><i class="fa-solid fa-envelope"></i>Email</a>` : '<span class="px-3 py-2 bg-slate-100 text-slate-400 rounded-xl text-xs">Email non disponibile</span>'}
+                            ${whatsappUrl ? `<a target="_blank" rel="noopener noreferrer" href="${whatsappUrl}" class="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold"><i aria-hidden="true" class="fa-brands fa-whatsapp"></i>WhatsApp</a>` : '<span class="px-3 py-2 bg-slate-100 text-slate-400 rounded-xl text-xs">WhatsApp non disponibile</span>'}
+                            ${emailUrl ? `<a href="${emailUrl}" class="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-water-600 hover:bg-water-700 text-white rounded-xl text-xs font-bold"><i aria-hidden="true" class="fa-solid fa-envelope"></i>Email</a>` : '<span class="px-3 py-2 bg-slate-100 text-slate-400 rounded-xl text-xs">Email non disponibile</span>'}
                         </div>
                     </div>
                 </div>`;
@@ -5175,7 +5184,7 @@
             document.getElementById('unassigned-events-list').innerHTML = shown.length ? shown.map(({ev,date}) => {
                 const suggestions = getEventPatientSuggestions(ev);
                 const suggestionHtml = suggestions.length ? `<div class="mt-2 flex flex-wrap gap-1.5"><span class="text-[10px] text-slate-500 self-center">Possibili:</span>${suggestions.map(item => `<span class="px-2 py-1 bg-amber-50 border border-amber-200 rounded-full text-[10px] text-amber-900">${escapePatientText(item.patient.name)} ${Math.round(item.score*100)}%</span>`).join('')}</div>` : '<p class="mt-2 text-[10px] text-slate-400 italic">Nessuna corrispondenza suggerita.</p>';
-                return `<button type="button" onclick="openUnassignedEvent('${encodeURIComponent(ev.id)}')" class="w-full p-4 bg-white hover:bg-rose-50 border border-slate-200 hover:border-rose-300 rounded-2xl text-left transition flex flex-col sm:flex-row sm:items-center justify-between gap-3"><div class="min-w-0"><div class="flex items-center gap-2 flex-wrap"><strong class="font-editorial italic text-base text-slate-900">${escapePatientText(ev.title || 'Appuntamento')}</strong><span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${date < now ? 'bg-slate-100 text-slate-700' : 'bg-emerald-100 text-emerald-800'}">${date < now ? 'Passato' : 'Futuro'}</span></div><p class="mt-1 text-xs text-slate-500"><i class="fa-regular fa-calendar mr-1"></i>${date.toLocaleString('it-IT',{dateStyle:'medium',timeStyle:'short'})} • ${escapePatientText(ev.extendedProps?.centerName || 'Studio Privato')}</p>${suggestionHtml}</div><span class="flex-shrink-0 px-3 py-2 bg-rose-100 text-rose-800 rounded-xl text-xs font-bold"><i class="fa-solid fa-pen-to-square mr-1"></i>Apri e assegna</span></button>`;
+                return `<button type="button" onclick="openUnassignedEvent('${encodeURIComponent(ev.id)}')" class="w-full p-4 bg-white hover:bg-rose-50 border border-slate-200 hover:border-rose-300 rounded-2xl text-left transition flex flex-col sm:flex-row sm:items-center justify-between gap-3"><div class="min-w-0"><div class="flex items-center gap-2 flex-wrap"><strong class="font-editorial italic text-base text-slate-900">${escapePatientText(ev.title || 'Appuntamento')}</strong><span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${date < now ? 'bg-slate-100 text-slate-700' : 'bg-emerald-100 text-emerald-800'}">${date < now ? 'Passato' : 'Futuro'}</span></div><p class="mt-1 text-xs text-slate-500"><i aria-hidden="true" class="fa-regular fa-calendar mr-1"></i>${date.toLocaleString('it-IT',{dateStyle:'medium',timeStyle:'short'})} • ${escapePatientText(ev.extendedProps?.centerName || 'Studio Privato')}</p>${suggestionHtml}</div><span class="flex-shrink-0 px-3 py-2 bg-rose-100 text-rose-800 rounded-xl text-xs font-bold"><i aria-hidden="true" class="fa-solid fa-pen-to-square mr-1"></i>Apri e assegna</span></button>`;
             }).join('') : '<p class="p-8 text-center text-slate-400 italic">Nessun appuntamento corrisponde al filtro selezionato.</p>';
         };
         window.openUnassignedEvent = function(encodedEventId) {
@@ -5221,7 +5230,7 @@
         function renderBackupDashboard() {
             const counts = backupCounts(appState);
             const cards = [['Pazienti',counts.patients,'fa-user-group'],['Appuntamenti',counts.events,'fa-calendar-check'],['Sedute cliniche',counts.clinicalSessions,'fa-notes-medical'],['Contenuti e sedi',counts.centers+counts.treatments+counts.news+counts.preparations+counts.manualRevenues+counts.taxProfiles,'fa-folder-tree']];
-            document.getElementById('backup-kpis').innerHTML=cards.map(x=>`<div class="p-4 bg-white border border-slate-200 rounded-2xl"><i class="fa-solid ${x[2]} text-indigo-700"></i><p class="text-[10px] uppercase text-slate-500 mt-2">${x[0]}</p><strong class="text-lg">${x[1]}</strong></div>`).join('');
+            document.getElementById('backup-kpis').innerHTML=cards.map(x=>`<div class="p-4 bg-white border border-slate-200 rounded-2xl"><i aria-hidden="true" class="fa-solid ${x[2]} text-indigo-700"></i><p class="text-[10px] uppercase text-slate-500 mt-2">${x[0]}</p><strong class="text-lg">${x[1]}</strong></div>`).join('');
             const last=localStorage.getItem('lastCompleteBackupAt');
             document.getElementById('backup-last-export').textContent=last?'Ultimo export da questo dispositivo: '+new Date(last).toLocaleString('it-IT'):'Nessun export registrato su questo dispositivo.';
         }
@@ -5437,7 +5446,7 @@
                     <div class="space-y-1"><label for="slot-center-${index}" class="block text-[10px] font-bold text-slate-600">Sede</label><select id="slot-center-${index}" data-field="centerId" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs">${templateLocationOptions(slot.centerId || PRIVATE_STUDIO_KEY)}</select></div>
                     <div class="space-y-1"><label for="slot-from-${index}" class="block text-[10px] font-bold text-slate-600">Dalle</label><input type="time" step="900" id="slot-from-${index}" data-field="from" value="${escapeHtml(slot.from || '')}" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs"></div>
                     <div class="space-y-1"><label for="slot-to-${index}" class="block text-[10px] font-bold text-slate-600">Alle</label><input type="time" step="900" id="slot-to-${index}" data-field="to" value="${escapeHtml(slot.to || '')}" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs"></div>
-                    <button type="button" onclick="removeTemplateSlot(${index})" aria-label="Rimuovi fascia" class="col-span-2 sm:col-span-1 px-3 py-2 bg-rose-50 hover:bg-rose-100 text-rose-700 rounded-xl text-xs font-semibold"><i class="fa-solid fa-trash-can"></i><span class="sm:hidden ml-1">Rimuovi</span></button>
+                    <button type="button" onclick="removeTemplateSlot(${index})" aria-label="Rimuovi fascia" class="col-span-2 sm:col-span-1 px-3 py-2 bg-rose-50 hover:bg-rose-100 text-rose-700 rounded-xl text-xs font-semibold"><i aria-hidden="true" class="fa-solid fa-trash-can"></i><span class="sm:hidden ml-1">Rimuovi</span></button>
                 </div>`).join('');
         }
         window.openAgendaSettingsModal = function() {
