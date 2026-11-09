@@ -82,12 +82,12 @@ let instrumentedScript = null;
  * @param {object|null} [options.popupUser] utente restituito dal popup Google
  * @param {(window: Window) => void} [options.beforeScript] hook eseguito prima dello script dell'app
  * @param {number} [options.width] larghezza viewport simulata
- * @param {string} [options.anonymousError] fa fallire l'accesso anonimo iniziale
+ * @param {string} [options.authInitError] fa fallire l'avvio dell'autenticazione (setPersistence)
  * @param {string} [options.initError] fa fallire initializeApp
  * @param {boolean} [options.waitForAuth=true] attende che il gate di autenticazione sia pronto
  */
 export async function bootApp(options = {}) {
-    firebaseMock.mockControl.reset({ docs: options.docs || {}, popupUser: options.popupUser ?? null, anonymousError: options.anonymousError ?? null, initError: options.initError ?? null });
+    firebaseMock.mockControl.reset({ docs: options.docs || {}, popupUser: options.popupUser ?? null, authInitError: options.authInitError ?? null, initError: options.initError ?? null });
     FakeCalendar.instances = [];
     const html = readIndexHtml().replace(/<script[\s\S]*?<\/script>/g, '');
     const dom = new JSDOM(html, { url: 'http://localhost/', runScripts: 'outside-only', pretendToBeVisual: true });

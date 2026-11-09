@@ -3,20 +3,17 @@
  *
  * Ogni pagina viene eseguita completamente offline e in modo deterministico:
  *  - Firebase (app/auth/firestore) → mock in-memory (tests/mocks/firebase), stato seminato per test;
- *  - Tailwind Play CDN → CSS precompilato (tests/.cache, generato in global-setup);
- *  - FullCalendar → copia npm della stessa versione (6.1.8);
- *  - font, icone e placeholder esterni → risposte vuote;
- *  - qualunque altra richiesta verso Internet → bloccata (e registrata in `blockedRequests`).
+ *  - CSS, font, icone e FullCalendar sono file del sito (assets/), serviti dal server locale;
+ *  - qualunque altra richiesta verso Internet → bloccata (e registrata in `blockedRequests`):
+ *    così un servizio esterno aggiunto per sbaglio alla parte pubblica viene notato.
  */
 import { test as base, expect } from '@playwright/test';
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { ROOT } from '../support/app-source.js';
-import { STUB_PATH } from '../support/build-tailwind.mjs';
 import { AUTHORIZED_EMAIL } from '../fixtures/seed.js';
 
 const FIREBASE_MOCK_DIR = path.join(ROOT, 'tests', 'mocks', 'firebase');
-const FULLCALENDAR_JS = path.join(ROOT, 'node_modules', 'fullcalendar', 'index.global.min.js');
 const GOOGLE_SVG = path.join(ROOT, 'tests', 'mocks', 'google.svg');
 
 const cache = new Map();
@@ -31,24 +28,12 @@ export async function installOfflineRoutes(page, blockedRequests) {
     await page.route(url => !/^https?:\/\/(127\.0\.0\.1|localhost)(:\d+)?\//.test(url.href), async (route) => {
         const url = new URL(route.request().url());
         const host = url.hostname;
-        if (host === 'cdn.tailwindcss.com') {
-            return route.fulfill({ status: 200, contentType: 'text/javascript', body: file(STUB_PATH) });
-        }
-        if (host === 'cdn.jsdelivr.net' && url.pathname.includes('fullcalendar@6.1.8/index.global.min.js')) {
-            return route.fulfill({ status: 200, contentType: 'text/javascript', body: file(FULLCALENDAR_JS) });
-        }
-        if (host === 'cdn.jsdelivr.net' && url.pathname.endsWith('.css')) {
-            return route.fulfill({ status: 200, contentType: 'text/css', body: '' });
-        }
         if (host === 'www.gstatic.com' && url.pathname.startsWith('/firebasejs/') && url.pathname.endsWith('.js')) {
             const name = path.basename(url.pathname);
             return route.fulfill({ status: 200, contentType: 'text/javascript', headers: CORS, body: file(path.join(FIREBASE_MOCK_DIR, name)) });
         }
         if (host === 'www.gstatic.com' && url.pathname.endsWith('.svg')) {
             return route.fulfill({ status: 200, contentType: 'image/svg+xml', body: file(GOOGLE_SVG) });
-        }
-        if (['fonts.googleapis.com', 'fonts.gstatic.com', 'cdnjs.cloudflare.com'].includes(host)) {
-            return route.fulfill({ status: 200, contentType: 'text/css', headers: CORS, body: '' });
         }
         blockedRequests.push(url.href);
         return route.abort('blockedbyclient');
@@ -84,7 +69,7 @@ export function firestore(page) {
 
 export const isMobile = (page) => (page.viewportSize()?.width || 1024) < 768;
 
-/** Apre il sito e attende che l'autenticazione anonima sia pronta. */
+/** Apre il sito e attende che Firebase sia pronto. */
 export async function openSite(page) {
     await page.goto('/');
     await expect(page.locator('#public-firebase-text')).toHaveText('Connesso');

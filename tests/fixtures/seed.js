@@ -14,6 +14,7 @@ export const UNAUTHORIZED_EMAIL = 'intruso@example.com';
 export const MIGRATION_MARKERS = {
     [`${SHARED}/_meta/clinical-sessions-migration-v1`]: { completed: true },
     [`${SHARED}/_meta/patient-notes-clinical-blocks-migration-v2`]: { completed: true },
+    [`${SHARED}/_meta/treatment-texts-v2`]: { completed: true },
     [`${SHARED}/_meta/legacy-migration-uid-${AUTHORIZED_EMAIL}`]: { completed: true },
     [`${SHARED}/_meta/legacy-migration-uid-${SECOND_AUTHORIZED_EMAIL}`]: { completed: true }
 };

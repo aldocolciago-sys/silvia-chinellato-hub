@@ -12,3 +12,5 @@ firestore.rules
 vitest.rules.config.js
 *-debug.log
 FIRESTORE_RULES.md
+scripts/
+tailwind.config.js

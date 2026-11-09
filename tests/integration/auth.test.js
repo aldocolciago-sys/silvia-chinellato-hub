@@ -6,25 +6,29 @@ let app;
 afterEach(() => app?.close());
 
 describe('avvio e autenticazione', () => {
-    it('all’avvio mostra la vista pubblica con sessione anonima e stato "Connesso"', async () => {
-        app = await bootApp();
+    // Ai visitatori non viene creato alcun account, nemmeno anonimo (minimizzazione dei dati):
+    // le regole Firestore permettono comunque di leggere i contenuti pubblici e di inviare il modulo.
+    it('all’avvio mostra la vista pubblica senza creare account e con stato "Connesso"', async () => {
+        app = await bootApp({ docs: seedDocs({ treatments: [{ id: 'x', title: 'Dal database', icon: 'fa-leaf', desc: 'testo' }] }) });
         expect(app.isHidden('public-view')).toBe(false);
         expect(app.isHidden('private-view')).toBe(true);
         expect(app.text('public-firebase-text')).toBe('Connesso');
         expect(app.byId('public-firebase-dot').className).toContain('bg-emerald-500');
-        expect(app.mock.currentUser()).toMatchObject({ isAnonymous: true });
+        expect(app.mock.currentUser()).toBeNull();
+        expect(app.mock.calls().map(c => c.op)).not.toContain('signInAnonymously');
+        expect(app.state.treatments.map(t => t.title)).toEqual(['Dal database']);
         expect(app.state.isLoggedIn).toBe(false);
     });
 
     it('non ripristina sessioni precedenti: persistenza in memoria e signOut all’avvio', async () => {
         app = await bootApp();
         const ops = app.mock.calls().map(c => c.op);
+        expect(ops.indexOf('setPersistence')).toBeGreaterThanOrEqual(0);
         expect(ops.indexOf('setPersistence')).toBeLessThan(ops.indexOf('signOut'));
-        expect(ops.indexOf('signOut')).toBeLessThan(ops.indexOf('signInAnonymously'));
     });
 
-    it('mostra "Accesso non disponibile" se l’accesso anonimo fallisce e blocca il login', async () => {
-        app = await bootApp({ anonymousError: 'network', waitForAuth: false });
+    it('mostra "Accesso non disponibile" se l’autenticazione non parte e blocca il login', async () => {
+        app = await bootApp({ authInitError: 'network', waitForAuth: false });
         await app.waitFor(() => app.text('public-firebase-text') === 'Accesso non disponibile', 'stato errore');
         expect(app.byId('public-firebase-dot').className).toContain('bg-rose-500');
         expect(app.window.__app.authGateReady).toBe(false);
