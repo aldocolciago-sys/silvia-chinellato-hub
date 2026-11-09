@@ -1,15 +1,10 @@
-import { describe, it, expect, vi, afterEach } from 'vitest';
-import { loadFunctions } from '../support/app-source.js';
+import { describe, it, expect, vi } from 'vitest';
 import handler from '../../api/ical.js';
 import { createMockReq, createMockRes } from '../support/vercel-mock.js';
+// Lettura iCal condivisa da app e server (lib/calendar-sync-core.js).
+import { parseIcalDateTime, normalizeGoogleCalendarUrl, unfoldIcalLines, parseIcalProperty, unescapeIcalText, zonedTimeToUtc } from '../../lib/calendar-sync-core.js';
 
-const { parseIcalDateTime, normalizeGoogleCalendarUrl, unfoldIcalLines, parseIcalProperty, unescapeIcalText, zonedTimeToUtc } = loadFunctions(
-    ['parseIcalDateTime', 'normalizeGoogleCalendarUrl', 'unfoldIcalLines', 'parseIcalProperty', 'unescapeIcalText', 'zonedTimeToUtc'],
-    { atob: globalThis.atob, URL: globalThis.URL }
-);
-
-describe('parseIcalDateTime (client)', () => {
-    afterEach(() => vi.useRealTimers());
+describe('parseIcalDateTime', () => {
 
     it('esegue il test nel fuso Europe/Rome', () => {
         expect(new Date('2030-01-15T12:00:00Z').getTimezoneOffset()).toBe(-60);
@@ -34,23 +29,17 @@ describe('parseIcalDateTime (client)', () => {
         expect(parseIcalDateTime('2030-01-15T09:00:00Z')).toBe('2030-01-15T09:00:00.000Z');
     });
 
-    it.each([undefined, null, ''])('restituisce "adesso" per un valore vuoto (%s)', (value) => {
-        vi.useFakeTimers();
-        vi.setSystemTime(new Date('2031-05-05T05:05:05.000Z'));
-        expect(parseIcalDateTime(value)).toBe('2031-05-05T05:05:05.000Z');
-    });
-
-    it('restituisce "adesso" per un valore non interpretabile invece di lanciare eccezioni', () => {
-        vi.useFakeTimers();
-        vi.setSystemTime(new Date('2031-05-05T05:05:05.000Z'));
-        expect(parseIcalDateTime('abc')).toBe('2031-05-05T05:05:05.000Z');
+    // Prima un valore vuoto diventava "adesso": l'appuntamento cambiava orario a ogni sincronizzazione
+    // e, con la sincronizzazione oraria, sarebbe risultato "modificato" ogni ora.
+    it.each([undefined, null, '', 'abc', '2030'])('restituisce null per un valore vuoto o non interpretabile (%s)', (value) => {
+        expect(parseIcalDateTime(value)).toBeNull();
     });
 
     // Regressione (difetto corretto): un orario locale "floating" (senza Z, tipico di DTSTART;TZID=Europe/Rome:...)
     // viene trattato come UTC, spostando l'appuntamento di 1-2 ore.
-    it('interpreta gli orari senza "Z" come ora locale e non come UTC', () => {
-        const iso = parseIcalDateTime('20300115T090000');
-        expect(new Date(iso).getHours()).toBe(9);
+    it('interpreta gli orari senza "Z" come ora di Roma e non come UTC', () => {
+        expect(parseIcalDateTime('20300115T090000')).toBe('2030-01-15T08:00:00.000Z');
+        expect(parseIcalDateTime('20300715T090000')).toBe('2030-07-15T07:00:00.000Z');
     });
 });
 
@@ -73,7 +62,7 @@ describe('parseIcalDateTime con fuso orario (TZID)', () => {
         expect(parseIcalDateTime('20300115T090000Z', 'America/New_York')).toBe('2030-01-15T09:00:00.000Z');
     });
 
-    it('con un TZID non riconosciuto (es. nomi Windows) usa l’ora locale', () => {
+    it('con un TZID non riconosciuto (es. nomi Windows) usa l’ora di Roma', () => {
         expect(new Date(parseIcalDateTime('20300115T090000', 'W. Europe Standard Time')).getHours()).toBe(9);
         expect(zonedTimeToUtc(2030, 0, 15, 9, 0, 'Fuso/Inesistente')).toBeNull();
     });
@@ -102,7 +91,7 @@ describe('lettura delle righe iCal', () => {
     });
 });
 
-describe('normalizeGoogleCalendarUrl (client)', () => {
+describe('normalizeGoogleCalendarUrl', () => {
     it.each([
         ['https://example.com/cal.ics', 'https://example.com/cal.ics'],
         ['https://calendar.google.com/calendar/ical/x%40gmail.com/public/basic.ics', 'https://calendar.google.com/calendar/ical/x%40gmail.com/public/basic.ics'],

@@ -590,6 +590,7 @@
                 <input type="hidden" id="studio-edit-event-id">
                 <input type="hidden" id="studio-event-is-external" value="false">
                 <div id="non-clinical-event-banner" class="hidden p-3.5 bg-sky-50 border border-sky-300 rounded-2xl text-sky-950"><div class="flex items-start gap-2.5"><i class="fa-solid fa-house mt-0.5 text-sky-700"></i><div><p class="text-xs font-bold">Evento da Calendario non Clinico</p><p class="text-[10px] mt-1">Occupa l’agenda e segnala sovrapposizioni, ma è escluso dalla gestione professionale.</p></div></div></div>
+                <div id="external-pending-banner" class="hidden p-3.5 bg-rose-50 border border-rose-300 rounded-2xl text-rose-950"><div class="flex items-start gap-2.5"><i class="fa-solid fa-calendar-xmark mt-0.5 text-rose-700"></i><div class="space-y-2"><p class="text-xs font-bold">Cancellato dal calendario originale</p><p class="text-[11px] leading-relaxed">Il poliambulatorio ha tolto questo appuntamento dal suo calendario. Resta nella tua agenda finché non scegli se tenerlo o toglierlo.</p><button type="button" onclick="openExternalRemovalDecision()" class="px-3 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs font-bold">Scegli ora</button></div></div></div>
                 <div id="external-detached-banner" class="hidden p-3.5 bg-amber-50 border border-amber-300 rounded-2xl text-amber-950"><div class="flex items-start gap-2.5"><i class="fa-solid fa-thumbtack mt-0.5 text-amber-700"></i><div class="space-y-1"><p class="text-xs font-bold">Appuntamento mantenuto manualmente</p><p class="text-[11px] leading-relaxed">Questo appuntamento è stato cancellato dal calendario originale del poliambulatorio, ma è stato mantenuto nella tua agenda personale.</p><p id="external-detached-date" class="text-[10px] font-semibold text-amber-800"></p></div></div></div>
                 <div class="space-y-1">
                     <label for="studio-center-select" class="text-[11px] font-bold text-slate-600">Sede / Poliambulatorio</label>
@@ -1215,6 +1216,12 @@
                     </label>
                     <p class="text-[11px] text-slate-600">Contiene gli appuntamenti di oggi e domani (ora, iniziali del paziente, trattamento e sede), i turni e gli impegni dei calendari personali: i nomi completi dei pazienti non escono dall'app.</p>
                     <p id="daily-digest-status" class="text-[11px] text-slate-700" aria-live="polite"></p>
+                    <label class="flex items-start gap-2 text-xs font-semibold text-slate-800 cursor-pointer">
+                        <input type="checkbox" id="sync-alerts-enabled" onchange="saveSyncAlertsEnabled(this.checked)" class="mt-0.5 w-4 h-4 accent-emerald-700">
+                        <span>Avvisa Silvia su WhatsApp quando cambia l'agenda dei poliambulatori o dei turni</span>
+                    </label>
+                    <p class="text-[11px] text-slate-600">Ogni ora i calendari vengono sincronizzati anche se l'app è chiusa. Gli appuntamenti cancellati dal calendario originale restano in agenda finché Silvia non sceglie se tenerli o toglierli.</p>
+                    <p id="sync-alerts-status" class="text-[11px] text-slate-700" aria-live="polite"></p>
                     <button type="button" id="daily-digest-test" onclick="sendDailyDigestTest()" class="inline-flex items-center gap-1.5 px-3 py-2 bg-white border border-emerald-300 text-emerald-800 hover:bg-emerald-50 rounded-xl text-xs font-bold"><i class="fa-solid fa-paper-plane"></i>Invia una prova ora</button>
                 </section>
             </div>
@@ -1462,6 +1469,10 @@
                 appState.dailyDigestStatus = snapshot.exists() ? snapshot.data() : null;
                 renderDailyDigestPanel();
             }, err => console.error('Errore sincronizzazione riepilogo WhatsApp:', err)));
+            sharedUnsubscribers.push(onSnapshot(sharedDocument('settings','calendar_sync'), snapshot => {
+                appState.calendarSyncState = snapshot.exists() ? snapshot.data() : null;
+                renderDailyDigestPanel();
+            }, err => console.error('Errore sincronizzazione stato calendari:', err)));
             sharedUnsubscribers.push(onSnapshot(sharedDocument('tax_profile','default'), snapshot => {
                 appState.taxProfile = snapshot.exists() ? { id:'default', ...snapshot.data() } : null;
                 populateTaxProfileForm();
@@ -1982,6 +1993,7 @@
             document.getElementById('studio-edit-event-id').value = '';
             document.getElementById('studio-event-is-external').value = 'false';
             document.getElementById('external-detached-banner').classList.add('hidden');
+            document.getElementById('external-pending-banner').classList.add('hidden');
             document.getElementById('external-detached-date').textContent = '';
             document.getElementById('studio-delete-btn').classList.add('hidden');
             document.getElementById('studio-modal-title').textContent = 'Nuovo Appuntamento Studio / Sede';
@@ -2017,6 +2029,7 @@
 
             if (editEv) {
                 document.getElementById('studio-modal-title').textContent = 'Modifica / Gestisci Appuntamento';
+                if (isExternalRemovalPending(editEv)) document.getElementById('external-pending-banner').classList.remove('hidden');
                 if (editEv.extendedProps?.detachedFromExternal) { const d=editEv.extendedProps?.externalRemovedAt?new Date(editEv.extendedProps.externalRemovedAt):null; const label=d&&!Number.isNaN(d.getTime())?d.toLocaleString('it-IT',{dateStyle:'medium',timeStyle:'short'}):''; document.getElementById('external-detached-banner').classList.remove('hidden'); document.getElementById('external-detached-date').textContent=label?`Decisione registrata il ${label}`:'Decisione di mantenimento registrata'; }
                 document.getElementById('studio-edit-event-id').value = editEv.id;
                 document.getElementById('studio-title').value = (editEv.title || '').replace('⚠️ [CONFLITTO] ', '');
@@ -3455,6 +3468,46 @@
             await executeIcalSync(false);
         }
 
+        // ---- Sincronizzazione calendari ----
+        // La logica (lettura .ics, nuovi/modificati/cancellati) è in lib/calendar-sync-core.js ed è la stessa
+        // della sincronizzazione automatica oraria del server (api/calendar-sync.js).
+        let calendarSyncCorePromise = null;
+        function loadCalendarSyncCore() {
+            if (window.__calendarSyncCore) return Promise.resolve(window.__calendarSyncCore);
+            calendarSyncCorePromise = calendarSyncCorePromise || import('/lib/calendar-sync-core.js').catch(err => { calendarSyncCorePromise = null; throw err; });
+            return calendarSyncCorePromise;
+        }
+        /** Report mostrato nella finestra di sincronizzazione. Le scelte sui cancellati sono salvate sugli appuntamenti. */
+        let currentSyncReport = null;
+        /** Scelte fatte in questa sessione, per mostrare "Scelta registrata" accanto all'appuntamento. */
+        const externalDeletionDecisions = new Map();
+
+        /** Scarica un calendario .ics: prima dal proxy del sito, poi dai proxy di riserva, infine direttamente. */
+        async function downloadIcalCalendar(targetUrl) {
+            const proxyEndpoints = [
+                `/api/ical?url=${encodeURIComponent(targetUrl)}`,
+                `https://api.allorigins.win/raw?url=${encodeURIComponent(targetUrl)}`,
+                `https://corsproxy.io/?${encodeURIComponent(targetUrl)}`,
+                targetUrl
+            ];
+            for (const endpoint of proxyEndpoints) {
+                try {
+                    const response = await fetch(endpoint);
+                    if (!response.ok) continue;
+                    const ct = response.headers.get('content-type') || '';
+                    let text;
+                    if (ct.includes('application/json')) {
+                        const j = await response.json();
+                        text = j.icsContent || j.contents;
+                    } else {
+                        text = await response.text();
+                    }
+                    if (text && (text.includes('BEGIN:VCALENDAR') || text.includes('BEGIN:VEVENT'))) return text;
+                } catch (err) {}
+            }
+            return null;
+        }
+
         async function executeIcalSync(isAutoLogin = false) {
             if (!authGateReady || !appState.isLoggedIn || !isAuthorizedFirebaseUser()) {
                 appState.isLoggedIn = false;
@@ -3474,12 +3527,15 @@
             if (titleEl) titleEl.textContent = isAutoLogin ? 'Sincronizzazione automatica all’accesso...' : 'Sincronizzazione Calendari in corso...';
             if (spinner) spinner.classList.add('animate-spin');
             if (footer) footer.classList.add('hidden');
+            currentSyncReport = null;
+            externalDeletionDecisions.clear();
 
             const icalCenters = appState.centers.filter(c => c.icalUrl && c.icalUrl.trim() !== '');
             if (icalCenters.length === 0) {
                 if (contentEl) contentEl.innerHTML = `<div class="p-4 bg-amber-50 text-amber-800 rounded-2xl text-xs text-center">Nessun link iCal configurato nei poliambulatori. Configuralo nella gestione centri.</div>`;
                 if (spinner) spinner.classList.remove('animate-spin');
                 if (titleEl) titleEl.textContent = 'Sincronizzazione completata';
+                updateSyncCloseState({ deleted: [] });
                 if (footer) footer.classList.remove('hidden');
                 return;
             }
@@ -3502,148 +3558,30 @@
             progressHtml += `</div></div>`;
             if (contentEl) contentEl.innerHTML = progressHtml;
 
-            let addedEventsDetail = [];
-            let modifiedEventsDetail = [];
-            let deletedEventsDetail = [];
+            let core;
+            try {
+                core = await loadCalendarSyncCore();
+            } catch (err) {
+                console.error('Logica di sincronizzazione non caricata:', err);
+                if (contentEl) contentEl.innerHTML = `<div class="p-4 bg-rose-50 text-rose-800 rounded-2xl text-xs text-center">Sincronizzazione non disponibile: controlla la connessione, ricarica la pagina e riprova.</div>`;
+                if (spinner) spinner.classList.remove('animate-spin');
+                if (titleEl) titleEl.textContent = 'Sincronizzazione non riuscita';
+                updateSyncCloseState({ deleted: [] });
+                if (footer) footer.classList.remove('hidden');
+                return;
+            }
 
-            let activeIcalEventIds = new Set();
-            const failedCenterIds = new Set();
-            const failedCenterNames = [];
-            let oldEventsMap = new Map(appState.events.filter(e => e.id.startsWith('ical_') && !e.extendedProps?.detachedFromExternal).map(ev => [ev.id, ev]));
-
+            const feeds = {};
             for (let center of icalCenters) {
-                let statusEl = document.getElementById(`sync-status-${center.id}`);
-                let badgeEl = document.getElementById(`sync-badge-${center.id}`);
-                let iconEl = document.getElementById(`sync-icon-${center.id}`);
-
+                const statusEl = document.getElementById(`sync-status-${center.id}`);
+                const badgeEl = document.getElementById(`sync-badge-${center.id}`);
+                const iconEl = document.getElementById(`sync-icon-${center.id}`);
                 if (statusEl) statusEl.textContent = `Interrogazione in corso per "${center.name}"...`;
-
-                let rawUrl = center.icalUrl.trim();
-                let targetUrl = normalizeGoogleCalendarUrl(rawUrl);
-                let text = null;
-
-                const proxyEndpoints = [
-                    `/api/ical?url=${encodeURIComponent(targetUrl)}`,
-                    `https://api.allorigins.win/raw?url=${encodeURIComponent(targetUrl)}`,
-                    `https://corsproxy.io/?${encodeURIComponent(targetUrl)}`,
-                    targetUrl
-                ];
-
-                for (let endpoint of proxyEndpoints) {
-                    try {
-                        let response = await fetch(endpoint);
-                        if (response.ok) {
-                            const ct = response.headers.get('content-type') || '';
-                            if (ct.includes('application/json')) {
-                                const j = await response.json();
-                                text = j.icsContent || j.contents;
-                            } else {
-                                text = await response.text();
-                            }
-                            if (text && (text.includes('BEGIN:VCALENDAR') || text.includes('BEGIN:VEVENT'))) {
-                                break;
-                            }
-                        }
-                    } catch(err) {}
-                }
-
-                if (text && (text.includes('BEGIN:VCALENDAR') || text.includes('BEGIN:VEVENT'))) {
+                const text = await downloadIcalCalendar(core.normalizeGoogleCalendarUrl(center.icalUrl.trim()));
+                feeds[center.id] = text;
+                if (text) {
                     if (statusEl) statusEl.textContent = 'Analisi eventi...';
-                    let centerAdded = 0;
-                    let centerModified = 0;
-
-                    const lines = unfoldIcalLines(text);
-                    let currentEvent = null;
-
-                    for (let line of lines) {
-                        if (line.startsWith('BEGIN:VEVENT')) {
-                            currentEvent = { uid: null, summary: null, start: null, end: null };
-                        } else if (line.startsWith('END:VEVENT') && currentEvent) {
-                            if (currentEvent.uid || currentEvent.summary || currentEvent.start) {
-                                const eventUid = currentEvent.uid || ('evt_' + Math.random().toString(36).substring(2, 9));
-                                const eventId = `ical_${center.id}_${eventUid}`;
-                                activeIcalEventIds.add(eventId);
-
-                                const eventTitleClean = currentEvent.summary || 'Appuntamento';
-                                const parsedStart = parseIcalDateTime(currentEvent.start, currentEvent.startTzid);
-                                let parsedEnd = currentEvent.end ? parseIcalDateTime(currentEvent.end, currentEvent.endTzid) : null;
-                                
-                                if (!parsedEnd) {
-                                    parsedEnd = new Date(new Date(parsedStart).getTime() + 3600000).toISOString();
-                                }
-
-                                let existingEv = oldEventsMap.get(eventId);
-                                let matchedPatientId = existingEv?.extendedProps?.patientId || null;
-
-                                if (!matchedPatientId) {
-                                    for (let p of appState.patients) {
-                                        if (eventTitleClean.toLowerCase().includes(p.name.toLowerCase())) {
-                                            matchedPatientId = p.id;
-                                            break;
-                                        }
-                                    }
-                                }
-
-                                let dStartObj = new Date(parsedStart);
-                                let dateFormatted = dStartObj.toLocaleDateString('it-IT', { day: 'numeric', month: 'short', year: 'numeric' });
-                                let timeFormatted = `${String(dStartObj.getHours()).padStart(2,'0')}:${String(dStartObj.getMinutes()).padStart(2,'0')}`;
-
-                                const centerColor = center.color || '#3f5e4e';
-                                const parsedEvent = {
-                                    id: eventId,
-                                    title: eventTitleClean,
-                                    start: parsedStart,
-                                    end: parsedEnd,
-                                    backgroundColor: centerColor,
-                                    borderColor: centerColor,
-                                    textColor: '#ffffff',
-                                    // Conserva i dati inseriti a mano (compenso, pagamento, note): prima venivano cancellati a ogni sincronizzazione.
-                                    extendedProps: { ...(existingEv?.extendedProps || {}), centerId: center.id, centerName: center.name, patientId: center.isNonClinicalCalendar === true ? null : matchedPatientId, isNonClinical: center.isNonClinicalCalendar === true }
-                                };
-                                if (!(Number(parsedEvent.extendedProps.fee || 0) > 0)) {
-                                    const autoFee = defaultFeeForEvent(parsedEvent);
-                                    if (autoFee > 0) parsedEvent.extendedProps.fee = autoFee;
-                                }
-
-                                const existingIdx = appState.events.findIndex(e => e.id === eventId);
-                                if (existingIdx >= 0) {
-                                    let oldEv = appState.events[existingIdx];
-                                    if (oldEv.title !== parsedEvent.title || oldEv.start !== parsedEvent.start || oldEv.end !== parsedEvent.end) {
-                                        centerModified++;
-                                        modifiedEventsDetail.push({ title: eventTitleClean, center: center.name, when: `${dateFormatted} alle ${timeFormatted}` });
-                                    }
-                                    appState.events[existingIdx] = parsedEvent;
-                                } else {
-                                    centerAdded++;
-                                    addedEventsDetail.push({ title: eventTitleClean, center: center.name, when: `${dateFormatted} alle ${timeFormatted}` });
-                                    appState.events.push(parsedEvent);
-                                }
-
-                                if (db && userId) {
-                                    await setDoc(sharedDocument('studio_events', eventId), parsedEvent).catch(()=>{});
-                                }
-                            }
-                            currentEvent = null;
-                        } else if (currentEvent) {
-                            const prop = parseIcalProperty(line);
-                            if (!prop) continue;
-                            if (prop.name === 'UID') currentEvent.uid = prop.value.trim();
-                            else if (prop.name === 'SUMMARY') currentEvent.summary = unescapeIcalText(prop.value).trim();
-                            else if (prop.name === 'DTSTART') { currentEvent.start = prop.value.trim(); currentEvent.startTzid = prop.params.TZID || null; }
-                            else if (prop.name === 'DTEND') { currentEvent.end = prop.value.trim(); currentEvent.endTzid = prop.params.TZID || null; }
-                        }
-                    }
-
-                    if (statusEl) statusEl.textContent = `Completato (${centerAdded} aggiunti, ${centerModified} mod.)`;
-                    if (badgeEl) {
-                        badgeEl.className = 'px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800';
-                        badgeEl.innerHTML = '<i class="fa-solid fa-circle text-[6px] mr-1 text-emerald-600"></i> Sincronizzato';
-                    }
-                    if (iconEl) iconEl.className = 'fa-solid fa-circle-check text-emerald-600';
-
                 } else {
-                    failedCenterIds.add(String(center.id));
-                    failedCenterNames.push(center.name);
                     if (statusEl) statusEl.textContent = 'Errore connessione iCal';
                     if (badgeEl) {
                         badgeEl.className = 'px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-rose-100 text-rose-800';
@@ -3655,17 +3593,24 @@
 
             // Gli eventi delle sedi il cui calendario non è stato scaricato restano invariati:
             // un errore di rete non significa che gli appuntamenti siano stati cancellati alla fonte.
-            const removedIds = Array.from(oldEventsMap.keys()).filter(id => id.startsWith('ical_') && !activeIcalEventIds.has(id) && !failedCenterIds.has(String(oldEventsMap.get(id)?.extendedProps?.centerId ?? '')));
-            for (const remId of removedIds) {
-                const evToRem = oldEventsMap.get(remId);
-                if (!evToRem) continue;
-                deletedEventsDetail.push({
-                    id: remId,
-                    title: evToRem.title,
-                    center: evToRem.extendedProps?.centerName || 'Poliambulatorio',
-                    when: formatDeletionEventDate(evToRem.start),
-                    decision: null
-                });
+            // Chi preme "Sincronizza" vede subito il risultato, quindi qui le sparizioni in blocco si registrano.
+            const result = core.computeCalendarSync({ centers: icalCenters, events: appState.events, patients: appState.patients, feeds, now: new Date(), feeFor: ev => defaultFeeForEvent(ev) });
+            for (const write of result.writes) {
+                const idx = appState.events.findIndex(e => e.id === write.id);
+                if (idx >= 0) appState.events[idx] = write.data;
+                else appState.events.push(write.data);
+                if (db && userId) await setDoc(sharedDocument('studio_events', write.id), write.data).catch(() => {});
+            }
+            for (const item of result.centers.filter(c => c.ok)) {
+                const statusEl = document.getElementById(`sync-status-${item.id}`);
+                const badgeEl = document.getElementById(`sync-badge-${item.id}`);
+                const iconEl = document.getElementById(`sync-icon-${item.id}`);
+                if (statusEl) statusEl.textContent = `Completato (${item.added} aggiunti, ${item.modified} mod.)`;
+                if (badgeEl) {
+                    badgeEl.className = 'px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800';
+                    badgeEl.innerHTML = '<i class="fa-solid fa-circle text-[6px] mr-1 text-emerald-600"></i> Sincronizzato';
+                }
+                if (iconEl) iconEl.className = 'fa-solid fa-circle-check text-emerald-600';
             }
             if (calendarInstance) calendarInstance.refetchEvents();
             checkCalendarConflicts();
@@ -3673,17 +3618,9 @@
             if (spinner) spinner.classList.remove('animate-spin');
             if (titleEl) titleEl.textContent = 'Sincronizzazione completata';
 
-            const report = {
-                syncedAt: new Date().toISOString(),
-                centers: icalCenters.map(c => c.name),
-                failed: failedCenterNames.slice(),
-                added: addedEventsDetail.map(item => ({ ...item })),
-                modified: modifiedEventsDetail.map(item => ({ ...item })),
-                deleted: deletedEventsDetail.map(item => ({ ...item }))
-            };
-            saveLastSyncReport(report);
-            if (contentEl) contentEl.innerHTML = buildSyncDecisionReport(report);
-            updateSyncCloseState(report);
+            await recordSyncChanges(core, result.changes);
+            currentSyncReport = buildSyncRunReport(result, icalCenters);
+            showSyncReport(currentSyncReport);
             if (footer) footer.classList.remove('hidden');
         }
 
@@ -3691,14 +3628,64 @@
             const d=new Date(value);
             return Number.isNaN(d.getTime()) ? String(value || '') : d.toLocaleString('it-IT',{dateStyle:'medium',timeStyle:'short'});
         }
+        function formatSyncChangeDate(value) {
+            const d = new Date(value);
+            if (!value || Number.isNaN(d.getTime())) return String(value || '');
+            return `${d.toLocaleDateString('it-IT', { day: 'numeric', month: 'short', year: 'numeric' })} alle ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+        }
+        function syncChangeItem(change) {
+            return { id: change.id, title: change.title, center: change.centerName || 'Poliambulatorio', when: formatSyncChangeDate(change.start) };
+        }
+        function eventCenterLabel(ev) {
+            return ev?.extendedProps?.centerName || getEventCenter(ev)?.name || 'Poliambulatorio';
+        }
+        /** Appuntamento sparito dal calendario originale, in attesa della scelta di Silvia. */
+        function isExternalRemovalPending(ev) {
+            return ev?.extendedProps?.externalRemovalPending === true && ev?.extendedProps?.detachedFromExternal !== true;
+        }
+        /** Cancellati da decidere (dal database, quindi uguali su ogni dispositivo) più le scelte appena fatte. */
+        function pendingDeletionItems() {
+            const pending = (appState.events || []).filter(isExternalRemovalPending)
+                .sort((a, b) => String(a.start || '').localeCompare(String(b.start || '')))
+                .map(ev => ({ id: ev.id, title: ev.title, center: eventCenterLabel(ev), when: formatDeletionEventDate(ev.start), decision: null }));
+            const decided = [...externalDeletionDecisions.values()].filter(item => !pending.some(p => p.id === item.id));
+            return [...pending, ...decided];
+        }
+        function buildSyncRunReport(result, icalCenters) {
+            const of = type => result.changes.filter(change => change.type === type).map(syncChangeItem);
+            const deleted = pendingDeletionItems();
+            return { syncedAt: new Date().toISOString(), centers: icalCenters.map(c => c.name).concat(deleted.map(item => item.center)), failed: result.failed.slice(), added: of('added'), modified: of('modified'), restored: of('restored'), deleted };
+        }
+        /** "Ultime novità": registro delle sincronizzazioni (app e controllo orario) degli ultimi giorni. */
+        function buildRecentSyncReport(days = 7) {
+            const state = appState.calendarSyncState || {};
+            const cutoff = Date.now() - days * 86400000;
+            const recent = (Array.isArray(state.recentChanges) ? state.recentChanges : []).filter(change => new Date(change.at).getTime() >= cutoff);
+            const of = type => recent.filter(change => change.type === type).map(syncChangeItem);
+            const added = of('added'), modified = of('modified'), restored = of('restored'), deleted = pendingDeletionItems();
+            const failed = Array.isArray(state.lastFailed) ? state.lastFailed.slice() : [];
+            const centers = [...added, ...modified, ...restored, ...deleted].map(item => item.center).concat(failed);
+            return { syncedAt: state.lastRunAt || null, centers, failed, added, modified, restored, deleted };
+        }
+        /** Aggiunge le novità al registro condiviso (settings/calendar_sync), lo stesso aggiornato dal server. */
+        async function recordSyncChanges(core, changes) {
+            if (!changes.length) return;
+            const recentChanges = core.appendRecentChanges(appState.calendarSyncState?.recentChanges, changes, { now: new Date() });
+            appState.calendarSyncState = { ...(appState.calendarSyncState || {}), recentChanges };
+            if (!db || !userId) return;
+            try {
+                await setDoc(sharedDocument('settings', 'calendar_sync'), { recentChanges, lastAppSyncAt: new Date().toISOString() }, { merge: true });
+            } catch (err) {
+                console.warn('Registro della sincronizzazione non salvato:', err);
+            }
+        }
+        function showSyncReport(report) {
+            const contentEl = document.getElementById('sync-report-content');
+            if (contentEl) contentEl.innerHTML = buildSyncDecisionReport(report);
+            updateSyncCloseState(report);
+        }
         function escapeReport(value) {
             return String(value||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;');
-        }
-        function saveLastSyncReport(report) {
-            try { localStorage.setItem('lastIcalSyncReport',JSON.stringify(report)); } catch(e) {}
-        }
-        function loadLastSyncReport() {
-            try { return JSON.parse(localStorage.getItem('lastIcalSyncReport')||'null'); } catch(e) { return null; }
         }
         function pendingDeletionCount(report) {
             return (report?.deleted || []).filter(x => !x.decision).length;
@@ -3714,6 +3701,7 @@
                 return `<div class="bg-white border rounded-xl p-3 text-xs"><b>${escapeReport(x.title)}</b><p class="text-slate-500 mt-1">${escapeReport(x.when||'')}</p>${decided?`<p class="mt-2 font-bold ${decided==='keep'?'text-amber-700':'text-rose-700'}">Scelta registrata: ${decided==='keep'?'mantieni nella mia agenda':'rimuovi dalla mia agenda'}</p>`:`<div class="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-3"><button type="button" onclick="requestExternalDeletionDecision('${x.id}','keep')" class="px-3 py-2 bg-amber-100 text-amber-900 rounded-xl font-bold">Mantieni nella mia agenda</button><button type="button" onclick="requestExternalDeletionDecision('${x.id}','remove')" class="px-3 py-2 bg-rose-600 text-white rounded-xl font-bold">Rimuovi dalla mia agenda</button></div>`}</div>`}).join('')}</div></div>`;
         }
         function buildSyncDecisionReport(report) {
+            const restoredAll=report.restored||[];
             const allCenters=[...new Set(report.centers||[])];
             const summary=`<div class="grid grid-cols-3 gap-2 text-center"><div class="p-3 bg-emerald-50 rounded-xl"><b>${report.added.length}</b><small class="block">Aggiunti</small></div><div class="p-3 bg-amber-50 rounded-xl"><b>${report.modified.length}</b><small class="block">Modificati</small></div><div class="p-3 bg-rose-50 rounded-xl"><b>${report.deleted.length}</b><small class="block">Rimossi alla fonte</small></div></div>`;
             const failed=report.failed||[];
@@ -3722,8 +3710,9 @@
             const centers=allCenters.map(name=>{
                 const a=report.added.filter(x=>x.center===name);
                 const m=report.modified.filter(x=>x.center===name);
+                const r=restoredAll.filter(x=>x.center===name);
                 const d=report.deleted.filter(x=>x.center===name);
-                const total=a.length+m.length+d.length;
+                const total=a.length+m.length+r.length+d.length;
                 const centerFailed=failed.includes(name);
                 const badge=centerFailed?'<span class="px-2.5 py-1 rounded-full text-[10px] font-bold bg-rose-100 text-rose-800">Errore di sincronizzazione</span>':`<span class="px-2.5 py-1 rounded-full text-[10px] font-bold ${total?'bg-purple-100 text-purple-800':'bg-emerald-100 text-emerald-800'}">${total?total+' variazioni':'Nessuna variazione'}</span>`;
                 return `<section class="border border-slate-200 rounded-2xl p-3 sm:p-4 bg-white">
@@ -3733,6 +3722,7 @@
                     </div>
                     ${buildChangeSection('Aggiunti',a,'bg-emerald-50')}
                     ${buildChangeSection('Modificati',m,'bg-amber-50')}
+                    ${buildChangeSection('Di nuovo nel calendario originale',r,'bg-sky-50')}
                     ${buildDeletedSection(d)}
                     ${centerFailed?'<p class="text-xs text-rose-700 mt-3"><i class="fa-solid fa-triangle-exclamation mr-1"></i>Calendario non sincronizzato: impossibile scaricarlo. Riprova più tardi o verifica il link iCal.</p>':(!total?'<p class="text-xs text-slate-400 mt-3"><i class="fa-solid fa-circle-check text-emerald-600 mr-1"></i>Nessun appuntamento aggiunto, modificato o rimosso.</p>':'')}
                 </section>`;
@@ -3749,25 +3739,27 @@
             button.classList.toggle('cursor-not-allowed',pending>0);
         }
         window.requestExternalDeletionDecision = function(eventId,decision) {
-            const report=loadLastSyncReport();
-            const item=report?.deleted?.find(x=>x.id===eventId);
-            if (!item) return;
+            const ev=appState.events.find(x=>x.id===eventId);
+            if (!ev) return;
             const action=decision==='keep'?'mantenere definitivamente questo appuntamento nella tua agenda':'rimuovere definitivamente questo appuntamento dalla tua agenda';
             showConfirmDialog('Conferma scelta',`Sei sicura di voler ${action}?`,async()=>{
-                const ev=appState.events.find(x=>x.id===eventId);
-                if (decision==='keep' && !ev) throw new Error('Appuntamento non trovato nello stato locale');
+                const item={ id:eventId, title:ev.title, center:eventCenterLabel(ev), when:formatDeletionEventDate(ev.start) };
                 try {
-                    if (decision==='keep' && ev) {
-                        const keptAt=new Date(); ev.extendedProps={...(ev.extendedProps||{}),detachedFromExternal:true,externalCalendarStatus:'Cancellato dal calendario originale e mantenuto nel calendario personale',externalRemovedAt:keptAt.toISOString()};
+                    if (decision==='keep') {
+                        const keptAt=new Date();
+                        const props={...(ev.extendedProps||{}),detachedFromExternal:true,externalCalendarStatus:'Cancellato dal calendario originale e mantenuto nel calendario personale',externalRemovedAt:keptAt.toISOString(),externalRemovalPending:false,externalRemovalDetectedAt:null};
                         const statusNote=`[STATO CALENDARIO] Cancellato dal calendario originale e mantenuto nel calendario personale. Decisione registrata il ${keptAt.toLocaleString('it-IT',{dateStyle:'medium',timeStyle:'short'})}.`;
-                        const existingNotes=String(ev.extendedProps.notes||'').replace(/\n?\[STATO CALENDARIO\][^\n]*/g,'').trim(); ev.extendedProps.notes=[existingNotes,statusNote].filter(Boolean).join('\n');
-                        await setDoc(sharedDocument('studio_events',eventId),ev,{merge:true});
+                        const existingNotes=String(props.notes||'').replace(/\n?\[STATO CALENDARIO\][^\n]*/g,'').trim(); props.notes=[existingNotes,statusNote].filter(Boolean).join('\n');
+                        const updated={...ev,extendedProps:props};
+                        await setDoc(sharedDocument('studio_events',eventId),updated,{merge:true});
+                        const idx=appState.events.findIndex(x=>x.id===eventId);
+                        if (idx>=0) appState.events[idx]=updated;
                     } else if (decision==='remove') {
-                        appState.events=appState.events.filter(x=>x.id!==eventId);
                         await deleteDoc(sharedDocument('studio_events',eventId));
+                        appState.events=appState.events.filter(x=>x.id!==eventId);
                     }
-                    item.decision=decision; item.decidedAt=new Date().toISOString(); saveLastSyncReport(report);
-                    document.getElementById('sync-report-content').innerHTML=buildSyncDecisionReport(report); updateSyncCloseState(report);
+                    externalDeletionDecisions.set(eventId,{...item,decision,decidedAt:new Date().toISOString()});
+                    if (currentSyncReport) { currentSyncReport.deleted=pendingDeletionItems(); currentSyncReport.centers=(currentSyncReport.centers||[]).concat(currentSyncReport.deleted.map(x=>x.center)); showSyncReport(currentSyncReport); }
                     if(calendarInstance)calendarInstance.refetchEvents();
                 } catch(err) {
                     console.error('Errore scelta cancellazione esterna:',err);
@@ -3777,105 +3769,27 @@
             }, decision==='keep' ? 'Sì, mantieni' : 'Sì, rimuovi');
         }
         window.openLastSyncReport = function() {
-            const report=loadLastSyncReport();
-            document.getElementById('sync-modal-title').textContent='Novità dell’ultima sincronizzazione';
+            externalDeletionDecisions.clear();
+            currentSyncReport=buildRecentSyncReport();
+            const report=currentSyncReport;
+            const hasNews=report.added.length||report.modified.length||report.restored.length||report.deleted.length||report.failed.length;
+            document.getElementById('sync-modal-title').textContent='Novità degli ultimi 7 giorni';
             document.getElementById('sync-spinner').classList.remove('animate-spin');
-            document.getElementById('sync-report-content').innerHTML=report?buildSyncDecisionReport(report):'<p class="p-4 text-center">Nessun report disponibile.</p>';
-            document.getElementById('sync-modal-footer').classList.remove('hidden'); updateSyncCloseState(report||{deleted:[]});
+            const lastRun=report.syncedAt?`<p class="text-[11px] text-slate-500 text-center">Ultimo controllo automatico: ${escapeReport(formatDeletionEventDate(report.syncedAt))}</p>`:'';
+            document.getElementById('sync-report-content').innerHTML=(hasNews?buildSyncDecisionReport(report):'<p class="p-4 text-center">Nessuna novità negli ultimi 7 giorni.</p>')+lastRun;
+            document.getElementById('sync-modal-footer').classList.remove('hidden'); updateSyncCloseState(report);
             document.getElementById('sync-report-modal').classList.remove('hidden');
         }
 
         window.closeSyncReportModal = function() {
-            const report=loadLastSyncReport();
-            if (pendingDeletionCount(report)>0) { showToast('Completa prima tutte le scelte sugli appuntamenti rimossi.'); return; }
+            if (pendingDeletionCount(currentSyncReport)>0) { showToast('Completa prima tutte le scelte sugli appuntamenti rimossi.'); return; }
             document.getElementById('sync-report-modal').classList.add('hidden');
         }
 
-        function normalizeGoogleCalendarUrl(url) {
-            try {
-                const urlObj = new URL(url);
-                if (!url.includes('calendar.google.com')) return url;
-                const cid = urlObj.searchParams.get('cid');
-                if (!cid) return url;
-                let calendarId = cid;
-                try {
-                    const decoded = atob(cid);
-                    if (decoded && decoded.includes('@')) calendarId = decoded;
-                } catch (e) {}
-                calendarId = decodeURIComponent(calendarId);
-                return `https://calendar.google.com/calendar/ical/${calendarId}/public/basic.ics`;
-            } catch (e) {
-                return url;
-            }
-        }
-
-        /** Ricompone le righe ripiegate (RFC 5545 §3.1): una riga che inizia con spazio o tab continua la precedente. */
-        function unfoldIcalLines(text) {
-            return String(text || '').replace(/\r\n|\r/g, '\n').replace(/\n[ \t]/g, '').split('\n');
-        }
-        /** Scompone una riga iCal in nome, parametri (es. TZID) e valore, rispettando i parametri tra virgolette. */
-        function parseIcalProperty(line) {
-            let inQuotes = false;
-            let colon = -1;
-            for (let i = 0; i < line.length; i++) {
-                const ch = line[i];
-                if (ch === '"') inQuotes = !inQuotes;
-                else if (ch === ':' && !inQuotes) { colon = i; break; }
-            }
-            if (colon < 0) return null;
-            const [name, ...paramParts] = line.slice(0, colon).split(';');
-            const params = {};
-            for (const part of paramParts) {
-                const eq = part.indexOf('=');
-                if (eq > 0) params[part.slice(0, eq).toUpperCase()] = part.slice(eq + 1).replace(/^"|"$/g, '');
-            }
-            return { name: name.toUpperCase(), params, value: line.slice(colon + 1) };
-        }
-        /** Decodifica i caratteri con escape dei valori di testo iCal (\\ \; \, \n). */
-        function unescapeIcalText(value) {
-            return String(value || '').replace(/\\([\\;,nN])/g, (m, ch) => (ch === 'n' || ch === 'N') ? '\n' : ch);
-        }
-        /** Converte un orario "da parete" in un fuso IANA (es. Europe/Rome) nell'istante UTC corrispondente. */
-        function zonedTimeToUtc(year, month, day, hour, minute, timeZone) {
-            try {
-                const formatter = new Intl.DateTimeFormat('en-US', { timeZone, hourCycle: 'h23', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit' });
-                const offsetAt = (ts) => {
-                    const parts = formatter.formatToParts(new Date(ts));
-                    const get = (type) => Number(parts.find(p => p.type === type).value);
-                    return Date.UTC(get('year'), get('month') - 1, get('day'), get('hour'), get('minute'), get('second')) - ts;
-                };
-                const wallClock = Date.UTC(year, month, day, hour, minute);
-                let ts = wallClock - offsetAt(wallClock);
-                ts = wallClock - offsetAt(ts);
-                return new Date(ts);
-            } catch (e) {
-                return null;
-            }
-        }
-        function parseIcalDateTime(str, tzid = null) {
-            if (!str) return new Date().toISOString();
-            try {
-                const raw = String(str).trim();
-                const clean = raw.replace(/[^0-9T]/g, '');
-                const year = parseInt(clean.substring(0, 4), 10);
-                const month = parseInt(clean.substring(4, 6), 10) - 1;
-                const day = parseInt(clean.substring(6, 8), 10);
-                if (!(clean.length >= 13 && clean.charAt(8) === 'T')) {
-                    // Evento di un'intera giornata (VALUE=DATE): convenzionalmente alle 09:00 UTC.
-                    return new Date(Date.UTC(year, month, day, 9, 0)).toISOString();
-                }
-                const hour = parseInt(clean.substring(9, 11), 10);
-                const minute = parseInt(clean.substring(11, 13), 10);
-                if (/Z$/i.test(raw)) return new Date(Date.UTC(year, month, day, hour, minute)).toISOString();
-                if (tzid) {
-                    const zoned = zonedTimeToUtc(year, month, day, hour, minute, tzid);
-                    if (zoned && !Number.isNaN(zoned.getTime())) return zoned.toISOString();
-                }
-                // Orario "floating" (o fuso non riconosciuto): ora locale del dispositivo.
-                return new Date(year, month, day, hour, minute).toISOString();
-            } catch(e) {
-                return new Date().toISOString();
-            }
+        /** Dalla scheda dell'appuntamento: apre le Ultime novità per scegliere se tenerlo o toglierlo. */
+        window.openExternalRemovalDecision = function() {
+            closeStudioModal();
+            openLastSyncReport();
         }
 
         let confirmCallback = null;
@@ -4656,7 +4570,7 @@
                 .sort((a, b) => a.start - b.start)
                 .map(({ ev, start }) => {
                     const patient = appState.patients.find(p => String(p.id) === String(ev.extendedProps?.patientId || '')) || null;
-                    return { event: ev, start, patient, hasPhone: Boolean(patient && normalizeWhatsAppNumber(patient.phone)), sentAt: ev.extendedProps?.reminderSentAt || null };
+                    return { event: ev, start, patient, hasPhone: Boolean(patient && normalizeWhatsAppNumber(patient.phone)), sentAt: ev.extendedProps?.reminderSentAt || null, removalPending: isExternalRemovalPending(ev) };
                 });
         }
         function tomorrowAppointments(now = new Date()) {
@@ -4672,13 +4586,16 @@
             const time = d.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' });
             return localDayKey(d) === localDayKey(now) ? `✓ inviato alle ${time}` : `✓ inviato il ${d.toLocaleDateString('it-IT', { day: 'numeric', month: 'short' })} alle ${time}`;
         }
-        function reminderRowHtml({ event, start, patient, hasPhone, sentAt }, now) {
+        function reminderRowHtml({ event, start, patient, hasPhone, sentAt, removalPending }, now) {
             const time = `${String(start.getHours()).padStart(2, '0')}:${String(start.getMinutes()).padStart(2, '0')}`;
             const place = appointmentContext(event)?.place || 'lo studio';
             const name = patient?.name || event.title || 'Appuntamento';
             let status = '';
             let action = '';
-            if (!patient) {
+            if (removalPending) {
+                status = '<span class="px-2 py-0.5 rounded-full bg-rose-100 text-rose-800 text-[10px] font-bold">Cancellato dal calendario originale</span>';
+                action = `<button type="button" onclick="openReminderEvent('${escapeHtml(event.id)}')" class="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-xl text-xs font-bold">Scegli se tenerlo</button>`;
+            } else if (!patient) {
                 status = '<span class="px-2 py-0.5 rounded-full bg-rose-100 text-rose-800 text-[10px] font-bold">Nessun paziente associato</span>';
                 action = `<button type="button" onclick="openReminderEvent('${escapeHtml(event.id)}')" class="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-xl text-xs font-bold">Associa paziente</button>`;
             } else if (!hasPhone) {
@@ -4688,7 +4605,7 @@
                 if (sentAt) status = `<span class="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-bold">${escapeHtml(reminderSentLabel(sentAt, now))}</span>`;
                 action = `<button type="button" onclick="sendTomorrowReminder('${escapeHtml(event.id)}')" aria-label="${sentAt ? 'Invia di nuovo il promemoria' : 'Promemoria WhatsApp'} a ${escapeHtml(name)} (${time})" class="inline-flex items-center gap-1.5 px-3 py-2 ${sentAt ? 'bg-white border border-emerald-300 text-emerald-800 hover:bg-emerald-50' : 'bg-emerald-700 hover:bg-emerald-800 text-white'} rounded-xl text-xs font-bold"><i class="fa-brands fa-whatsapp"></i>${sentAt ? 'Invia di nuovo' : 'WhatsApp'}</button>`;
             }
-            return `<div data-reminder-id="${escapeHtml(event.id)}" class="p-3 sm:p-4 bg-white border ${!patient || !hasPhone ? 'border-rose-200' : 'border-slate-200'} rounded-2xl flex flex-col sm:flex-row sm:items-center gap-3">
+            return `<div data-reminder-id="${escapeHtml(event.id)}" class="p-3 sm:p-4 bg-white border ${removalPending || !patient || !hasPhone ? 'border-rose-200' : 'border-slate-200'} rounded-2xl flex flex-col sm:flex-row sm:items-center gap-3">
                 <div class="flex items-center gap-3 min-w-0 flex-1">
                     <span class="w-14 flex-shrink-0 text-center font-bold text-sm text-slate-900">${time}</span>
                     <div class="min-w-0">
@@ -4708,7 +4625,7 @@
                 { id: 'tomorrow', label: 'Domani', date: tomorrow, items: tomorrowAppointments(now), empty: 'Nessun appuntamento con pazienti domani.' }
             ];
             const all = sections.flatMap(section => section.items);
-            const pending = all.filter(item => item.hasPhone && !item.sentAt).length;
+            const pending = all.filter(item => item.hasPhone && !item.sentAt && !item.removalPending).length;
             document.getElementById('reminders-summary').textContent = all.length
                 ? `${all.length} appuntament${all.length === 1 ? 'o' : 'i'} • ${pending} promemoria da inviare`
                 : 'Nessun appuntamento da ricordare';
@@ -4767,7 +4684,40 @@
             const label = document.getElementById('daily-digest-status');
             label.textContent = dailyDigestStatusText(enabled, status);
             label.classList.toggle('text-rose-700', Boolean(status?.lastError));
+            const alertsBox = document.getElementById('sync-alerts-enabled');
+            if (alertsBox) {
+                const syncState = appState.calendarSyncState || null;
+                alertsBox.checked = syncAlertsEnabled(appState.messagingSettings);
+                const alertsLabel = document.getElementById('sync-alerts-status');
+                alertsLabel.textContent = syncAlertsStatusText(syncState);
+                alertsLabel.classList.toggle('text-rose-700', Boolean(syncState?.lastAlertError));
+            }
         }
+        /** Avvisi sulle modifiche: attivi se scelti, altrimenti insieme al riepilogo delle 7 (stessa regola del server). */
+        function syncAlertsEnabled(settings) {
+            return settings?.syncAlertsEnabled === true || (settings?.syncAlertsEnabled === undefined && settings?.dailyDigestEnabled === true);
+        }
+        function syncAlertsStatusText(state) {
+            const parts = [];
+            if (state?.lastRunAt) parts.push(`Ultimo controllo automatico il ${formatDigestMoment(state.lastRunAt)}.`);
+            else parts.push('Il controllo automatico non è ancora partito.');
+            if (state?.lastAlertAt) parts.push(`Ultimo avviso inviato il ${formatDigestMoment(state.lastAlertAt)}.`);
+            if (state?.lastAlertError) parts.push(`Ultimo avviso non riuscito: ${state.lastAlertError}`);
+            return parts.join(' ');
+        }
+        window.saveSyncAlertsEnabled = async function(enabled) {
+            if (!db || !appState.isLoggedIn || !isAuthorizedFirebaseUser()) { showToast('Accesso autorizzato necessario.'); renderDailyDigestPanel(); return; }
+            const updatedAt = new Date().toISOString();
+            try {
+                await setDoc(sharedDocument('settings', 'messaging'), { syncAlertsEnabled: Boolean(enabled), updatedAt }, { merge: true });
+                appState.messagingSettings = { ...(appState.messagingSettings || {}), syncAlertsEnabled: Boolean(enabled), updatedAt };
+                showToast(enabled ? 'Avvisi sulle modifiche dell\'agenda attivati.' : 'Avvisi sulle modifiche dell\'agenda disattivati.');
+            } catch (err) {
+                console.error('Errore salvataggio avvisi agenda:', err);
+                showToast('Errore: impostazione non salvata.');
+            }
+            renderDailyDigestPanel();
+        };
         window.saveDailyDigestEnabled = async function(enabled) {
             if (!db || !appState.isLoggedIn || !isAuthorizedFirebaseUser()) { showToast('Accesso autorizzato necessario.'); renderDailyDigestPanel(); return; }
             const settings = { ...(appState.messagingSettings || {}), dailyDigestEnabled: Boolean(enabled), updatedAt: new Date().toISOString() };
@@ -5637,10 +5587,11 @@
                         }
 
                         const isDetached=ev.extendedProps?.detachedFromExternal===true;
+                        const removalPending=isExternalRemovalPending(ev);
                         const nonClinical=isNonClinicalEvent(ev);
                         const tightTransfer=!hasConflict && tightTargets.has(ev.id);
-                        let titlePrefix=hasConflict?'⚠️ [CONFLITTO] ':(tightTransfer?'⏱ [SPOSTAMENTO] ':(nonClinical?'🏠 [NON CLINICO] ':(isDetached?'📌 [MANTENUTO] ':'')));
-                        let cleanTitle=(ev.title||'').replace('⚠️ [CONFLITTO] ','').replace('⏱ [SPOSTAMENTO] ','').replace('🏠 [NON CLINICO] ','').replace('📌 [MANTENUTO] ','');
+                        let titlePrefix=removalPending?'❌ [DA DECIDERE] ':(hasConflict?'⚠️ [CONFLITTO] ':(tightTransfer?'⏱ [SPOSTAMENTO] ':(nonClinical?'🏠 [NON CLINICO] ':(isDetached?'📌 [MANTENUTO] ':''))));
+                        let cleanTitle=(ev.title||'').replace('❌ [DA DECIDERE] ','').replace('⚠️ [CONFLITTO] ','').replace('⏱ [SPOSTAMENTO] ','').replace('🏠 [NON CLINICO] ','').replace('📌 [MANTENUTO] ','');
                         return { 
                             ...ev, 
                             title: titlePrefix + cleanTitle,

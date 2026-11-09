@@ -9,6 +9,7 @@
 import { JSDOM } from 'jsdom';
 import { readIndexHtml, getModuleScript, parseModuleScript, topLevelFunctionNames } from './app-source.js';
 import * as firebaseMock from '../mocks/firebase/firebase-mock-core.js';
+import * as calendarSyncCore from '../../lib/calendar-sync-core.js';
 
 import { AUTHORIZED_EMAIL } from '../fixtures/seed.js';
 
@@ -93,6 +94,8 @@ export async function bootApp(options = {}) {
     const { window } = dom;
     if (options.width) Object.defineProperty(window, 'innerWidth', { value: options.width, configurable: true });
     window.__firebaseModule = firebaseMock;
+    // In jsdom l'import dinamico non è disponibile: la logica di sincronizzazione condivisa viene passata già caricata.
+    window.__calendarSyncCore = calendarSyncCore;
     window.FullCalendar = { Calendar: FakeCalendar };
     window.structuredClone = window.structuredClone || (v => JSON.parse(JSON.stringify(v)));
     window.fetch = options.fetch || (async () => { throw new Error('fetch non configurato nel test'); });

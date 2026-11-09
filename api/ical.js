@@ -133,7 +133,7 @@ export default async function handler(req, res) {
  * Scarica un URL seguendo manualmente i redirect, verificando a ogni passaggio
  * che la destinazione sia un host pubblico (protezione SSRF).
  */
-async function fetchPublicUrl(url, signal) {
+export async function fetchPublicUrl(url, signal) {
 
   let currentUrl = url;
 

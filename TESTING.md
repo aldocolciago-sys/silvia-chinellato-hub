@@ -50,6 +50,15 @@ Nella scheda paziente la sezione "Valutazione pre-trattamento" contiene due list
 
 Nella dashboard compensi la sezione "Scadenze fiscali" stima i versamenti dell'anno selezionato con il metodo storico: il 30 giugno si versano il saldo dell'imposta sostitutiva dell'anno precedente e il 1° acconto (40%); il 30 novembre il 2° acconto (60%). Non c'è acconto sotto 51,65 €, e fino a 257,52 € c'è un acconto unico a novembre. Le date che cadono nel fine settimana slittano al lunedì. Per i contributi, la Gestione separata segue le stesse date (acconti 40% + 40% sui contributi dell'anno precedente); per ENPAPI o un'altra cassa si inseriscono fino a 3 scadenze (gg/mm e percentuale) nel profilo fiscale (`pensionFund`, `customDeadlines`). Nell'area riservata compare un promemoria 15 giorni prima di ogni scadenza, che si può nascondere per la sessione. Sono tutte stime da verificare con il commercialista. Logica in `buildTaxSchedule`, `taxAdvancePlan`, `businessDayOnOrAfter` e `upcomingTaxDeadline` (`index.html`). Test: `tests/unit/tax-schedule.test.js`, `tests/integration/tax-schedule.test.js`, `tests/e2e/tax-schedule.spec.js` (orologio fissato al 20 giugno 2030).
 
+## Sincronizzazione dei calendari (app e controllo orario)
+
+La lettura dei calendari .ics e il confronto con l'agenda sono in `lib/calendar-sync-core.js`, usato sia dall'app (pulsante "Sincronizza" e accesso) sia da `api/calendar-sync.js`, chiamata ogni ora da GitHub Actions (`.github/workflows/calendar-sync.yml`) e prima del riepilogo delle 7.
+- Gli appuntamenti spariti alla fonte vengono segnati `extendedProps.externalRemovalPending` e mai eliminati: decide Silvia.
+- Il registro delle novità sta in `shared/data/settings/calendar_sync`.
+- Nell'app la logica si carica con `import('/lib/calendar-sync-core.js')`; nei test jsdom è passata già caricata (`window.__calendarSyncCore`).
+
+Test: `tests/unit/calendar-sync-core.test.js`, `tests/unit/api-calendar-sync.test.js` (Firestore Admin simulato, testo degli avvisi, lucchetto, coda), `tests/integration/ical-sync.test.js`, `tests/e2e/ical-sync.spec.js`.
+
 ## Messaggi WhatsApp ai pazienti
 
 Dall'anagrafica pazienti il pulsante **WhatsApp** apre un menu di messaggi precompilati (richiesta notizie, nuovo appuntamento, recensione Google, ringraziamento, promemoria), in versione Osteopatia e Idrocolonterapia. I testi sono in `WHATSAPP_TEMPLATES` in `index.html`; il link recensioni si imposta dall'app ed è salvato in `shared/data/settings/messaging`. Test: `tests/unit/whatsapp.test.js`, `tests/integration/patient-messages.test.js`, `tests/e2e/patient-messages.spec.js`.

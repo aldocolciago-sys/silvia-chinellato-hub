@@ -31,7 +31,9 @@ async function setup({ ics, fetchImpl, centers = [center({ id: 'c1', name: 'Poli
 }
 
 const calendarWith = (...events) => vcalendar(events.map(vevent));
-const reportFromStorage = () => JSON.parse(app.window.localStorage.getItem('lastIcalSyncReport'));
+const syncState = () => app.mock.get(`${SHARED}/settings/calendar_sync`);
+const recentOf = (type) => (syncState()?.recentChanges || []).filter(change => change.type === type);
+const pendingIds = () => app.mock.list(`${SHARED}/studio_events`).filter(e => e.extendedProps?.externalRemovalPending === true).map(e => e.id).sort();
 const closeButton = () => app.$('#sync-modal-footer button');
 
 describe('sincronizzazione iCal', () => {
@@ -54,8 +56,10 @@ describe('sincronizzazione iCal', () => {
 
         expect(app.text('sync-modal-title')).toBe('Sincronizzazione completata');
         expect(app.text('sync-report-content')).toContain('Aggiunti (2)');
-        expect(reportFromStorage()).toMatchObject({ centers: ['Polisalute'], modified: [], deleted: [] });
-        expect(reportFromStorage().added).toHaveLength(2);
+        expect(recentOf('added').map(c => c.id).sort()).toEqual(['ical_c1_u1', 'ical_c1_u2']);
+        expect(recentOf('added')[0]).toMatchObject({ kind: 'clinical', centerName: 'Polisalute', at: expect.any(String) });
+        expect(recentOf('modified')).toHaveLength(0);
+        expect(pendingIds()).toEqual([]);
         expect(closeButton().disabled).toBe(false);
         expect(closeButton().textContent).toBe('Ho capito');
         expect(app.calendar.renderedEvents).toHaveLength(2);
@@ -68,9 +72,9 @@ describe('sincronizzazione iCal', () => {
         await app.window.triggerIcalSync();
         await app.flush();
         expect(app.text('sync-modal-title')).toBe('Sincronizzazione completata');
-        const report = reportFromStorage();
-        expect(report.added).toHaveLength(0);
-        expect(report.modified).toHaveLength(1);
+        expect(app.text('sync-report-content')).toContain('Modificati (1)');
+        expect(app.text('sync-report-content')).not.toContain('Aggiunti (');
+        expect(recentOf('modified')[0]).toMatchObject({ id: 'ical_c1_u1', start: '2030-01-15T11:00:00.000Z', before: { start: '2030-01-15T09:00:00.000Z' } });
         expect(app.mock.get(`${SHARED}/studio_events/ical_c1_u1`).start).toBe('2030-01-15T11:00:00.000Z');
     });
 
@@ -88,6 +92,9 @@ describe('sincronizzazione iCal', () => {
             events: [studioEvent({ id: 'ical_c1_gone', title: 'Rimosso', start: '2030-01-15T09:00:00.000Z', end: '2030-01-15T10:00:00.000Z', extendedProps: { centerId: 'c1', centerName: 'Polisalute' } })]
         });
         expect(app.text('sync-report-content')).toContain('Scelta obbligatoria');
+        // L'appuntamento resta in agenda, segnato "da decidere" nel database (visibile da ogni dispositivo).
+        expect(app.mock.get(`${SHARED}/studio_events/ical_c1_gone`).extendedProps).toMatchObject({ externalRemovalPending: true, externalRemovalDetectedAt: expect.any(String) });
+        expect(app.calendar.renderedEvents.find(e => e.id === 'ical_c1_gone').title).toBe('❌ [DA DECIDERE] Rimosso');
         expect(closeButton().disabled).toBe(true);
         expect(closeButton().textContent).toBe('Completa 1 scelte');
         app.window.closeSyncReportModal();
@@ -100,7 +107,7 @@ describe('sincronizzazione iCal', () => {
         const kept = app.mock.get(`${SHARED}/studio_events/ical_c1_gone`);
         expect(kept.extendedProps.detachedFromExternal).toBe(true);
         expect(kept.extendedProps.notes).toMatch(/^\[STATO CALENDARIO\] Cancellato dal calendario originale/);
-        expect(reportFromStorage().deleted[0].decision).toBe('keep');
+        expect(kept.extendedProps.externalRemovalPending).toBe(false);
         expect(app.text('sync-report-content')).toContain('Scelta registrata: mantieni nella mia agenda');
         expect(closeButton().disabled).toBe(false);
         app.window.closeSyncReportModal();
@@ -112,7 +119,8 @@ describe('sincronizzazione iCal', () => {
             ics: calendarWith(),
             events: [studioEvent({ id: 'ical_c1_kept', extendedProps: { centerId: 'c1', detachedFromExternal: true } })]
         });
-        expect(reportFromStorage().deleted).toHaveLength(0);
+        expect(pendingIds()).toEqual([]);
+        expect(app.text('sync-report-content')).not.toContain('Rimossi dal calendario originale');
     });
 
     it('richiede una decisione per gli appuntamenti rimossi alla fonte: rimuovi', async () => {
@@ -125,7 +133,7 @@ describe('sincronizzazione iCal', () => {
         await app.confirm();
         expect(app.mock.has(`${SHARED}/studio_events/ical_c1_gone`)).toBe(false);
         expect(app.state.events).toHaveLength(0);
-        expect(reportFromStorage().deleted[0].decision).toBe('remove');
+        expect(app.text('sync-report-content')).toContain('Scelta registrata: rimuovi dalla mia agenda');
     });
 
     it('non registra la decisione se il salvataggio fallisce e riabilita la conferma', async () => {
@@ -135,7 +143,9 @@ describe('sincronizzazione iCal', () => {
         await app.confirm();
         expect(app.toast()).toBe('Errore: operazione non completata.');
         expect(app.isHidden('confirm-modal')).toBe(false);
-        expect(reportFromStorage().deleted[0].decision).toBeNull();
+        expect(pendingIds()).toEqual(['ical_c1_gone']);
+        expect(app.state.events.find(e => e.id === 'ical_c1_gone').extendedProps.detachedFromExternal).not.toBe(true);
+        expect(closeButton().disabled).toBe(true);
     });
 
     it('ripiega sui proxy alternativi se /api/ical non risponde', async () => {
@@ -165,7 +175,7 @@ describe('sincronizzazione iCal', () => {
         await setup({ fetchImpl: vi.fn(async () => { throw new TypeError('offline'); }) });
         expect(app.text('sync-report-content')).toMatch(/errore|non sincronizzat/i);
         expect(app.text('sync-report-content')).not.toContain('Nessuna variazione');
-        expect(reportFromStorage().failed).toEqual(['Polisalute']);
+        expect(app.text('sync-report-content')).toContain('non è stato possibile scaricare il calendario di Polisalute');
     });
 
     // Regressione (difetto corretto): se il download di un calendario fallisce, tutti gli eventi già importati
@@ -175,7 +185,7 @@ describe('sincronizzazione iCal', () => {
             fetchImpl: vi.fn(async () => { throw new TypeError('offline'); }),
             events: [studioEvent({ id: 'ical_c1_x', extendedProps: { centerId: 'c1' } })]
         });
-        expect(reportFromStorage().deleted).toHaveLength(0);
+        expect(pendingIds()).toEqual([]);
         expect(closeButton().disabled).toBe(false);
         expect(app.mock.has(`${SHARED}/studio_events/ical_c1_x`)).toBe(true);
     });
@@ -190,8 +200,8 @@ describe('sincronizzazione iCal', () => {
                 studioEvent({ id: 'ical_cb_keep', extendedProps: { centerId: 'cb', centerName: 'Offline' } })
             ]
         });
-        expect(reportFromStorage().deleted.map(d => d.id)).toEqual(['ical_ca_gone']);
-        expect(reportFromStorage().failed).toEqual(['Offline']);
+        expect(pendingIds()).toEqual(['ical_ca_gone']);
+        expect(app.text('sync-report-content')).toContain('non è stato possibile scaricare il calendario di Offline');
     });
 
     it('normalizza gli URL di condivisione Google prima di scaricarli', async () => {
@@ -220,21 +230,76 @@ describe('sincronizzazione iCal', () => {
         expect(app.text('sync-report-content')).toContain('Nessuna variazione');
     });
 
-    it('riapre l’ultimo report salvato', async () => {
+    it('"Ultime novità" mostra le novità degli ultimi 7 giorni dal registro condiviso', async () => {
         await setup({ ics: calendarWith({ uid: 'u1', summary: 'Visita', start: '20300115T090000Z' }) });
         app.window.closeSyncReportModal();
         app.window.openLastSyncReport();
         expect(app.isHidden('sync-report-modal')).toBe(false);
-        expect(app.text('sync-modal-title')).toBe('Novità dell’ultima sincronizzazione');
+        expect(app.text('sync-modal-title')).toBe('Novità degli ultimi 7 giorni');
         expect(app.text('sync-report-content')).toContain('Aggiunti (1)');
     });
 
-    it('senza report salvato mostra un messaggio', async () => {
+    it('"Ultime novità" mostra anche le novità e i cancellati trovati dal controllo orario del server', async () => {
+        const at = new Date().toISOString();
+        app = await bootApp({ docs: seedDocs({
+            centers: [center({ id: 'c1', name: 'Polisalute' })],
+            events: [studioEvent({ id: 'ical_c1_gone', title: 'Sparito', start: '2030-02-01T09:00:00.000Z', extendedProps: { centerId: 'c1', centerName: 'Polisalute', externalRemovalPending: true } })],
+            extra: { [`${SHARED}/settings/calendar_sync`]: { lastRunAt: at, recentChanges: [
+                { type: 'modified', id: 'ical_c1_m', title: 'Spostato', centerName: 'Polisalute', start: '2030-02-02T09:00:00.000Z', at },
+                { type: 'added', id: 'ical_c1_old', title: 'Vecchio', centerName: 'Polisalute', start: '2030-02-03T09:00:00.000Z', at: '2020-01-01T00:00:00.000Z' }
+            ] } }
+        }) });
+        await app.login();
+        app.window.closeSyncReportModal?.();
+        app.window.openLastSyncReport();
+        const text = app.text('sync-report-content');
+        expect(text).toContain('Modificati (1)');
+        expect(text).not.toContain('Vecchio');
+        expect(text).toContain('Rimossi dal calendario originale (1)');
+        expect(text).toContain('Ultimo controllo automatico');
+        expect(closeButton().disabled).toBe(true);
+    });
+
+    it('senza novità mostra un messaggio', async () => {
         app = await bootApp({ docs: seedDocs({ centers: [center()] }) });
         await app.login();
-        app.window.localStorage.clear();
         app.window.openLastSyncReport();
-        expect(app.text('sync-report-content')).toBe('Nessun report disponibile.');
+        expect(app.text('sync-report-content')).toBe('Nessuna novità negli ultimi 7 giorni.');
+        expect(closeButton().disabled).toBe(false);
+    });
+
+    it('un appuntamento già da decidere non viene segnalato di nuovo e ricompare da solo se torna nel calendario', async () => {
+        const gone = studioEvent({ id: 'ical_c1_u1', title: 'Visita', start: '2030-01-15T09:00:00.000Z', end: '2030-01-15T10:00:00.000Z', extendedProps: { centerId: 'c1', centerName: 'Polisalute', fee: 55, notes: 'nota di Silvia', externalRemovalPending: true, externalRemovalDetectedAt: '2030-01-01T00:00:00.000Z' } });
+        await setup({ ics: calendarWith({ uid: 'u1', summary: 'Visita', start: '20300115T090000Z', end: '20300115T100000Z' }), events: [gone] });
+        const back = app.mock.get(`${SHARED}/studio_events/ical_c1_u1`);
+        expect(back.extendedProps).toMatchObject({ externalRemovalPending: false, externalRemovalDetectedAt: null, fee: 55, notes: 'nota di Silvia' });
+        expect(app.text('sync-report-content')).toContain('Di nuovo nel calendario originale (1)');
+        expect(closeButton().disabled).toBe(false);
+    });
+
+    // Regressione (difetto corretto): un appuntamento "mantenuto" che ricompare nel calendario originale
+    // veniva sovrascritto e perdeva compenso, pagamento e note.
+    it('un appuntamento mantenuto che ricompare nel calendario originale conserva i dati inseriti a mano', async () => {
+        const kept = studioEvent({ id: 'ical_c1_u1', title: 'Visita', start: '2030-01-15T09:00:00.000Z', end: '2030-01-15T10:00:00.000Z', extendedProps: { centerId: 'c1', centerName: 'Polisalute', fee: 70, paymentStatus: 'unpaid', patientId: 'pat_9', detachedFromExternal: true, externalRemovedAt: '2030-01-01T00:00:00.000Z', notes: 'controllo\n[STATO CALENDARIO] Cancellato dal calendario originale e mantenuto.' } });
+        await setup({ ics: calendarWith({ uid: 'u1', summary: 'Visita', start: '20300115T090000Z', end: '20300115T100000Z' }), events: [kept] });
+        const saved = app.mock.get(`${SHARED}/studio_events/ical_c1_u1`).extendedProps;
+        expect(saved).toMatchObject({ fee: 70, paymentStatus: 'unpaid', patientId: 'pat_9', detachedFromExternal: false, notes: 'controllo' });
+    });
+
+    // Regressione (difetto corretto): le eccezioni di una serie ricorrente hanno lo stesso UID e si sovrascrivevano,
+    // risultando "modificate" a ogni sincronizzazione.
+    it('le eccezioni di una serie ricorrente non risultano modificate a ogni sincronizzazione', async () => {
+        const ics = vcalendar([
+            vevent({ uid: 'serie', summary: 'Turno', start: '20300107T090000Z', end: '20300107T100000Z', extra: ['RRULE:FREQ=WEEKLY'] }),
+            vevent({ uid: 'serie', summary: 'Turno spostato', start: '20300114T110000Z', end: '20300114T120000Z', extra: ['RECURRENCE-ID:20300114T090000Z'] }),
+            vevent({ uid: 'annullato', summary: 'Annullato', start: '20300116T110000Z', extra: ['STATUS:CANCELLED'] })
+        ]);
+        await setup({ ics });
+        expect(app.mock.list(`${SHARED}/studio_events`).map(e => e.id).sort()).toEqual(['ical_c1_serie', 'ical_c1_serie_r20300114T090000Z']);
+        app.window.closeSyncReportModal();
+        await app.window.triggerIcalSync();
+        await app.flush();
+        expect(app.text('sync-report-content')).toContain('Nessuna variazione');
     });
 
     // Regressione (difetto corretto): le proprietà con parametri (DTSTART;TZID=Europe/Rome:...) vengono lette come UTC.

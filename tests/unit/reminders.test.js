@@ -13,7 +13,7 @@ const patients = [
 
 function fns(events) {
     const appState = { centers, patients, events };
-    return loadFunctions(['tomorrowAppointments', 'todayUpcomingAppointments', 'dayAppointments', 'reminderSentLabel', 'localDayKey', 'isNonClinicalEvent', 'getEventCenter', 'normalizeWhatsAppNumber', 'appointmentContext'], { appState });
+    return loadFunctions(['tomorrowAppointments', 'todayUpcomingAppointments', 'dayAppointments', 'reminderSentLabel', 'localDayKey', 'isNonClinicalEvent', 'getEventCenter', 'normalizeWhatsAppNumber', 'appointmentContext', 'isExternalRemovalPending'], { appState });
 }
 const ev = (id, start, extendedProps = {}, extra = {}) => ({ id, title: id, start, end: start, extendedProps, ...extra });
 
@@ -44,6 +44,18 @@ describe('tomorrowAppointments', () => {
     it('riporta quando il promemoria è già stato inviato', () => {
         const items = fns([ev('a', '2030-03-05T09:00:00', { patientId: 'p1', reminderSentAt: '2030-03-04T18:32:00' })]).tomorrowAppointments(new Date(2030, 2, 4, 19, 0));
         expect(items[0].sentAt).toBe('2030-03-04T18:32:00');
+    });
+});
+
+describe('appuntamenti cancellati dal calendario originale', () => {
+    it('sono segnati, così non si manda il promemoria a un paziente per un appuntamento che non c’è più', () => {
+        const events = [
+            ev('da decidere', '2030-03-05T09:00:00', { patientId: 'p1', externalRemovalPending: true }),
+            ev('mantenuto', '2030-03-05T10:00:00', { patientId: 'p1', externalRemovalPending: true, detachedFromExternal: true }),
+            ev('normale', '2030-03-05T11:00:00', { patientId: 'p1' })
+        ];
+        const items = fns(events).tomorrowAppointments(new Date(2030, 2, 4, 18, 0));
+        expect(items.map(i => [i.event.id, i.removalPending])).toEqual([['da decidere', true], ['mantenuto', false], ['normale', false]]);
     });
 });
 

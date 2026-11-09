@@ -7,7 +7,7 @@ export const TIME_ZONE = 'Europe/Rome';
 export const SEND_FROM_HOUR = 7;
 export const MAX_LINES_PER_DAY = 25;
 
-const TREATMENT_LABELS = { osteopatia: 'Osteopatia', idrocolonterapia: 'Idrocolonterapia' };
+export const TREATMENT_LABELS = { osteopatia: 'Osteopatia', idrocolonterapia: 'Idrocolonterapia' };
 
 const partsFormatter = new Intl.DateTimeFormat('en-GB', {
     timeZone: TIME_ZONE, year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hourCycle: 'h23'
@@ -93,12 +93,12 @@ export function detectTreatmentInText(text) {
     return null;
 }
 
-function eventCenter(ev, centers) {
+export function eventCenter(ev, centers) {
     const id = String(ev?.extendedProps?.centerId || '');
     return centers.find(center => String(center.id) === id) || null;
 }
 
-function eventTreatment(ev, center) {
+export function eventTreatment(ev, center) {
     if (TREATMENT_LABELS[ev?.extendedProps?.treatment]) return ev.extendedProps.treatment;
     for (const text of [ev?.title, center?.service, ev?.extendedProps?.centerName, center?.name]) {
         const found = detectTreatmentInText(text);
@@ -107,11 +107,18 @@ function eventTreatment(ev, center) {
     return null;
 }
 
-function eventKind(ev, center) {
+export function eventKind(ev, center) {
     if (center?.isNonClinicalCalendar === true && center?.isShiftCalendar === true) return 'shift';
     if (ev?.extendedProps?.isNonClinical === true || center?.isNonClinicalCalendar === true) return 'personal';
     return 'clinical';
 }
+
+/** Sparito dal calendario originale: resta in agenda finché Silvia non sceglie se tenerlo o toglierlo. */
+export function isRemovalPending(ev) {
+    return ev?.extendedProps?.externalRemovalPending === true && ev?.extendedProps?.detachedFromExternal !== true;
+}
+
+export const REMOVAL_PENDING_FLAG = ' ❌ cancellato dal calendario originale';
 
 function clockTime(date) {
     const p = romeParts(date);
@@ -138,7 +145,8 @@ export function appointmentsForDay({ events = [], patients = [], centers = [] },
                 place: centerName && centerName !== 'Studio Privato' ? centerName : 'studio',
                 hasPatient: Boolean(patient),
                 hasPhone: Boolean(patient && normalizeWhatsAppNumber(patient.phone)),
-                reminderSent: Boolean(ev.extendedProps?.reminderSentAt)
+                reminderSent: Boolean(ev.extendedProps?.reminderSentAt),
+                removalPending: isRemovalPending(ev)
             };
         });
 }
@@ -175,7 +183,8 @@ export function commitmentsForDay({ events = [], centers = [] }, dayKey, notBefo
                 allDay: ev.allDay === true,
                 time: ev.allDay ? 'Tutto il giorno' : `${clockTime(start)}${end && end > start ? `–${clockTime(end)}` : ''}`,
                 label: kind === 'shift' ? 'Turno' : cleanTitle(ev.title) || 'Impegno personale',
-                place: kind === 'shift' ? centerName : ''
+                place: kind === 'shift' ? centerName : '',
+                removalPending: isRemovalPending(ev)
             };
         });
 }
@@ -186,11 +195,11 @@ function plural(count, one, many) {
 
 function itemLine(item) {
     if (item.kind === 'clinical') {
-        const flag = !item.hasPatient ? '' : !item.hasPhone ? ' ⚠️ senza telefono' : '';
+        const flag = item.removalPending ? REMOVAL_PENDING_FLAG : !item.hasPatient ? '' : !item.hasPhone ? ' ⚠️ senza telefono' : '';
         return `• ${[item.time, item.who, item.treatment, item.place].filter(Boolean).join(' – ')}${flag}`;
     }
     const icon = item.kind === 'shift' ? '🩺' : '🗓️';
-    return `• ${[item.time, `${icon} ${item.label}`, item.place].filter(Boolean).join(' – ')}`;
+    return `• ${[item.time, `${icon} ${item.label}`, item.place].filter(Boolean).join(' – ')}${item.removalPending ? REMOVAL_PENDING_FLAG : ''}`;
 }
 
 function sectionLines(title, items) {
@@ -219,10 +228,12 @@ export function buildDigest(data, now, { appUrl = '', test = false } = {}) {
     const today = dayItems(data, todayKey, now);
     const tomorrow = dayItems(data, tomorrowKey);
     const all = [...today, ...tomorrow];
-    const clinical = all.filter(item => item.kind === 'clinical');
+    // Gli appuntamenti cancellati dal calendario originale non contano per i promemoria ai pazienti.
+    const clinical = all.filter(item => item.kind === 'clinical' && !item.removalPending);
     const pending = clinical.filter(item => item.hasPhone && !item.reminderSent).length;
     const noPhone = clinical.filter(item => item.hasPatient && !item.hasPhone).length;
     const noPatient = clinical.filter(item => !item.hasPatient).length;
+    const removalPending = (data.events || []).filter(isRemovalPending).length;
     const countKind = (items, kind) => items.filter(item => item.kind === kind).length;
 
     const lines = [];
@@ -234,6 +245,9 @@ export function buildDigest(data, now, { appUrl = '', test = false } = {}) {
     if (pending) todo.push(`📲 ${pending} promemoria da inviare ai pazienti`);
     if (noPhone) todo.push(`⚠️ ${plural(noPhone, 'paziente', 'pazienti')} senza telefono`);
     if (noPatient) todo.push(`⚠️ ${plural(noPatient, 'appuntamento', 'appuntamenti')} senza paziente associato`);
+    if (removalPending) todo.push(removalPending === 1
+        ? "❌ 1 appuntamento cancellato dal calendario originale: scegli nell'app se tenerlo o toglierlo"
+        : `❌ ${removalPending} appuntamenti cancellati dal calendario originale: scegli nell'app se tenerli o toglierli`);
     if (todo.length) lines.push('', ...todo);
     if (appUrl) lines.push('', `Apri l'agenda: ${appUrl}`);
     return {
@@ -242,7 +256,7 @@ export function buildDigest(data, now, { appUrl = '', test = false } = {}) {
         counts: {
             today: countKind(today, 'clinical'), tomorrow: countKind(tomorrow, 'clinical'),
             shifts: countKind(all, 'shift'), personal: countKind(all, 'personal'),
-            pending, noPhone, noPatient
+            pending, noPhone, noPatient, removalPending
         }
     };
 }

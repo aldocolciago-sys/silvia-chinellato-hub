@@ -1,0 +1,51 @@
+name: Sincronizzazione agenda
+
+# Ogni ora chiama /api/calendar-sync: aggiorna l'agenda dai calendari dei poliambulatori
+# e, se cambia qualcosa, avvisa Silvia su WhatsApp. Il piano gratuito di Vercel permette
+# cron solo una volta al giorno, per questo l'orario lo dà GitHub.
+# Configurazione: PROMEMORIA_WHATSAPP.md, sezione "Sincronizzazione automatica ogni ora".
+on:
+  schedule:
+    - cron: '17 * * * *'
+  workflow_dispatch:
+
+permissions:
+  actions: write   # per tenere attiva la pianificazione (vedi ultimo passo)
+  contents: read
+
+concurrency:
+  group: calendar-sync
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    name: Sincronizza i calendari
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Chiama /api/calendar-sync
+        env:
+          APP_URL: ${{ vars.APP_URL || 'https://silvia-chinellato-hub.vercel.app' }}
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+        run: |
+          if [ -z "$CRON_SECRET" ]; then
+            echo "::error::Manca il secret CRON_SECRET (Settings → Secrets and variables → Actions): deve essere uguale a quello su Vercel."
+            exit 1
+          fi
+          # La risposta contiene solo conteggi, mai dati dei pazienti: i log di questo repository sono pubblici.
+          status=$(curl -sS -o response.json -w '%{http_code}' --max-time 120 --retry 2 --retry-delay 30 \
+            -H "Authorization: Bearer $CRON_SECRET" "$APP_URL/api/calendar-sync")
+          cat response.json; echo
+          if [ "$status" != "200" ]; then
+            echo "::error::La sincronizzazione ha risposto con HTTP $status"
+            exit 1
+          fi
+
+      # GitHub sospende le pianificazioni dei repository senza attività da 60 giorni:
+      # riattivare il workflow a ogni esecuzione lo tiene attivo.
+      - name: Mantieni attiva la pianificazione
+        if: github.event_name == 'schedule'
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh api -X PUT "repos/${{ github.repository }}/actions/workflows/calendar-sync.yml/enable"

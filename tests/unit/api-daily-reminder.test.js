@@ -136,7 +136,7 @@ describe('riepilogo WhatsApp – contenuto', () => {
     it('compone il testo con iniziali, trattamento, sede e cose da fare', () => {
         const { text, todayKey, counts } = buildDigest(DATA, SEVEN_AM, { appUrl: 'https://agenda.example' });
         expect(todayKey).toBe('2026-10-01');
-        expect(counts).toEqual({ today: 1, tomorrow: 3, shifts: 1, personal: 2, pending: 1, noPhone: 1, noPatient: 1 });
+        expect(counts).toEqual({ today: 1, tomorrow: 3, shifts: 1, personal: 2, pending: 1, noPhone: 1, noPatient: 1, removalPending: 0 });
         expect(text).toBe([
             '☀️ Buongiorno Silvia! Oggi è giovedì 1 ottobre.',
             '',
@@ -216,7 +216,7 @@ describe('api/daily-reminder – invio programmato (GET)', () => {
         const deps = makeDeps();
         const res = await call(deps);
         expect(res.statusCode).toBe(200);
-        expect(res.body).toEqual({ status: 'sent', counts: { today: 1, tomorrow: 3, shifts: 1, personal: 2, pending: 1, noPhone: 1, noPatient: 1 } });
+        expect(res.body).toEqual({ status: 'sent', counts: { today: 1, tomorrow: 3, shifts: 1, personal: 2, pending: 1, noPhone: 1, noPatient: 1, removalPending: 0 } });
         expect(res.headers['cache-control']).toBe('no-store');
         const url = new URL(deps.fetch.mock.calls[0][0]);
         expect(url.origin + url.pathname).toBe('https://api.callmebot.com/whatsapp.php');
