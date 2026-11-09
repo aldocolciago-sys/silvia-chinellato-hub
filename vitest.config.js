@@ -9,7 +9,7 @@ export default defineConfig({
         env: { TZ: 'Europe/Rome' },
         coverage: {
             provider: 'v8',
-            include: ['api/**/*.js'],
+            include: ['api/**/*.js', 'lib/**/*.js'],
             reporter: ['text', 'html', 'lcov'],
             reportsDirectory: 'coverage',
             thresholds: { lines: 95, functions: 95, branches: 90, statements: 95 }

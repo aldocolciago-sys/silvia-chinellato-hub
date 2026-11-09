@@ -1,4 +1,4 @@
-# Riepilogo automatico su WhatsApp alle 7:00
+# Riepilogo automatico su WhatsApp alle 7:00 e avvisi sulle modifiche dell'agenda
 
 Ogni mattina Silvia riceve sul proprio WhatsApp il promemoria di oggi e domani:
 
@@ -94,8 +94,59 @@ Per sospendere gli invii basta togliere la spunta: non serve toccare Vercel.
 
 Il doppio invio non è possibile, perché la funzione manda un solo riepilogo al giorno: si possono quindi lasciare attivi anche i cron di Vercel come riserva.
 
+## Sincronizzazione automatica ogni ora
+
+Senza l'app aperta, prima, l'agenda restava ferma all'ultima volta in cui Silvia aveva sincronizzato, e il riepilogo delle 7 poteva essere sbagliato. Ora:
+
+- **ogni ora** i calendari dei poliambulatori, dei turni e personali vengono sincronizzati anche ad app chiusa (`api/calendar-sync.js`, chiamata da GitHub Actions);
+- **alle 7**, prima del riepilogo, c'è sempre una sincronizzazione: il riepilogo è aggiornato;
+- se cambia qualcosa **nei poliambulatori o nei turni, da oggi in poi**, Silvia riceve un WhatsApp, a qualsiasi ora:
+
+```
+🔄 Agenda aggiornata
+
+❌ Cancellati dal calendario originale (1)
+• lun 16/11 09:00 – G.B. – Idrocolonterapia – CMS Carate
+Restano in agenda finché non scegli se tenerli o toglierli: apri l'app → Ultime novità.
+
+✏️ Modificati (1)
+• ven 13/11 11:00 → 15:30 – A.D. – Osteopatia – CMS Carate
+
+➕ Nuovi (1)
+• gio 12/11 10:00 – M.R. – Osteopatia – CMS Carate
+```
+
+Le modifiche dei calendari personali aggiornano l'agenda ma non mandano avvisi, perché li modifica Silvia stessa. Quelle degli appuntamenti passati si vedono solo nell'app.
+
+### Appuntamenti cancellati dal poliambulatorio
+- Non vengono **mai** tolti in automatico. Restano in agenda segnati **❌ [DA DECIDERE]** e la scelta resta a Silvia: *Mantieni nella mia agenda* oppure *Rimuovi dalla mia agenda*.
+- Si sceglie in **Ultime novità**, nella scheda dell'appuntamento (pulsante *Scegli ora*) o nella finestra che si apre all'accesso.
+- La segnalazione è salvata sull'appuntamento in Firestore (`extendedProps.externalRemovalPending`), quindi si vede da ogni dispositivo.
+- Su WhatsApp l'avviso arriva **una volta sola**. Nel riepilogo delle 7 compaiono con "❌ cancellato dal calendario originale" e un conteggio, finché Silvia non sceglie. Su WhatsApp non si può rispondere, perché CallMeBot invia soltanto.
+- Per questi appuntamenti non si propone il promemoria al paziente.
+- Se l'appuntamento ricompare nel calendario del poliambulatorio, la segnalazione sparisce da sola. Se Silvia lo aveva mantenuto, torna sincronizzato con compenso, pagamento e note.
+
+### Protezione dai falsi allarmi
+- **Calendario non scaricabile**: i suoi appuntamenti restano come sono.
+- **Calendario arrivato vuoto, o con almeno 5 appuntamenti futuri spariti insieme (almeno metà di quelli della sede)**: la sincronizzazione automatica non segna nulla e manda un solo avviso al giorno. Se le cancellazioni sono vere, basta premere **Sincronizza** nell'app.
+- **WhatsApp non raggiungibile**: le novità restano in coda e partono con il controllo successivo.
+- **Due sincronizzazioni insieme**, per esempio quella oraria e quella delle 7: un lucchetto in `settings/calendar_sync` evita doppi avvisi.
+
+### Attivazione (una volta sola)
+1. **GitHub** → repository → **Settings → Secrets and variables → Actions → New repository secret**: nome `CRON_SECRET`, valore **identico** a quello già impostato su Vercel.
+2. *Facoltativo*: nella stessa pagina, scheda **Variables**, la variabile `APP_URL` se il sito non è `https://silvia-chinellato-hub.vercel.app`.
+3. **Actions → Sincronizzazione agenda → Run workflow** per una prova. Nel log compare una riga come `{"status":"ok","counts":{…}}`.
+4. Gli avvisi partono se nell'app (finestra *Promemoria*) è spuntata *Avvisa Silvia su WhatsApp quando cambia l'agenda…*. All'inizio la spunta segue quella del riepilogo delle 7. Al primo controllo Silvia riceve "✅ Sincronizzazione automatica dell'agenda attiva", con il numero di appuntamenti cancellati da decidere.
+
+Nella stessa finestra *Promemoria* si vede l'ora dell'ultimo controllo automatico e dell'ultimo avviso inviato.
+
+> GitHub fa partire le pianificazioni con qualche minuto di ritardo, a volte 10–30 minuti nelle ore di punta.
+> Se un repository resta 60 giorni senza attività, GitHub può sospenderle: il workflow prova a riattivarsi da solo a ogni esecuzione. Se arriva comunque l'email di sospensione, basta **Actions → Sincronizzazione agenda → Enable workflow**.
+> Ogni ora la funzione legge solo gli appuntamenti da due giorni fa in poi: restano poche letture Firestore, ben dentro la quota gratuita.
+
 ## Privacy
-- Il testo passa da CallMeBot, un servizio esterno senza garanzie contrattuali. Per questo gli appuntamenti con i pazienti riportano solo iniziali, orari, trattamento e sede: mai nomi completi, telefoni o note cliniche.
+- Il testo passa da CallMeBot, un servizio esterno senza garanzie contrattuali. Per questo gli appuntamenti con i pazienti riportano solo iniziali, orari, trattamento e sede: mai nomi completi, telefoni o note cliniche. Vale anche per gli avvisi orari sulle modifiche.
+- Il workflow di GitHub stampa solo dei conteggi: i log di un repository pubblico li può leggere chiunque.
 - Degli impegni personali invece passa il titolo così com'è nel calendario: meglio non scriverci nomi di pazienti.
 - Le credenziali (`FIREBASE_SERVICE_ACCOUNT`, `CALLMEBOT_APIKEY`, `CRON_SECRET`) stanno solo nelle variabili d'ambiente di Vercel. Non vanno mai inserite nel codice.
 - Le regole Firestore non cambiano: la funzione usa le credenziali di servizio, che non passano dalle regole.

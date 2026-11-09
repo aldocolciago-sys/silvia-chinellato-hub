@@ -79,7 +79,7 @@ test.describe('sincronizzazione calendari poliambulatori', () => {
         } else {
             await page.getByRole('button', { name: 'Ultime novità' }).click();
         }
-        await expect(page.locator('#sync-modal-title')).toHaveText('Novità dell’ultima sincronizzazione');
+        await expect(page.locator('#sync-modal-title')).toHaveText('Novità degli ultimi 7 giorni');
         await expect(content).toContainText('Modificati (1)');
     });
 
