@@ -53,7 +53,7 @@ jobs:
 
   e2e:
     name: End-to-end (Playwright)
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04 # Playwright 1.56 non supporta ancora Ubuntu 26.04 (ubuntu-latest)
     timeout-minutes: 25
     steps:
       - uses: actions/checkout@v4
