@@ -268,3 +268,46 @@ describe('gestione guide di preparazione', () => {
         expect(app.toast()).toBe('Guida eliminata.');
     });
 });
+
+describe('immagine facoltativa in trattamenti e guide di preparazione', () => {
+    const image = 'data:image/jpeg;base64,/9j/4AAQSkZJRgABAQ==';
+
+    it.each([
+        ['treatment', 'treatment-form', { 'new-treatment-title': 'Con foto', 'new-treatment-desc': 'Testo' }, 'treatments_list', 'treatments', 'editTreatment', 'public-treatments-grid', 'treatments-management-list', 'Immagine del trattamento: Con foto'],
+        ['prep', 'prep-form', { 'prep-title': 'Con foto', 'prep-tag': 'Tag', 'prep-content': 'Testo' }, 'preparations_list', 'preparations', 'editPrep', 'public-preparations-grid', 'prep-management-list', 'Immagine della guida: Con foto']
+    ])('%s: salva, mostra, conserva in modifica e rimuove l’immagine', async (kind, form, values, collection, stateKey, editFn, grid, list, alt) => {
+        await loggedIn();
+        for (const [id, value] of Object.entries(values)) app.setValue(id, value);
+        app.fn.setContentImage(kind, image);
+        expect(app.isHidden(`${kind}-image-preview`)).toBe(false);
+        await app.submit(form);
+        const item = app.state[stateKey].find(x => x.title === 'Con foto');
+        expect(app.mock.get(`${PUBLIC}/${collection}/${item.id}`).image).toBe(image);
+        expect(app.byId(`${kind}-image-data`).value).toBe('');
+        expect(app.isHidden(`${kind}-image-preview`)).toBe(true);
+        const img = app.$(`#${grid} img`);
+        expect(img.getAttribute('src')).toBe(image);
+        expect(img.getAttribute('alt')).toBe(alt);
+        expect(app.text(list)).toContain('Con immagine');
+
+        app.window[editFn](item.id);
+        expect(app.byId(`${kind}-image-data`).value).toBe(image);
+        await app.submit(form);
+        expect(app.mock.get(`${PUBLIC}/${collection}/${item.id}`).image).toBe(image);
+
+        app.window[editFn](item.id);
+        app.window.removeContentImage(kind);
+        await app.submit(form);
+        expect('image' in app.mock.get(`${PUBLIC}/${collection}/${item.id}`)).toBe(false);
+        expect(app.$(`#${grid} img`)).toBeNull();
+    });
+
+    it('un’immagine esterna o non valida non viene mostrata', async () => {
+        await loggedIn({
+            treatments: [{ id: 't1', title: 'T', icon: 'fa-spa', desc: 'd', image: 'https://example.com/a.png' }],
+            preparations: [{ id: 'p1', title: 'P', tag: 'x', content: 'c', image: 'javascript:alert(1)' }]
+        });
+        expect(app.$('#public-treatments-grid img')).toBeNull();
+        expect(app.$('#public-preparations-grid img')).toBeNull();
+    });
+});

@@ -848,6 +848,15 @@
                         <span class="text-[10px] text-slate-600">Seleziona il testo e tocca G (grassetto) o C (corsivo). Per andare a capo premi Invio.</span>
                     </div>
                     <textarea id="new-treatment-desc" required placeholder="Descrizione del trattamento..." class="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-2xl text-xs focus:outline-none focus:ring-2 focus:ring-nature-500 h-24 resize-none"></textarea>
+                    <div class="space-y-2">
+                        <label for="new-treatment-image" class="block text-[10px] font-bold text-slate-600">Immagine (facoltativa)</label>
+                        <input type="file" id="new-treatment-image" accept="image/*" onchange="handleContentImageChange(event, 'treatment')" class="w-full px-3 py-2.5 bg-white border border-slate-200 rounded-2xl text-xs">
+                        <input type="hidden" id="treatment-image-data">
+                        <div id="treatment-image-preview" class="hidden items-center gap-3">
+                            <span id="treatment-image-preview-slot"></span>
+                            <button type="button" onclick="removeContentImage('treatment')" class="px-3 py-2 bg-rose-50 hover:bg-rose-100 text-rose-700 rounded-xl text-xs font-semibold">Rimuovi immagine</button>
+                        </div>
+                    </div>
                     <div class="flex justify-end gap-2 pt-1">
                         <button type="button" id="treatment-cancel-edit" onclick="resetTreatmentForm()" class="hidden px-4 py-2.5 bg-slate-200 text-slate-700 font-semibold rounded-2xl text-xs transition">Annulla</button>
                         <button type="submit" class="px-5 py-2.5 bg-nature-600 hover:bg-nature-700 text-white font-semibold rounded-2xl text-xs transition shadow-md shadow-nature-200 italic-title text-sm"><span id="treatment-submit-btn-text">Salva Trattamento</span></button>
@@ -1031,6 +1040,15 @@
                         <span class="text-[10px] text-slate-600">Seleziona il testo e tocca G (grassetto) o C (corsivo). Per andare a capo premi Invio.</span>
                     </div>
                     <textarea id="prep-content" required placeholder="Contenuto della guida..." class="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-2xl text-xs h-24 resize-none"></textarea>
+                    <div class="space-y-2">
+                        <label for="prep-image" class="block text-[10px] font-bold text-slate-600">Immagine (facoltativa)</label>
+                        <input type="file" id="prep-image" accept="image/*" onchange="handleContentImageChange(event, 'prep')" class="w-full px-3 py-2.5 bg-white border border-slate-200 rounded-2xl text-xs">
+                        <input type="hidden" id="prep-image-data">
+                        <div id="prep-image-preview" class="hidden items-center gap-3">
+                            <span id="prep-image-preview-slot"></span>
+                            <button type="button" onclick="removeContentImage('prep')" class="px-3 py-2 bg-rose-50 hover:bg-rose-100 text-rose-700 rounded-xl text-xs font-semibold">Rimuovi immagine</button>
+                        </div>
+                    </div>
                     <div class="flex justify-end gap-2">
                         <button type="button" id="prep-cancel-edit" onclick="resetPrepForm()" class="hidden px-4 py-2.5 bg-slate-200 text-slate-700 font-semibold rounded-2xl text-xs">Annulla</button>
                         <button type="submit" class="px-5 py-2.5 bg-nature-600 text-white font-semibold rounded-2xl text-xs"><span id="prep-submit-btn-text">Salva Guida</span></button>
@@ -1770,6 +1788,7 @@
             if (!grid) return;
             grid.innerHTML = appState.treatments.map(t => `
                 <div class="bg-white/90 backdrop-blur-md p-6 sm:p-8 rounded-[2.5rem] border border-white/80 shadow-lg space-y-4 flex flex-col items-center text-center">
+                    ${safeImageSrc(t.image) ? `<img src="${safeImageSrc(t.image)}" alt="Immagine del trattamento: ${escapeHtml(t.title)}" loading="lazy" class="w-full max-h-72 object-contain rounded-3xl bg-nature-50">` : ''}
                     <div class="w-16 h-16 rounded-2xl bg-nature-50 text-nature-600 flex items-center justify-center font-bold text-2xl shadow-inner mx-auto"><i aria-hidden="true" class="fa-solid ${safeIcon(t.icon, 'fa-spa')}"></i></div>
                     <h4 class="font-editorial text-xl font-bold text-slate-900 italic">${escapeHtml(t.title)}</h4>
                     <p class="text-xs sm:text-sm text-slate-500 font-light">${formatRichText(t.desc)}</p>
@@ -1844,6 +1863,7 @@
             }
             grid.innerHTML = appState.preparations.map(prep => `
                 <div class="bg-white/90 backdrop-blur-md p-6 sm:p-8 rounded-[2.5rem] border border-white/80 shadow-lg space-y-3">
+                    ${safeImageSrc(prep.image) ? `<img src="${safeImageSrc(prep.image)}" alt="Immagine della guida: ${escapeHtml(prep.title)}" loading="lazy" class="block w-full max-h-72 object-contain rounded-3xl bg-nature-50">` : ''}
                     <span class="px-3 py-1 rounded-full text-[10px] font-bold bg-nature-50 text-nature-800 italic-title">${escapeHtml(prep.tag)}</span>
                     <h4 class="font-editorial text-xl font-bold text-slate-900 italic">${escapeHtml(prep.title)}</h4>
                     <p class="text-xs sm:text-sm text-slate-600 font-light leading-relaxed">${formatRichText(prep.content)}</p>
@@ -2284,30 +2304,38 @@
                 throw new Error('Immagine troppo pesante');
             } finally { URL.revokeObjectURL(url); }
         }
-        function setNewsImage(value) {
+        /** Campo file di ogni modulo con immagine facoltativa: news, trattamenti e guide di preparazione. */
+        const CONTENT_IMAGE_INPUTS = { news: 'new-news-image', treatment: 'new-treatment-image', prep: 'prep-image' };
+        /** Imposta (o svuota) l'immagine in attesa di salvataggio nel modulo indicato e ne mostra l'anteprima. */
+        function setContentImage(kind, value) {
             const src = safeImageSrc(value);
-            document.getElementById('news-image-data').value = src;
-            const preview = document.getElementById('news-image-preview');
-            document.getElementById('news-image-preview-slot').innerHTML = src ? `<img src="${src}" alt="Anteprima dell’immagine della news" class="h-20 w-20 object-cover rounded-xl border border-slate-200">` : '';
+            document.getElementById(`${kind}-image-data`).value = src;
+            const preview = document.getElementById(`${kind}-image-preview`);
+            document.getElementById(`${kind}-image-preview-slot`).innerHTML = src ? `<img src="${src}" alt="Anteprima dell’immagine" class="h-20 w-20 object-cover rounded-xl border border-slate-200">` : '';
             preview.classList.toggle('hidden', !src);
             preview.classList.toggle('flex', !!src);
         }
-        window.handleNewsImageChange = async function(event) {
+        /** Svuota il campo file e imposta l'immagine già salvata (in modifica) o nessuna (modulo nuovo). */
+        function resetContentImage(kind, value = '') {
+            document.getElementById(CONTENT_IMAGE_INPUTS[kind]).value = '';
+            setContentImage(kind, value);
+        }
+        function setNewsImage(value) { setContentImage('news', value); }
+        window.handleContentImageChange = async function(event, kind) {
             const file = event.target.files?.[0];
-            if (!file) return;
+            if (!file || !CONTENT_IMAGE_INPUTS[kind]) return;
             try {
                 if (!/^image\//.test(file.type || '')) throw new Error('Non è un’immagine');
-                setNewsImage(await compressImageFile(file));
+                setContentImage(kind, await compressImageFile(file));
             } catch (err) {
-                console.error('Errore immagine news:', err);
+                console.error('Errore immagine:', err);
                 event.target.value = '';
                 showToast('Immagine non utilizzabile: prova con una foto JPG o PNG.');
             }
         }
-        window.removeNewsImage = function() {
-            document.getElementById('new-news-image').value = '';
-            setNewsImage('');
-        }
+        window.handleNewsImageChange = function(event) { return window.handleContentImageChange(event, 'news'); }
+        window.removeContentImage = function(kind) { if (CONTENT_IMAGE_INPUTS[kind]) resetContentImage(kind); }
+        window.removeNewsImage = function() { resetContentImage('news'); }
         /** Mette in grassetto (**) o in corsivo (*) il testo selezionato nella casella indicata. */
         window.applyTextFormat = function(textareaId, marker) {
             const el = document.getElementById(textareaId);
@@ -3205,7 +3233,9 @@
             const icon = document.getElementById('new-treatment-icon').value;
             const desc = document.getElementById('new-treatment-desc').value.trim();
 
+            const image = safeImageSrc(document.getElementById('treatment-image-data').value);
             const newT = { id, title, icon, desc };
+            if (image) newT.image = image;
             if (db) {
                 try { await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'treatments_list', id), newT); }
                 catch(err) { console.error('Errore salvataggio trattamento:', err); showToast('Errore: trattamento non salvato. Controlla i permessi Firestore.'); return; }
@@ -3229,6 +3259,7 @@
                         <div class="w-8 h-8 rounded-xl bg-nature-50 text-nature-700 flex items-center justify-center font-bold"><i aria-hidden="true" class="fa-solid ${safeIcon(t.icon, 'fa-spa')}"></i></div>
                         <div>
                             <strong class="text-slate-900 font-editorial italic text-sm">${escapeHtml(t.title)}</strong>
+                            ${safeImageSrc(t.image) ? `<span class="ml-1 text-[10px] bg-water-50 text-water-800 px-2 py-0.5 rounded font-bold"><i aria-hidden="true" class="fa-regular fa-image mr-1"></i>Con immagine</span>` : ''}
                             <p class="text-slate-500 text-[11px] line-clamp-1">${escapeHtml(t.desc)}</p>
                         </div>
                     </div>
@@ -3247,6 +3278,7 @@
             document.getElementById('new-treatment-title').value = t.title;
             document.getElementById('new-treatment-icon').value = t.icon || 'fa-spa';
             document.getElementById('new-treatment-desc').value = t.desc;
+            resetContentImage('treatment', t.image);
             document.getElementById('treatment-form-title').textContent = 'Modifica Trattamento';
             document.getElementById('treatment-submit-btn-text').textContent = 'Aggiorna Trattamento';
             document.getElementById('treatment-cancel-edit').classList.remove('hidden');
@@ -3255,6 +3287,7 @@
         window.resetTreatmentForm = function() {
             document.getElementById('treatment-form').reset();
             document.getElementById('treatment-edit-id').value = '';
+            resetContentImage('treatment');
             document.getElementById('treatment-form-title').textContent = 'Aggiungi Nuovo Trattamento';
             document.getElementById('treatment-submit-btn-text').textContent = 'Salva Trattamento';
             document.getElementById('treatment-cancel-edit').classList.add('hidden');
@@ -3498,8 +3531,7 @@
             document.getElementById('new-news-date').value = n.date || '';
             document.getElementById('new-news-content').value = n.content;
             document.getElementById('new-news-link').value = n.link || '';
-            document.getElementById('new-news-image').value = '';
-            setNewsImage(n.image);
+            resetContentImage('news', n.image);
             document.getElementById('news-submit-btn-text').textContent = 'Aggiorna News';
             document.getElementById('news-cancel-edit').classList.remove('hidden');
         }
@@ -3531,7 +3563,9 @@
             const tag = document.getElementById('prep-tag').value.trim();
             const content = document.getElementById('prep-content').value.trim();
 
+            const image = safeImageSrc(document.getElementById('prep-image-data').value);
             const newP = { id, title, tag, content };
+            if (image) newP.image = image;
             if (db) {
                 try { await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'preparations_list', id), newP); }
                 catch(e) { console.error('Errore salvataggio guida:', e); showToast('Errore: guida non salvata. Controlla i permessi Firestore.'); return; }
@@ -3550,7 +3584,7 @@
             if (!list) return;
             list.innerHTML = appState.preparations.map(p => `
                 <div class="p-3 bg-white border border-slate-200 rounded-2xl flex items-center justify-between text-xs">
-                    <div><span class="px-2 py-0.5 rounded bg-nature-50 text-nature-800 text-[10px] font-bold">${escapeHtml(p.tag)}</span> <strong class="text-slate-900 ml-1">${escapeHtml(p.title)}</strong></div>
+                    <div><span class="px-2 py-0.5 rounded bg-nature-50 text-nature-800 text-[10px] font-bold">${escapeHtml(p.tag)}</span> <strong class="text-slate-900 ml-1">${escapeHtml(p.title)}</strong>${safeImageSrc(p.image) ? ` <span class="ml-1 text-[10px] bg-water-50 text-water-800 px-2 py-0.5 rounded font-bold"><i aria-hidden="true" class="fa-regular fa-image mr-1"></i>Con immagine</span>` : ''}</div>
                     <div class="flex items-center gap-1.5">
                         <button type="button" onclick="editPrep('${p.id}')" class="px-2.5 py-1 bg-nature-50 text-nature-700 rounded-lg font-semibold">Modifica</button>
                         <button type="button" onclick="confirmDeletePrep('${p.id}')" class="px-2.5 py-1 bg-rose-50 text-rose-600 rounded-lg font-semibold">Elimina</button>
@@ -3566,6 +3600,7 @@
             document.getElementById('prep-title').value = p.title || '';
             document.getElementById('prep-tag').value = p.tag || '';
             document.getElementById('prep-content').value = p.content || '';
+            resetContentImage('prep', p.image);
             document.getElementById('prep-submit-btn-text').textContent = 'Aggiorna Guida';
             document.getElementById('prep-cancel-edit').classList.remove('hidden');
         }
@@ -3573,6 +3608,7 @@
         window.resetPrepForm = function() {
             document.getElementById('prep-form').reset();
             document.getElementById('prep-edit-id').value = '';
+            resetContentImage('prep');
             document.getElementById('prep-submit-btn-text').textContent = 'Salva Guida';
             document.getElementById('prep-cancel-edit').classList.add('hidden');
         }

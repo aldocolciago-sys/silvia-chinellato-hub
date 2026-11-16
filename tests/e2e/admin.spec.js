@@ -158,6 +158,27 @@ test.describe('news con formattazione e immagine', () => {
         expect(await card.locator('img').evaluate(el => el.naturalWidth)).toBe(2);
     });
 
+    for (const c of [
+        { name: 'trattamento', admin: { title: 'Gestisci Trattamenti', mobileLabel: 'Trattamenti' }, fill: { '#new-treatment-title': 'Trattamento con foto', '#new-treatment-desc': 'Descrizione' }, file: '#new-treatment-image', preview: '#treatment-image-preview', submit: 'Salva Trattamento', list: '#treatments-management-list', collection: 'treatments_list', grid: '#public-treatments-grid', title: 'Trattamento con foto' },
+        { name: 'guida di preparazione', admin: { title: 'Gestisci Preparazione', mobileLabel: 'Preparazione' }, fill: { '#prep-title': 'Guida con foto', '#prep-tag': 'Osteopatia', '#prep-content': 'Contenuto' }, file: '#prep-image', preview: '#prep-image-preview', submit: 'Salva Guida', list: '#prep-management-list', collection: 'preparations_list', grid: '#public-preparations-grid', title: 'Guida con foto' }
+    ]) {
+        test(`pubblica un elemento con foto: ${c.name}`, async ({ page }) => {
+            await loginViaUi(page);
+            await openAdmin(page, c.admin);
+            for (const [selector, value] of Object.entries(c.fill)) await page.locator(selector).fill(value);
+            await page.locator(c.file).setInputFiles({ name: 'foto.png', mimeType: 'image/png', buffer: PNG });
+            await expect(page.locator(c.preview)).toBeVisible();
+            await page.getByRole('button', { name: c.submit }).click();
+            await expect(page.locator(c.list)).toContainText('Con immagine');
+            const saved = (await firestore(page).list(`${PUBLIC}/${c.collection}`)).find(x => x.title === c.title);
+            expect(saved.image).toMatch(/^data:image\/jpeg;base64,/);
+            await page.evaluate(() => window.handleLogout());
+            const img = page.locator(`${c.grid} > div`).filter({ hasText: c.title }).locator('img');
+            await expect(img).toBeVisible();
+            expect(await img.evaluate(el => el.naturalWidth)).toBe(2);
+        });
+    }
+
     test('un file che non è un’immagine viene rifiutato con un avviso', async ({ page }) => {
         await loginViaUi(page);
         await openAdmin(page, { title: 'Gestisci News', mobileLabel: 'News e offerte' });
