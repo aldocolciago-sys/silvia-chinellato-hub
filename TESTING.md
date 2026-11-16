@@ -140,3 +140,7 @@ Nota: il server locale di test (`npm run serve`, E2E) imposta `ICAL_ALLOW_PRIVAT
 - Logica pura → `tests/unit/*.test.js` con `loadFunctions(['nomeFunzione'], { appState })`.
 - Flusso applicativo veloce → `tests/integration/*.test.js` con `bootApp({ docs: seedDocs({...}) })` e `await app.login()`.
 - Flusso nel browser → `tests/e2e/*.spec.js` importando `test`, `expect`, `loginViaUi` da `./fixtures.js`; per i dati usare `test.use({ firebaseSeed: { docs: seedDocs({...}), popupUser } })`.
+
+## Testo formattato e immagine delle news
+
+Nei testi di news, trattamenti e guide di preparazione Silvia può usare `**grassetto**`, `*corsivo*` e gli a capo (pulsanti **G** e *C* sopra la casella di testo). `formatRichText` neutralizza prima tutto l'HTML e poi aggiunge solo `<strong>`, `<em>` e `<br>`. Ogni news può avere un'immagine facoltativa: il browser la riduce a un JPEG leggero (`compressImageFile`, al massimo 1280 px e circa 450 KB) e la salva nel campo `image` del documento della news, senza servizi esterni; `safeImageSrc` accetta solo data URL jpeg/png/webp. Test: `tests/unit/safe-html.test.js`, `tests/integration/content-admin.test.js`, `tests/e2e/admin.spec.js`.
