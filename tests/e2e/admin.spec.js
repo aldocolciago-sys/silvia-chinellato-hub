@@ -129,6 +129,44 @@ test.describe('contenuti del sito', () => {
     });
 });
 
+test.describe('news con formattazione e immagine', () => {
+    // PNG 2×2 valido: l'app lo converte in JPEG ridotto prima di salvarlo.
+    const PNG = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAIAAAD91JpzAAAAEklEQVR4nGM4YWNzwsaGAUIBACU+BQE37XHpAAAAAElFTkSuQmCC', 'base64');
+
+    test('pubblica una news con grassetto, a capo e foto', async ({ page }) => {
+        await loginViaUi(page);
+        await openAdmin(page, { title: 'Gestisci News', mobileLabel: 'News e offerte' });
+        await page.locator('#new-news-title').fill('Open day');
+        const area = page.locator('#new-news-content');
+        await area.fill('Vi aspetto sabato');
+        await area.evaluate(el => el.setSelectionRange(11, 17));
+        await page.locator('#news-form').getByRole('button', { name: 'Grassetto' }).click();
+        await expect(area).toHaveValue('Vi aspetto **sabato**');
+        await area.evaluate(el => { el.value += '\nIngresso *libero*'; });
+        await page.locator('#new-news-image').setInputFiles({ name: 'foto.png', mimeType: 'image/png', buffer: PNG });
+        await expect(page.locator('#news-image-preview')).toBeVisible();
+        await page.getByRole('button', { name: 'Pubblica News' }).click();
+        await expect(page.locator('#news-management-list')).toContainText('Con immagine');
+        const published = (await firestore(page).list(`${PUBLIC}/news_list`)).find(n => n.title === 'Open day');
+        expect(published.content).toBe('Vi aspetto **sabato**\nIngresso *libero*');
+        expect(published.image).toMatch(/^data:image\/jpeg;base64,/);
+        await page.evaluate(() => window.handleLogout());
+        const card = page.locator('#public-news-grid > div').filter({ hasText: 'Open day' });
+        await expect(card.locator('strong')).toHaveText('sabato');
+        await expect(card.locator('em')).toHaveText('libero');
+        await expect(card.locator('img')).toBeVisible();
+        expect(await card.locator('img').evaluate(el => el.naturalWidth)).toBe(2);
+    });
+
+    test('un file che non è un’immagine viene rifiutato con un avviso', async ({ page }) => {
+        await loginViaUi(page);
+        await openAdmin(page, { title: 'Gestisci News', mobileLabel: 'News e offerte' });
+        await page.locator('#new-news-image').setInputFiles({ name: 'finta.png', mimeType: 'image/png', buffer: Buffer.from('non sono una foto') });
+        await expect(page.locator('#toast')).toContainText('Immagine non utilizzabile');
+        await expect(page.locator('#news-image-preview')).toBeHidden();
+    });
+});
+
 test.describe('backup e ripristino', () => {
     test('esporta un backup completo e lo reimporta', async ({ page }, testInfo) => {
         await loginViaUi(page);

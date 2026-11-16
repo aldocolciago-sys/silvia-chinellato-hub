@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { loadFunctions } from '../support/app-source.js';
 
-const { safeUrl, safeColor, safeIcon, escapeHtml } = loadFunctions(['safeUrl', 'safeColor', 'safeIcon', 'escapeHtml', 'escapePatientText']);
+const { safeUrl, safeColor, safeIcon, escapeHtml, formatRichText, safeImageSrc } = loadFunctions(['safeUrl', 'safeColor', 'safeIcon', 'escapeHtml', 'escapePatientText', 'formatRichText', 'safeImageSrc']);
 
 describe('safeUrl', () => {
     it.each([
@@ -42,5 +42,48 @@ describe('safeIcon', () => {
 describe('escapeHtml', () => {
     it('è equivalente a escapePatientText', () => {
         expect(escapeHtml('<b a="1">&\'')).toBe('&lt;b a=&quot;1&quot;&gt;&amp;&#039;');
+    });
+});
+
+describe('formatRichText', () => {
+    it.each([
+        ['Orari **nuovi** da lunedì', 'Orari <strong>nuovi</strong> da lunedì'],
+        ['Un consiglio *importante*.', 'Un consiglio <em>importante</em>.'],
+        ['***Attenzione***', '<strong><em>Attenzione</em></strong>'],
+        ['**Grassetto con *corsivo* dentro**', '<strong>Grassetto con <em>corsivo</em> dentro</strong>'],
+        ['Prima riga\nSeconda riga\r\n\r\nQuarta', 'Prima riga<br>Seconda riga<br><br>Quarta'],
+        ['**uno** e **due**', '<strong>uno</strong> e <strong>due</strong>'],
+        ['  testo semplice  ', 'testo semplice']
+    ])('formatta %j', (input, expected) => {
+        expect(formatRichText(input)).toBe(expected);
+    });
+
+    it.each([
+        ['5 * 3 * 2 = 30', '5 * 3 * 2 = 30'],
+        ['Sconto 10%* fino a fine mese', 'Sconto 10%* fino a fine mese'],
+        ['**non chiuso', '**non chiuso'],
+        ['*riga uno\nriga due*', '*riga uno<br>riga due*']
+    ])('lascia invariati gli asterischi che non sono formattazione: %j', (input, expected) => {
+        expect(formatRichText(input)).toBe(expected);
+    });
+
+    it('neutralizza sempre l’HTML scritto nel testo', () => {
+        expect(formatRichText('<b>x</b> **<img src=x onerror=alert(1)>**')).toBe('&lt;b&gt;x&lt;/b&gt; <strong>&lt;img src=x onerror=alert(1)&gt;</strong>');
+        expect(formatRichText('*<script>alert(1)</script>*')).not.toContain('<script');
+    });
+
+    it.each([null, undefined, ''])('restituisce una stringa vuota per %s', (v) => expect(formatRichText(v)).toBe(''));
+});
+
+describe('safeImageSrc', () => {
+    it.each(['data:image/jpeg;base64,/9j/4AAQ', 'data:image/png;base64,iVBORw0KGgo=', 'data:image/webp;base64,UklGRg=='])('accetta %s', (src) => {
+        expect(safeImageSrc(src)).toBe(src);
+    });
+    it.each([
+        'https://example.com/foto.jpg', 'javascript:alert(1)', 'data:text/html;base64,PHNjcmlwdD4=', 'data:image/svg+xml;base64,PHN2Zz4=',
+        'data:image/jpeg;base64,AAAA" onerror="alert(1)', 'data:image/jpeg;base64,', '', null, undefined
+    ])('rifiuta %s', (src) => expect(safeImageSrc(src)).toBe(''));
+    it('rifiuta immagini troppo pesanti per un documento Firestore', () => {
+        expect(safeImageSrc('data:image/jpeg;base64,' + 'A'.repeat(900000))).toBe('');
     });
 });

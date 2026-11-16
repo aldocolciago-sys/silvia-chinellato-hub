@@ -164,6 +164,84 @@ describe('gestione news', () => {
         expect(app.mock.has(`${PUBLIC}/news_list/${n.id}`)).toBe(false);
     });
 
+    it('mostra grassetto, corsivo e a capo nel sito, senza eseguire HTML', async () => {
+        await loggedIn();
+        app.window.openNewsAdminModal();
+        app.setValue('new-news-title', 'Formattata');
+        app.setValue('new-news-content', 'Riga **importante**\ncon *corsivo* e <img src=x onerror=alert(1)>');
+        await app.submit('news-form');
+        const idx = app.state.news.findIndex(x => x.title === 'Formattata');
+        expect(app.state.news[idx].content).toBe('Riga **importante**\ncon *corsivo* e <img src=x onerror=alert(1)>');
+        const box = app.byId(`news-content-${idx}`);
+        expect(box.querySelector('strong').textContent).toBe('importante');
+        expect(box.querySelector('em').textContent).toBe('corsivo');
+        expect(box.querySelectorAll('br').length).toBe(1);
+        expect(box.querySelector('img')).toBeNull();
+        expect(box.textContent).toContain('<img src=x onerror=alert(1)>');
+        app.window.toggleNewsExpand(idx);
+        expect(box.querySelector('strong').textContent).toBe('importante');
+        expect(box.querySelectorAll('br').length).toBe(1);
+    });
+
+    it('i pulsanti G e C racchiudono il testo selezionato', async () => {
+        await loggedIn();
+        app.window.openNewsAdminModal();
+        const area = app.byId('new-news-content');
+        area.value = 'Orari nuovi da lunedì';
+        area.setSelectionRange(6, 11);
+        app.window.applyTextFormat('new-news-content', '**');
+        expect(area.value).toBe('Orari **nuovi** da lunedì');
+        area.setSelectionRange(16, 25);
+        app.window.applyTextFormat('new-news-content', '*');
+        expect(area.value).toBe('Orari **nuovi** *da lunedì*');
+        area.value = 'uno \ndue';
+        area.setSelectionRange(0, area.value.length);
+        app.window.applyTextFormat('new-news-content', '**');
+        expect(area.value).toBe('**uno** \n**due**');
+        area.value = '';
+        app.window.applyTextFormat('new-news-content', '*');
+        expect(area.value).toBe('*testo in corsivo*');
+        expect(area.value.slice(area.selectionStart, area.selectionEnd)).toBe('testo in corsivo');
+    });
+
+    it('salva, mostra, conserva in modifica e rimuove l’immagine di una news', async () => {
+        const image = 'data:image/jpeg;base64,/9j/4AAQSkZJRgABAQ==';
+        await loggedIn();
+        app.window.openNewsAdminModal();
+        app.setValue('new-news-title', 'Con foto');
+        app.setValue('new-news-content', 'Testo');
+        app.fn.setNewsImage(image);
+        expect(app.isHidden('news-image-preview')).toBe(false);
+        await app.submit('news-form');
+        const n = app.state.news.find(x => x.title === 'Con foto');
+        expect(app.mock.get(`${PUBLIC}/news_list/${n.id}`).image).toBe(image);
+        expect(app.byId('news-image-data').value).toBe('');
+        expect(app.isHidden('news-image-preview')).toBe(true);
+        const img = app.$('#public-news-grid img');
+        expect(img.getAttribute('src')).toBe(image);
+        expect(img.getAttribute('alt')).toBe('Immagine della news: Con foto');
+        expect(app.text('news-management-list')).toContain('Con immagine');
+
+        app.window.editNews(n.id);
+        expect(app.byId('news-image-data').value).toBe(image);
+        app.setValue('new-news-title', 'Con foto 2');
+        await app.submit('news-form');
+        expect(app.mock.get(`${PUBLIC}/news_list/${n.id}`)).toMatchObject({ title: 'Con foto 2', image });
+
+        app.window.editNews(n.id);
+        app.window.removeNewsImage();
+        await app.submit('news-form');
+        expect('image' in app.mock.get(`${PUBLIC}/news_list/${n.id}`)).toBe(false);
+        expect(app.$('#public-news-grid img')).toBeNull();
+    });
+
+    it('non pubblica come immagine un indirizzo esterno o non valido', async () => {
+        await loggedIn({ news: [{ id: 'ext', title: 'Esterna', content: 'x', date: '', image: 'https://example.com/tracker.png' }] });
+        expect(app.$('#public-news-grid img')).toBeNull();
+        app.window.editNews('ext');
+        expect(app.byId('news-image-data').value).toBe('');
+    });
+
     it('mostra il messaggio vuoto dopo aver eliminato tutte le news', async () => {
         await loggedIn({ news: [{ id: 'solo', title: 'Unica', content: 'x', date: '' }] });
         app.window.confirmDeleteNews('solo');
