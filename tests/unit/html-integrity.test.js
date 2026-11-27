@@ -86,8 +86,10 @@ describe('integrità di index.html', () => {
         expect(document.title).toContain('Silvia Chinellato');
     });
 
-    it('usa una sola versione fissata di Firebase; FullCalendar è un file del sito', () => {
-        expect(html).toContain('<script src="/assets/vendor/fullcalendar.min.js"></script>');
+    it('usa una sola versione fissata di Firebase; FullCalendar è un file del sito caricato solo per l\'area riservata', () => {
+        expect(html).not.toContain('<script src="/assets/vendor/fullcalendar.min.js"></script>');
+        expect(script).toContain("script.src = '/assets/vendor/fullcalendar.min.js'");
+        expect(existsSync(path.join(ROOT, 'assets', 'vendor', 'fullcalendar.min.js'))).toBe(true);
         const firebaseVersions = new Set([...script.matchAll(/firebasejs\/([\d.]+)\//g)].map(m => m[1]));
         expect(firebaseVersions.size).toBe(1);
     });

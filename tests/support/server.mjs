@@ -24,7 +24,8 @@ const QUIET = process.env.QUIET !== '0';
 const MIME = {
     '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.mjs': 'text/javascript; charset=utf-8',
     '.css': 'text/css; charset=utf-8', '.json': 'application/json; charset=utf-8', '.jpeg': 'image/jpeg', '.jpg': 'image/jpeg',
-    '.png': 'image/png', '.svg': 'image/svg+xml', '.ico': 'image/x-icon', '.ics': 'text/calendar; charset=utf-8'
+    '.png': 'image/png', '.svg': 'image/svg+xml', '.ico': 'image/x-icon', '.ics': 'text/calendar; charset=utf-8',
+    '.webp': 'image/webp', '.txt': 'text/plain; charset=utf-8', '.xml': 'application/xml; charset=utf-8', '.woff2': 'font/woff2'
 };
 const BLOCKED = [/^\/node_modules\//, /^\/\.git\//, /^\/tests\//, /^\/coverage\//, /^\/playwright-report\//, /^\/test-results\//];
 const dynamicCalendars = new Map();

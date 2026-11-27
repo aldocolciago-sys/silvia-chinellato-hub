@@ -4,7 +4,7 @@ import { seedDocs, center } from '../fixtures/seed.js';
 test.describe('sito pubblico', () => {
     test('si carica senza errori JavaScript né richieste esterne impreviste', async ({ page, pageErrors, blockedRequests }) => {
         await openSite(page);
-        await expect(page).toHaveTitle('Silvia Chinellato | Osteopata & Idrocolonterapia');
+        await expect(page).toHaveTitle('Osteopata a Carate Brianza e idrocolonterapia | Silvia Chinellato');
         await expect(page.getByRole('heading', { level: 1, name: 'Silvia Chinellato' })).toBeVisible();
         expect(pageErrors.map(e => e.message)).toEqual([]);
         expect(blockedRequests).toEqual([]);
@@ -24,7 +24,7 @@ test.describe('sito pubblico', () => {
 
     test('le immagini del profilo e del logo vengono caricate', async ({ page }) => {
         await openSite(page);
-        const images = page.locator('#public-view img[src="Logo.jpeg"], #public-view img[src="Silvia Foto Profilo.jpeg"]');
+        const images = page.locator('#public-view img[src^="/assets/img/logo-silvia-chinellato-"], #public-view img[src="/assets/img/silvia-chinellato-osteopata.webp"]');
         await expect(images).toHaveCount(3);
         const sizes = await images.evaluateAll(imgs => imgs.map(img => ({ src: img.getAttribute('src'), ok: img.complete && img.naturalWidth > 0 })));
         expect(sizes.every(s => s.ok), JSON.stringify(sizes)).toBe(true);
