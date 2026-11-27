@@ -30,6 +30,25 @@ test.describe('sito pubblico', () => {
         expect(sizes.every(s => s.ok), JSON.stringify(sizes)).toBe(true);
     });
 
+    test('i visitatori non scaricano il calendario dell’area riservata; parte solo aprendo l’accesso', async ({ page }) => {
+        const calendarRequests = [];
+        page.on('request', request => { if (request.url().includes('/assets/vendor/fullcalendar.min.js')) calendarRequests.push(request.url()); });
+        await openSite(page);
+        await expect(page.locator('#public-centers-grid > div')).toHaveCount(2);
+        expect(calendarRequests).toEqual([]);
+        await page.getByRole('button', { name: 'Area Riservata' }).click();
+        await expect.poll(() => calendarRequests.length).toBe(1);
+    });
+
+    test('titolo, descrizione e dati strutturati restano nella pagina dopo il caricamento', async ({ page }) => {
+        await openSite(page);
+        await expect(page.locator('meta[name="description"]')).toHaveAttribute('content', /Carate Brianza/);
+        await expect(page.locator('link[rel="canonical"]')).toHaveAttribute('href', 'https://silvia-chinellato-hub.vercel.app/');
+        const jsonLd = JSON.parse(await page.locator('script[type="application/ld+json"]').textContent());
+        expect(jsonLd['@graph'].map(item => item['@type'])).toEqual(expect.arrayContaining(['MedicalBusiness', 'Person']));
+        await expect(page.locator('#poliambulatori-pubblica')).toContainText('Piazza Risorgimento 3');
+    });
+
     test('la navigazione porta alle sezioni', async ({ page }) => {
         await openSite(page);
         const nav = isMobile(page) ? page.locator('header .md\\:hidden') : page.locator('header nav');

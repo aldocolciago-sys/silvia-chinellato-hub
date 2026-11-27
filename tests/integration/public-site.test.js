@@ -1,5 +1,5 @@
 import { describe, it, expect, afterEach } from 'vitest';
-import { bootApp } from '../support/jsdom-app.js';
+import { bootApp, FakeCalendar } from '../support/jsdom-app.js';
 import { seedDocs, center, SHARED, PUBLIC } from '../fixtures/seed.js';
 
 let app;
@@ -128,5 +128,58 @@ describe('sito pubblico', () => {
         expect(card.querySelector('a').getAttribute('rel')).toBe('noopener noreferrer');
         expect(card.innerHTML).not.toContain('onmouseover');
         expect(card.innerHTML).toContain('background-color: #3f5e4e');
+    });
+});
+
+describe('sito pubblico: indicizzazione e prestazioni', () => {
+    const PLACEHOLDERS = /example\.com|Via Roma 10|Corso Italia 45|1234567|7654321|San Benedetto/;
+    const PROMISE_WORDS = /tossin|detox|disintossic|depura|purific|guarigion|garantit|miracol|dimagr/i;
+
+    it('se il database non risponde mostra le sedi reali, senza indirizzi o telefoni di prova', async () => {
+        app = await bootApp({ initError: 'rete assente', waitForAuth: false });
+        const centers = app.text('public-centers-grid');
+        expect(centers).toContain('CMS Centro Medico Polispecialistico');
+        expect(centers).toContain('Piazza Risorgimento 3, Carate Brianza');
+        expect(centers).toContain('Centro Polisalute');
+        expect(centers).toContain('Via E. de Amicis 67, Cinisello Balsamo');
+        expect(app.$('#public-centers-grid a[href="https://cmscarate.com/"]')).not.toBeNull();
+        expect(app.byId('public-view').textContent).not.toMatch(PLACEHOLDERS);
+    });
+
+    it('i testi predefiniti di trattamenti e preparazione sono informativi, senza promesse di risultato', async () => {
+        app = await bootApp();
+        for (const id of ['public-treatments-grid', 'public-preparations-grid']) expect(app.text(id)).not.toMatch(PROMISE_WORDS);
+    });
+
+    it('il calendario si scarica solo per l’area riservata: all’apertura dell’accesso, non per i visitatori', async () => {
+        app = await bootApp({ beforeScript: (window) => { delete window.FullCalendar; } });
+        const loader = () => app.document.querySelector('script[src="/assets/vendor/fullcalendar.min.js"]');
+        expect(loader()).toBeNull();
+
+        app.window.openLoginModal();
+        expect(loader()).not.toBeNull();
+        app.window.openLoginModal();
+        expect(app.$$('script[src="/assets/vendor/fullcalendar.min.js"]')).toHaveLength(1);
+
+        await app.login();
+        expect(app.calendar).toBeFalsy(); // in attesa del file
+
+        app.window.FullCalendar = { Calendar: FakeCalendar };
+        loader().dispatchEvent(new app.window.Event('load'));
+        await app.waitFor(() => app.calendar, 'calendario inizializzato');
+        expect(FakeCalendar.instances).toHaveLength(1);
+    });
+
+    it('se il calendario non si scarica avvisa e permette di riprovare', async () => {
+        app = await bootApp({ beforeScript: (window) => { delete window.FullCalendar; } });
+        app.window.openLoginModal();
+        app.$('script[src="/assets/vendor/fullcalendar.min.js"]').dispatchEvent(new app.window.Event('error'));
+        await app.flush();
+        await app.login();
+        const retry = app.$$('script[src="/assets/vendor/fullcalendar.min.js"]').at(-1);
+        retry.dispatchEvent(new app.window.Event('error'));
+        await app.flush();
+        expect(app.toast()).toContain('Calendario non caricato');
+        expect(app.$$('script[src="/assets/vendor/fullcalendar.min.js"]')).toHaveLength(2);
     });
 });
