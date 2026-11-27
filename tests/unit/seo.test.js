@@ -28,6 +28,10 @@ describe('SEO della home', () => {
         expect(description.length).toBeLessThanOrEqual(160);
     });
 
+    it('mantiene il tag di verifica di Google Search Console (toglierlo fa perdere l\'accesso ai dati)', () => {
+        expect(meta('meta[name="google-site-verification"]')).toMatch(/^[\w-]{20,}$/);
+    });
+
     it('dichiara l\'indirizzo canonico ed è indicizzabile', () => {
         expect(document.querySelector('link[rel="canonical"]').getAttribute('href')).toBe(SITE);
         expect(meta('meta[name="robots"]')).toMatch(/^index, follow/);
