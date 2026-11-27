@@ -6,7 +6,7 @@
  *  - font Cormorant Garamond e Plus Jakarta Sans (pacchetti @fontsource, licenza OFL);
  *  - icone Font Awesome Free 6.4.0;
  *  - FullCalendar 6.1.8;
- *  - CSS Tailwind compilato da index.html e privacy.html.
+ *  - CSS Tailwind compilato dalle pagine HTML del sito (index.html, privacy.html, pagine dei servizi).
  *
  * Uso: npm run build:assets (da rilanciare dopo aver cambiato classi CSS nelle pagine:
  * un test segnala se assets/css/tailwind.css non è aggiornato).
@@ -81,9 +81,21 @@ async function buildFullCalendar() {
     return version;
 }
 
+/** File elencati in tailwind.config.js (content), con i caratteri jolly espansi (es. './*.html'). */
+async function tailwindContentFiles() {
+    const files = [];
+    for (const pattern of tailwindConfig.content) {
+        if (!pattern.includes('*')) { files.push(pattern); continue; }
+        const dir = path.dirname(pattern);
+        const regex = new RegExp(`^${path.basename(pattern).replace(/[.+^${}()|[\]\\]/g, '\\$&').replace(/\*/g, '[^/]*')}$`);
+        for (const name of (await readdir(path.join(ROOT, dir))).sort()) if (regex.test(name)) files.push(path.join(dir, name));
+    }
+    return files;
+}
+
 /** CSS Tailwind compilato dalle classi presenti nelle pagine (markup e template JavaScript). */
 export async function compileTailwind() {
-    const content = await Promise.all(tailwindConfig.content.map(async file => ({ raw: await readFile(path.join(ROOT, file), 'utf8'), extension: 'html' })));
+    const content = await Promise.all((await tailwindContentFiles()).map(async file => ({ raw: await readFile(path.join(ROOT, file), 'utf8'), extension: 'html' })));
     const result = await postcss([tailwindcss({ ...tailwindConfig, content })]).process('@tailwind base;\n@tailwind components;\n@tailwind utilities;', { from: undefined });
     return `/* Generato da scripts/build-assets.mjs (npm run build:assets): non modificare a mano. */\n${result.css}`;
 }

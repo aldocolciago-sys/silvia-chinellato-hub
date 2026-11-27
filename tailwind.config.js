@@ -4,7 +4,8 @@
  * il sito non scarica più nulla da cdn.tailwindcss.com.
  */
 export default {
-    content: ['./index.html', './privacy.html'],
+    // Tutte le pagine HTML del sito (home, privacy, pagine dei servizi): le nuove pagine sono incluse da sole.
+    content: ['./*.html'],
     theme: {
         extend: {
             colors: {

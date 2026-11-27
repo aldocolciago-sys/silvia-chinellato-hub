@@ -123,9 +123,63 @@ describe('robots.txt e sitemap.xml', () => {
 
     it('la sitemap elenca le pagine pubbliche esistenti con indirizzi canonici', () => {
         const locs = [...sitemap.matchAll(/<loc>([^<]+)<\/loc>/g)].map(m => m[1]);
-        expect(locs).toEqual([SITE, `${SITE}privacy.html`]);
+        expect(locs).toEqual([SITE, `${SITE}osteopatia-carate-brianza.html`, `${SITE}idrocolonterapia-carate-brianza.html`, `${SITE}privacy.html`]);
         for (const loc of locs.slice(1)) expect(existsSync(path.join(ROOT, loc.slice(SITE.length)))).toBe(true);
         const privacy = new JSDOM(readFileSync(path.join(ROOT, 'privacy.html'), 'utf8')).window.document;
         expect(privacy.querySelector('link[rel="canonical"]').getAttribute('href')).toBe(`${SITE}privacy.html`);
+    });
+});
+
+describe('pagine dei servizi (fase 2)', () => {
+    const OSTEO = 'osteopatia-carate-brianza.html';
+    const IDRO = 'idrocolonterapia-carate-brianza.html';
+    const page = (file) => new JSDOM(readFileSync(path.join(ROOT, file), 'utf8')).window.document;
+    const text = (doc) => { const body = doc.body.cloneNode(true); body.querySelectorAll('script').forEach(el => el.remove()); return body.textContent.replace(/\s+/g, ' '); };
+
+    it('la home collega entrambe le pagine', () => {
+        for (const file of [OSTEO, IDRO]) expect(document.querySelectorAll(`#public-view a[href="/${file}"]`).length, file).toBeGreaterThanOrEqual(2);
+    });
+
+    it('le due pagine si collegano tra loro e tornano alla home', () => {
+        expect(page(OSTEO).querySelector(`a[href="/${IDRO}"]`)).not.toBeNull();
+        expect(page(IDRO).querySelector(`a[href="/${OSTEO}"]`)).not.toBeNull();
+        for (const file of [OSTEO, IDRO]) expect(page(file).querySelector('header a[href="/"]'), file).not.toBeNull();
+    });
+
+    it('osteopatia: titolo e h1 con la città, studio di Via San Giuseppe, prenotazione dal modulo', () => {
+        const doc = page(OSTEO);
+        expect(doc.title).toMatch(/^Osteopatia a Carate Brianza/);
+        expect(doc.querySelector('h1').textContent).toContain('Carate Brianza');
+        expect(text(doc)).toContain('Via San Giuseppe 25');
+        expect(doc.querySelector('a[href="https://maps.app.goo.gl/KfM6Rqde9TN5TTxq7"]')).not.toBeNull();
+        expect(doc.querySelector('main a[href="/#appointment-request"]')).not.toBeNull();
+    });
+
+    it('idrocolonterapia: entrambe le sedi e entrambe le strade per prenotare (centri e Silvia)', () => {
+        const doc = page(IDRO);
+        const content = text(doc);
+        expect(doc.title).toMatch(/^Idrocolonterapia a Carate Brianza/);
+        expect(doc.querySelector('h1').textContent).toMatch(/Carate Brianza.*Cinisello Balsamo/);
+        expect(content).toContain('Piazza Risorgimento 3, 20841 Carate Brianza');
+        expect(content).toContain('Via E. de Amicis 67, 20092 Cinisello Balsamo');
+        expect(doc.querySelector('#sedi a[href="https://cmscarate.com/"]')).not.toBeNull();
+        expect(doc.querySelector('#sedi a[href="https://www.miodottore.it/profilo/silvia-chinellato"]')).not.toBeNull();
+        expect(doc.querySelector('#sedi a[href="/#appointment-request"]')).not.toBeNull();
+    });
+
+    it('idrocolonterapia: controindicazioni da verificare nel colloquio e rimando al medico', () => {
+        const content = text(page(IDRO));
+        expect(content).toContain('Quando non si esegue');
+        expect(content).toContain('gravidanza');
+        expect(content).toMatch(/non sostituisce le cure del medico/);
+    });
+
+    it('nessun prezzo pubblicato, né nelle pagine dei servizi né nella home (scelta di Silvia)', () => {
+        for (const doc of [document, page(OSTEO), page(IDRO)]) {
+            const root = doc.getElementById('public-view') || doc.body;
+            const clone = root.cloneNode(true);
+            clone.querySelectorAll('script').forEach(el => el.remove());
+            expect(clone.textContent).not.toMatch(/€|\beuro\b|\d+\s*eur\b/i);
+        }
     });
 });

@@ -6,13 +6,15 @@
  *  - testi informativi, senza promesse di risultato (pubblicità sanitaria, L. 145/2018 c. 525).
  */
 import { describe, it, expect } from 'vitest';
-import { readFileSync, existsSync } from 'node:fs';
+import { readFileSync, existsSync, readdirSync } from 'node:fs';
 import path from 'node:path';
 import { JSDOM } from 'jsdom';
 import { ROOT, readIndexHtml } from '../support/app-source.js';
 import { assertTailwindUpToDate } from '../support/build-tailwind.mjs';
 
-const PAGES = { 'index.html': readIndexHtml(), 'privacy.html': readFileSync(path.join(ROOT, 'privacy.html'), 'utf8') };
+/** Tutte le pagine HTML del sito: home, privacy e pagine dei servizi (le nuove sono controllate da sole). */
+const PAGES = Object.fromEntries(readdirSync(ROOT).filter(f => f.endsWith('.html')).sort()
+    .map(f => [f, f === 'index.html' ? readIndexHtml() : readFileSync(path.join(ROOT, f), 'utf8')]));
 const dom = (html) => new JSDOM(html).window.document;
 /** Unici indirizzi esterni ammessi tra le risorse caricate automaticamente: Firebase (Google), già indicato nell'informativa. */
 const ALLOWED_EXTERNAL = [/^https:\/\/www\.gstatic\.com\/firebasejs\//];
