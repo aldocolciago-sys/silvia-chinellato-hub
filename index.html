@@ -3,15 +3,123 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>Silvia Chinellato | Osteopata & Idrocolonterapia</title>
+    <title>Osteopata a Carate Brianza e idrocolonterapia | Silvia Chinellato</title>
+    <meta name="description" content="Osteopata e infermiera con studio a Carate Brianza (MB). Idrocolonterapia al CMS di Carate Brianza e al Centro Polisalute di Cinisello Balsamo.">
+    <meta name="robots" content="index, follow, max-image-preview:large">
+    <link rel="canonical" href="https://silvia-chinellato-hub.vercel.app/">
+    <meta name="theme-color" content="#3f5e4e">
     <meta name="app-build" content="shared-data-v31-tax-current-advance-split">
-    
-    <!-- Font, icone e calendario serviti dal sito stesso: nessuna richiesta a Google Fonts, cdnjs o jsDelivr
-         (l'indirizzo IP dei visitatori non viene inviato a terzi). Si rigenerano con: npm run build:assets -->
+
+    <!-- Icone del sito (scheda del browser, risultati di Google, schermata Home) -->
+    <link rel="icon" href="/favicon.ico" sizes="48x48">
+    <link rel="icon" type="image/png" sizes="192x192" href="/assets/img/icon-192.png">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+
+    <!-- Anteprima quando il link viene condiviso (WhatsApp, Facebook, Telegram...) -->
+    <meta property="og:type" content="website">
+    <meta property="og:locale" content="it_IT">
+    <meta property="og:site_name" content="Silvia Chinellato">
+    <meta property="og:title" content="Silvia Chinellato – Osteopata a Carate Brianza e idrocolonterapia">
+    <meta property="og:description" content="Studio di osteopatia a Carate Brianza (MB). Idrocolonterapia al CMS di Carate Brianza e al Centro Polisalute di Cinisello Balsamo.">
+    <meta property="og:url" content="https://silvia-chinellato-hub.vercel.app/">
+    <meta property="og:image" content="https://silvia-chinellato-hub.vercel.app/assets/img/og-silvia-chinellato.jpg">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:image:alt" content="Logo di Silvia Chinellato, osteopata a Carate Brianza">
+    <meta name="twitter:card" content="summary_large_image">
+
+    <!-- Dati strutturati per Google: studio, professionista e sedi in cui riceve.
+         Il telefono non è pubblicato di proposito (resta nascosto anche nella pagina). -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@graph": [
+            {
+                "@type": "WebSite",
+                "@id": "https://silvia-chinellato-hub.vercel.app/#website",
+                "url": "https://silvia-chinellato-hub.vercel.app/",
+                "name": "Silvia Chinellato – Osteopata e idrocolonterapia",
+                "inLanguage": "it-IT",
+                "publisher": { "@id": "https://silvia-chinellato-hub.vercel.app/#studio" }
+            },
+            {
+                "@type": "MedicalBusiness",
+                "@id": "https://silvia-chinellato-hub.vercel.app/#studio",
+                "name": "Silvia Chinellato – Osteopata",
+                "description": "Studio di osteopatia della Dott.ssa Silvia Chinellato, osteopata e infermiera, a Carate Brianza (MB).",
+                "url": "https://silvia-chinellato-hub.vercel.app/",
+                "image": "https://silvia-chinellato-hub.vercel.app/assets/img/og-silvia-chinellato.jpg",
+                "logo": "https://silvia-chinellato-hub.vercel.app/Logo.jpeg",
+                "email": "silviachine@gmail.com",
+                "vatID": "IT13070370963",
+                "address": {
+                    "@type": "PostalAddress",
+                    "streetAddress": "Via San Giuseppe 25",
+                    "postalCode": "20841",
+                    "addressLocality": "Carate Brianza",
+                    "addressRegion": "MB",
+                    "addressCountry": "IT"
+                },
+                "hasMap": "https://maps.app.goo.gl/KfM6Rqde9TN5TTxq7",
+                "areaServed": [
+                    { "@type": "City", "name": "Carate Brianza" },
+                    { "@type": "AdministrativeArea", "name": "Provincia di Monza e della Brianza" }
+                ],
+                "availableService": [
+                    { "@type": "MedicalTherapy", "name": "Osteopatia" }
+                ],
+                "founder": { "@id": "https://silvia-chinellato-hub.vercel.app/#silvia" },
+                "sameAs": ["https://www.instagram.com/dott.ssasilviachinellato/"]
+            },
+            {
+                "@type": "Person",
+                "@id": "https://silvia-chinellato-hub.vercel.app/#silvia",
+                "name": "Silvia Chinellato",
+                "honorificPrefix": "Dott.ssa",
+                "jobTitle": "Osteopata e infermiera",
+                "url": "https://silvia-chinellato-hub.vercel.app/",
+                "image": "https://silvia-chinellato-hub.vercel.app/assets/img/silvia-chinellato-osteopata.webp",
+                "knowsAbout": ["Osteopatia", "Idrocolonterapia"],
+                "worksFor": { "@id": "https://silvia-chinellato-hub.vercel.app/#studio" },
+                "workLocation": [
+                    { "@id": "https://silvia-chinellato-hub.vercel.app/#studio" },
+                    {
+                        "@type": "MedicalClinic",
+                        "name": "CMS Centro Medico Polispecialistico",
+                        "url": "https://cmscarate.com/",
+                        "address": { "@type": "PostalAddress", "streetAddress": "Piazza Risorgimento 3", "postalCode": "20841", "addressLocality": "Carate Brianza", "addressRegion": "MB", "addressCountry": "IT" }
+                    },
+                    {
+                        "@type": "MedicalClinic",
+                        "name": "Centro Polisalute",
+                        "address": { "@type": "PostalAddress", "streetAddress": "Via E. de Amicis 67", "postalCode": "20092", "addressLocality": "Cinisello Balsamo", "addressRegion": "MI", "addressCountry": "IT" }
+                    }
+                ],
+                "hasCredential": [
+                    { "@type": "EducationalOccupationalCredential", "credentialCategory": "degree", "name": "Laurea in Infermieristica", "dateCreated": "2014" },
+                    { "@type": "EducationalOccupationalCredential", "credentialCategory": "diploma", "name": "Diploma in Osteopatia", "dateCreated": "2019" },
+                    {
+                        "@type": "EducationalOccupationalCredential",
+                        "credentialCategory": "license",
+                        "name": "Infermiera iscritta all'albo, n. 31189",
+                        "recognizedBy": { "@type": "Organization", "name": "OPI di Milano, Lodi, Monza e Brianza" }
+                    }
+                ],
+                "sameAs": [
+                    "https://www.instagram.com/dott.ssasilviachinellato/",
+                    "https://www.miodottore.it/profilo/silvia-chinellato"
+                ]
+            }
+        ]
+    }
+    </script>
+
+    <!-- Font e icone serviti dal sito stesso: nessuna richiesta a Google Fonts, cdnjs o jsDelivr
+         (l'indirizzo IP dei visitatori non viene inviato a terzi). Si rigenerano con: npm run build:assets.
+         Il calendario (FullCalendar, ~280 KB) si carica solo all'ingresso nell'area riservata: vedi loadFullCalendar(). -->
     <link rel="stylesheet" href="/assets/css/fonts.css">
     <link rel="stylesheet" href="/assets/fontawesome/css/all.min.css">
-    <script src="/assets/vendor/fullcalendar.min.js"></script>
-    
+
     <style>
         body { 
             font-family: 'Plus Jakarta Sans', sans-serif; 
@@ -55,7 +163,7 @@
             #public-view > header { padding-top: env(safe-area-inset-top); }
             #public-view > header > div:first-child { padding-top: .65rem; padding-bottom: .65rem; gap: .5rem; }
             #public-view > header .w-11 { width: 2.75rem; height: 2.75rem; }
-            #public-view > header h1 { font-size: 1.2rem; }
+            #public-view > header .brand-name { font-size: 1.2rem; }
             #public-view > header .flex.items-center.gap-2 { gap: .35rem; }
             #public-firebase-status { display: none; }
             #public-view > header button[onclick="openLoginModal()"] { min-height: 44px; padding: .65rem .85rem; }
@@ -70,11 +178,11 @@
             #public-view main > section { margin-bottom: 1.25rem; }
             #profilo-pubblica { padding: 1.25rem; border-radius: 2rem; gap: 1.1rem; }
             #profilo-pubblica > div:nth-of-type(3) { width: min(68vw, 16rem); height: min(68vw, 16rem); }
-            #profilo-pubblica h2 { font-size: 2.35rem; }
+            #profilo-pubblica h1 { font-size: 2.35rem; }
             #profilo-pubblica p { font-size: .92rem; }
             #profilo-pubblica a { min-height: 48px; flex: 1 1 150px; justify-content: center; display: inline-flex; align-items: center; }
             #filosofia-pubblica, #contatti-pubblica { padding: 1.25rem; border-radius: 2rem; }
-            #public-view h3 { font-size: 2rem; line-height: 1.05; }
+            #public-view main > section h2 { font-size: 2rem; line-height: 1.05; }
             #public-view p, #public-view li { font-size: .9rem; }
             #public-view [id$="-grid"] > div { border-radius: 1.75rem; padding: 1.25rem; }
             #public-view footer { margin-top: 1rem; padding-bottom: calc(2rem + env(safe-area-inset-bottom)); }
@@ -170,10 +278,10 @@
             <div class="max-w-6xl mx-auto px-4 sm:px-6 py-3.5 flex items-center justify-between">
                 <a href="#" class="flex items-center gap-3 group">
                     <div class="w-11 h-11 sm:w-13 sm:h-13 rounded-full bg-white border border-nature-200 flex items-center justify-center shadow-md overflow-hidden flex-shrink-0 group-hover:scale-105 transition duration-300">
-                        <img src="Logo.jpeg" alt="Logo Silvia Chinellato" class="w-full h-full object-cover" onerror="this.onerror=null; this.src='/assets/img/iniziali.svg'">
+                        <img src="/assets/img/logo-silvia-chinellato-128.webp" width="128" height="128" alt="Logo Silvia Chinellato" class="w-full h-full object-cover" onerror="this.onerror=null; this.src='/assets/img/iniziali.svg'">
                     </div>
                     <div>
-                        <h1 class="font-editorial text-lg sm:text-2xl font-bold text-slate-900 leading-none tracking-tight italic">Silvia Chinellato</h1>
+                        <p class="brand-name font-editorial text-lg sm:text-2xl font-bold text-slate-900 leading-none tracking-tight italic">Silvia Chinellato</p>
                         <p class="text-[11px] sm:text-xs text-nature-700 font-medium italic-title">Osteopata & Idrocolon Terapista</p>
                     </div>
                 </a>
@@ -215,16 +323,17 @@
                 <div class="absolute -left-20 -top-20 w-80 h-80 bg-warmth-500/15 rounded-full blur-3xl pointer-events-none"></div>
                 
                 <div class="w-56 h-56 sm:w-72 sm:h-72 rounded-[2.5rem] bg-white/10 backdrop-blur-xl p-3 border border-white/25 flex-shrink-0 shadow-2xl flex items-center justify-center overflow-hidden">
-                    <img src="Silvia Foto Profilo.jpeg" alt="Silvia Chinellato" class="w-full h-full object-cover rounded-[2rem]" onerror="this.onerror=null; this.src='/assets/img/iniziali.svg'">
+                    <img src="/assets/img/silvia-chinellato-osteopata.webp" width="600" height="750" fetchpriority="high" alt="Silvia Chinellato, osteopata e infermiera" class="w-full h-full object-cover rounded-[2rem]" onerror="this.onerror=null; this.src='/assets/img/iniziali.svg'">
                 </div>
 
                 <div class="space-y-4 text-center md:text-left z-10">
                     <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/15 backdrop-blur-md text-xs font-medium text-nature-100 border border-white/20 italic-title tracking-wide">
                         <i aria-hidden="true" class="fa-solid fa-seedling text-nature-200"></i> Osteopatia e idrocolonterapia
                     </div>
-                    <h2 class="font-editorial text-3xl sm:text-6xl font-bold tracking-tight leading-tight italic">Silvia Chinellato</h2>
+                    <h1 class="font-editorial text-3xl sm:text-6xl font-bold tracking-tight leading-tight italic">Silvia Chinellato<span class="block font-sans not-italic font-medium tracking-normal text-base sm:text-2xl text-nature-100 mt-2">Osteopata a Carate Brianza</span></h1>
                     <p class="text-nature-100 text-xs sm:text-base leading-relaxed max-w-2xl font-light font-sans opacity-95">
                         Osteopata, mi occupo anche di idrocolonterapia. Alle spalle ho un percorso nella professione infermieristica: in ogni seduta dedico tempo all'ascolto, alla raccolta della storia clinica e alla spiegazione di cosa faremo e perché.
+                        Per l'osteopatia ricevo nel mio studio di Carate Brianza, in Via San Giuseppe 25; per l'idrocolonterapia al CMS di Carate Brianza e al Centro Polisalute di Cinisello Balsamo.
                     </p>
                     <div class="pt-2 sm:pt-4 flex flex-wrap items-center justify-center md:justify-start gap-3">
                         <a href="#poliambulatori-pubblica" class="px-6 py-3.5 bg-white text-nature-900 hover:bg-nature-50 font-semibold rounded-full text-sm transition shadow-lg italic-title">
@@ -240,7 +349,7 @@
             <section id="filosofia-pubblica" class="grid grid-cols-1 md:grid-cols-2 gap-8 sm:gap-12 items-center bg-white/80 backdrop-blur-md p-6 sm:p-14 rounded-[2.5rem] sm:rounded-[3.5rem] border border-white/80 shadow-xl scroll-mt-24">
                 <div class="space-y-5">
                     <span class="text-xs font-bold text-nature-700 uppercase tracking-widest italic-title sm:text-sm">Come lavoro</span>
-                    <h3 class="font-editorial text-2xl sm:text-4xl font-bold text-slate-900 leading-tight italic">Ascolto, valutazione, trattamento</h3>
+                    <h2 class="font-editorial text-2xl sm:text-4xl font-bold text-slate-900 leading-tight italic">Ascolto, valutazione, trattamento</h2>
                     <p class="text-xs sm:text-sm text-slate-600 leading-relaxed font-light">
                         Il primo incontro comincia con un colloquio e una valutazione: la storia clinica, eventuali esami e terapie in corso, le possibili controindicazioni. Il trattamento viene proposto solo se è indicato e viene spiegato prima di iniziare; quando serve, consiglio di rivolgersi al medico curante.
                     </p>
@@ -258,7 +367,7 @@
                 </div>
                 <div class="bg-gradient-to-br from-nature-50/90 via-water-50/70 to-warmth-50/60 p-6 sm:p-10 rounded-[2rem] sm:rounded-[2.5rem] border border-nature-100 space-y-6 shadow-inner text-center flex flex-col items-center justify-center">
                     <div class="w-44 h-44 sm:w-56 sm:h-56 rounded-full bg-white border-4 border-nature-200 flex items-center justify-center shadow-2xl overflow-hidden mx-auto flex-shrink-0 hover:scale-105 transition duration-500">
-                        <img src="Logo.jpeg" alt="Logo Silvia Chinellato" class="w-full h-full object-cover" onerror="this.onerror=null; this.src='/assets/img/iniziali.svg'">
+                        <img src="/assets/img/logo-silvia-chinellato-480.webp" width="480" height="480" decoding="async" alt="Logo Silvia Chinellato" class="w-full h-full object-cover" onerror="this.onerror=null; this.src='/assets/img/iniziali.svg'">
                     </div>
                     <blockquote class="text-xs sm:text-sm text-slate-700 leading-relaxed font-editorial italic text-base sm:text-lg max-w-sm">
                         "La salute è uno stato di completo benessere fisico, mentale e sociale e non semplicemente l'assenza di malattia o di infermità." <span class="block mt-2 text-xs not-italic font-sans text-slate-500">Costituzione dell'Organizzazione Mondiale della Sanità, 1946</span>
@@ -269,7 +378,7 @@
             <section id="trattamenti-pubblica" class="space-y-6 sm:space-y-8 scroll-mt-24">
                 <div class="text-center max-w-xl mx-auto space-y-2">
                     <span class="text-xs font-bold text-nature-700 uppercase tracking-widest italic-title sm:text-sm">Trattamenti</span>
-                    <h3 class="font-editorial text-2xl sm:text-4xl font-bold text-slate-900 tracking-tight italic">Cosa propongo</h3>
+                    <h2 class="font-editorial text-2xl sm:text-4xl font-bold text-slate-900 tracking-tight italic">Osteopatia e idrocolonterapia</h2>
                     <p class="text-xs sm:text-sm text-slate-500 font-light">Cosa sono i trattamenti e come si svolgono. Non sostituiscono la diagnosi e le cure del medico.</p>
                 </div>
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8" id="public-treatments-grid"></div>
@@ -278,8 +387,8 @@
             <section id="poliambulatori-pubblica" class="space-y-6 sm:space-y-8 scroll-mt-24 text-center">
                 <div class="max-w-xl mx-auto space-y-2">
                     <span class="text-xs font-bold text-nature-700 uppercase tracking-widest italic-title sm:text-sm">Strutture Partner</span>
-                    <h3 class="font-editorial text-2xl sm:text-4xl font-bold text-slate-900 tracking-tight italic">Dove Ricevo (Poliambulatori)</h3>
-                    <p class="text-xs sm:text-sm text-slate-500 font-light">Informazioni e prenotazioni dirette presso le singole strutture di fiducia</p>
+                    <h2 class="font-editorial text-2xl sm:text-4xl font-bold text-slate-900 tracking-tight italic">Dove ricevo: Carate Brianza e Cinisello Balsamo</h2>
+                    <p class="text-xs sm:text-sm text-slate-500 font-light">Osteopatia nello studio privato di Carate Brianza (Via San Giuseppe 25). Idrocolonterapia al CMS Centro Medico Polispecialistico di Carate Brianza (Piazza Risorgimento 3) e al Centro Polisalute di Cinisello Balsamo (Via E. de Amicis 67): informazioni e prenotazioni direttamente presso le strutture.</p>
                 </div>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8 text-left" id="public-centers-grid"></div>
             </section>
@@ -287,7 +396,7 @@
             <section id="news-pubblica" class="space-y-6 sm:space-y-8 scroll-mt-24 text-center">
                 <div class="max-w-xl mx-auto space-y-2">
                     <span class="text-xs font-bold text-water-700 uppercase tracking-widest italic-title sm:text-sm">Novità & Aggiornamenti</span>
-                    <h3 class="font-editorial text-2xl sm:text-4xl font-bold text-slate-900 tracking-tight italic">Comunicazioni dallo Studio</h3>
+                    <h2 class="font-editorial text-2xl sm:text-4xl font-bold text-slate-900 tracking-tight italic">Comunicazioni dallo Studio</h2>
                     <p class="text-xs sm:text-sm text-slate-500 font-light">Tutte le ultime novità, consigli di benessere e variazioni di orario.</p>
                 </div>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8 text-left" id="public-news-grid"></div>
@@ -296,7 +405,7 @@
             <section id="preparazione-pubblica" class="space-y-6 sm:space-y-8 scroll-mt-24 text-center">
                 <div class="max-w-xl mx-auto space-y-2">
                     <span class="text-xs font-bold text-nature-700 uppercase tracking-widest italic-title sm:text-sm">Guida del Paziente</span>
-                    <h3 class="font-editorial text-2xl sm:text-4xl font-bold text-slate-900 tracking-tight italic">Preparazione ai Trattamenti</h3>
+                    <h2 class="font-editorial text-2xl sm:text-4xl font-bold text-slate-900 tracking-tight italic">Preparazione ai Trattamenti</h2>
                     <p class="text-xs sm:text-sm text-slate-500 font-light">Consigli utili e indicazioni da seguire per vivere la seduta nel massimo comfort.</p>
                 </div>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8 text-left" id="public-preparations-grid"></div>
@@ -305,7 +414,7 @@
             <section id="contatti-pubblica" class="bg-white/90 backdrop-blur-md rounded-[2.5rem] sm:rounded-[3.5rem] p-6 sm:p-14 border border-white/80 shadow-xl space-y-10 scroll-mt-24">
                 <div class="text-center max-w-xl mx-auto space-y-2">
                     <span class="text-xs font-bold text-nature-700 uppercase tracking-widest italic-title sm:text-sm">Contatti Ufficiali</span>
-                    <h3 class="font-editorial text-2xl sm:text-4xl font-bold text-slate-900 italic">Entra in Contatto con Silvia</h3>
+                    <h2 class="font-editorial text-2xl sm:text-4xl font-bold text-slate-900 italic">Entra in Contatto con Silvia</h2>
                     <p class="text-xs sm:text-sm text-slate-500 font-light font-editorial italic text-base">Per informazioni sui trattamenti o prenotazioni presso i poliambulatori e lo studio privato.</p>
                 </div>
 
@@ -321,7 +430,7 @@
                         </div>
                     </div>
 
-                    <a href="https://www.instagram.com/dott.ssasilviachinellato?stkn=eXhjemF4eG5jbW9n" target="_blank" class="bg-warmth-50/80 p-6 sm:p-8 rounded-3xl border border-warmth-100 flex flex-col items-center text-center space-y-3 shadow-xs hover:shadow-md transition group">
+                    <a href="https://www.instagram.com/dott.ssasilviachinellato/" target="_blank" rel="noopener" class="bg-warmth-50/80 p-6 sm:p-8 rounded-3xl border border-warmth-100 flex flex-col items-center text-center space-y-3 shadow-xs hover:shadow-md transition group">
                         <div class="w-14 h-14 rounded-2xl bg-gradient-to-tr from-amber-500 via-rose-500 to-purple-600 text-white flex items-center justify-center text-xl shadow-md group-hover:scale-105 transition">
                             <i aria-hidden="true" class="fa-brands fa-instagram"></i>
                         </div>
@@ -396,7 +505,7 @@
         <header class="bg-white/95 backdrop-blur-md border-b border-nature-100 px-3 sm:px-4 py-2 flex flex-col sm:flex-row sm:items-center justify-between gap-2 z-30 shadow-xs flex-shrink-0">
             <div class="flex items-center gap-2.5">
                 <div class="w-8 h-8 rounded-full bg-white border border-nature-200 flex items-center justify-center shadow-xs overflow-hidden flex-shrink-0">
-                    <img src="Logo.jpeg" alt="Logo" class="w-full h-full object-cover" onerror="this.onerror=null; this.src='/assets/img/iniziali.svg'">
+                    <img src="/assets/img/logo-silvia-chinellato-128.webp" width="128" height="128" loading="lazy" alt="Logo" class="w-full h-full object-cover" onerror="this.onerror=null; this.src='/assets/img/iniziali.svg'">
                 </div>
                 <div>
                     <h2 class="font-editorial text-xs font-bold text-slate-900 leading-tight italic">Agenda Silvia Chinellato</h2>
@@ -1365,8 +1474,10 @@
             isLoggedIn: false,
             currentUserEmail: null,
             centers: [
-                { id: '1', name: 'Centro Polisalute', service: 'Osteopatia & Visite', color: '#3f5e4e', icon: 'fa-hospital', icalUrl: '', showPublic: true, address: 'Via Roma 10, Milano', phone: '02 1234567', siteUrl: 'https://example.com', bookingUrl: 'https://example.com/book' },
-                { id: '2', name: 'Poliambulatorio San Benedetto', service: 'Idrocolonterapia', color: '#4a8fa8', icon: 'fa-clinic-medical', icalUrl: '', showPublic: true, address: 'Corso Italia 45, Monza', phone: '039 7654321', siteUrl: 'https://example.com', bookingUrl: 'https://example.com/book' }
+                // Mostrati solo se i poliambulatori non sono ancora nel database (o non si riesce a leggerlo):
+                // sono le sedi reali, senza indirizzi, telefoni o link inventati che Google potrebbe indicizzare.
+                { id: '1', name: 'CMS Centro Medico Polispecialistico', service: 'Idrocolonterapia', color: '#4a8fa8', icon: 'fa-clinic-medical', icalUrl: '', showPublic: true, address: 'Piazza Risorgimento 3, Carate Brianza (MB)', phone: '', siteUrl: 'https://cmscarate.com/', bookingUrl: '' },
+                { id: '2', name: 'Centro Polisalute', service: 'Idrocolonterapia', color: '#3f5e4e', icon: 'fa-hospital', icalUrl: '', showPublic: true, address: 'Via E. de Amicis 67, Cinisello Balsamo (MI)', phone: '', siteUrl: '', bookingUrl: '' }
             ],
             treatments: [
                 { id: 't1', title: 'Idrocolonterapia', icon: 'fa-droplet', desc: DEFAULT_TREATMENT_TEXTS.t1.desc },
@@ -1738,9 +1849,32 @@
             populateCenterDropdown();
             updateTaxDeadlineBanner();
             setTimeout(() => {
-                initCalendar();
-                checkCalendarConflicts();
+                const startCalendar = () => { initCalendar(); checkCalendarConflicts(); };
+                if (window.FullCalendar) { startCalendar(); return; }
+                loadFullCalendar().then(startCalendar).catch(err => {
+                    console.error(err);
+                    showToast('Calendario non caricato: ricarica la pagina.');
+                });
             }, 100);
+        }
+
+        let fullCalendarLoading = null;
+        /**
+         * FullCalendar (~280 KB) serve solo nell'area riservata: lo scarica al primo accesso invece
+         * di farlo scaricare, prima di mostrare la pagina, a ogni visitatore del sito pubblico.
+         */
+        function loadFullCalendar() {
+            if (window.FullCalendar) return Promise.resolve();
+            if (!fullCalendarLoading) {
+                fullCalendarLoading = new Promise((resolve, reject) => {
+                    const script = document.createElement('script');
+                    script.src = '/assets/vendor/fullcalendar.min.js';
+                    script.onload = () => resolve();
+                    script.onerror = () => { fullCalendarLoading = null; reject(new Error('FullCalendar non caricato')); };
+                    document.head.appendChild(script);
+                });
+            }
+            return fullCalendarLoading;
         }
 
         function renderAllPublicUI() {
@@ -1883,7 +2017,10 @@
             `).join('');
         }
 
-        window.openLoginModal = function() { document.getElementById('login-modal').classList.remove('hidden'); }
+        window.openLoginModal = function() {
+            document.getElementById('login-modal').classList.remove('hidden');
+            loadFullCalendar().catch(() => {}); // anticipa il download del calendario mentre si fa l'accesso
+        }
         window.closeLoginModal = function() { document.getElementById('login-modal').classList.add('hidden'); }
 
         window.handleGoogleLogin = async function() {

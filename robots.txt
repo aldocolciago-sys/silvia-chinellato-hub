@@ -1,0 +1,6 @@
+# Sito pubblico di Silvia Chinellato, osteopata a Carate Brianza
+User-agent: *
+Allow: /
+Disallow: /api/
+
+Sitemap: https://silvia-chinellato-hub.vercel.app/sitemap.xml

@@ -116,9 +116,20 @@ describe('server statico di test', () => {
     it('serve index.html sulla radice e le immagini', async () => {
         const index = await fetch(`${appUrl}/`);
         expect(index.status).toBe(200);
-        expect(await index.text()).toContain('<title>Silvia Chinellato');
+        expect(await index.text()).toMatch(/<title>[^<]*Silvia Chinellato<\/title>/);
         const logo = await fetch(`${appUrl}/Logo.jpeg`);
         expect(logo.headers.get('content-type')).toBe('image/jpeg');
+        const photo = await fetch(`${appUrl}/assets/img/silvia-chinellato-osteopata.webp`);
+        expect(photo.headers.get('content-type')).toBe('image/webp');
+    });
+
+    it('serve robots.txt, sitemap.xml e favicon dalla radice', async () => {
+        const robots = await fetch(`${appUrl}/robots.txt`);
+        expect(robots.status).toBe(200);
+        expect(await robots.text()).toContain('Sitemap: https://silvia-chinellato-hub.vercel.app/sitemap.xml');
+        const sitemap = await fetch(`${appUrl}/sitemap.xml`);
+        expect(sitemap.headers.get('content-type')).toMatch(/^application\/xml/);
+        expect((await fetch(`${appUrl}/favicon.ico`)).status).toBe(200);
     });
 
     it('non espone node_modules né i file di test', async () => {

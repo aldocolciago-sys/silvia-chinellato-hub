@@ -4,7 +4,7 @@ import { seedDocs, center } from '../fixtures/seed.js';
 test.describe('sito pubblico', () => {
     test('si carica senza errori JavaScript né richieste esterne impreviste', async ({ page, pageErrors, blockedRequests }) => {
         await openSite(page);
-        await expect(page).toHaveTitle('Silvia Chinellato | Osteopata & Idrocolonterapia');
+        await expect(page).toHaveTitle('Osteopata a Carate Brianza e idrocolonterapia | Silvia Chinellato');
         await expect(page.getByRole('heading', { level: 1, name: 'Silvia Chinellato' })).toBeVisible();
         expect(pageErrors.map(e => e.message)).toEqual([]);
         expect(blockedRequests).toEqual([]);
@@ -24,10 +24,29 @@ test.describe('sito pubblico', () => {
 
     test('le immagini del profilo e del logo vengono caricate', async ({ page }) => {
         await openSite(page);
-        const images = page.locator('#public-view img[src="Logo.jpeg"], #public-view img[src="Silvia Foto Profilo.jpeg"]');
+        const images = page.locator('#public-view img[src^="/assets/img/logo-silvia-chinellato-"], #public-view img[src="/assets/img/silvia-chinellato-osteopata.webp"]');
         await expect(images).toHaveCount(3);
         const sizes = await images.evaluateAll(imgs => imgs.map(img => ({ src: img.getAttribute('src'), ok: img.complete && img.naturalWidth > 0 })));
         expect(sizes.every(s => s.ok), JSON.stringify(sizes)).toBe(true);
+    });
+
+    test('i visitatori non scaricano il calendario dell’area riservata; parte solo aprendo l’accesso', async ({ page }) => {
+        const calendarRequests = [];
+        page.on('request', request => { if (request.url().includes('/assets/vendor/fullcalendar.min.js')) calendarRequests.push(request.url()); });
+        await openSite(page);
+        await expect(page.locator('#public-centers-grid > div')).toHaveCount(2);
+        expect(calendarRequests).toEqual([]);
+        await page.getByRole('button', { name: 'Area Riservata' }).click();
+        await expect.poll(() => calendarRequests.length).toBe(1);
+    });
+
+    test('titolo, descrizione e dati strutturati restano nella pagina dopo il caricamento', async ({ page }) => {
+        await openSite(page);
+        await expect(page.locator('meta[name="description"]')).toHaveAttribute('content', /Carate Brianza/);
+        await expect(page.locator('link[rel="canonical"]')).toHaveAttribute('href', 'https://silvia-chinellato-hub.vercel.app/');
+        const jsonLd = JSON.parse(await page.locator('script[type="application/ld+json"]').textContent());
+        expect(jsonLd['@graph'].map(item => item['@type'])).toEqual(expect.arrayContaining(['MedicalBusiness', 'Person']));
+        await expect(page.locator('#poliambulatori-pubblica')).toContainText('Piazza Risorgimento 3');
     });
 
     test('la navigazione porta alle sezioni', async ({ page }) => {
