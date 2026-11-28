@@ -140,6 +140,16 @@ describe('home: struttura invariata e domande frequenti', () => {
         }
     });
 
+    it('i due menu in alto (computer e telefono) hanno il pulsante Domande frequenti dopo Trattamenti', () => {
+        const menus = [...document.querySelectorAll('#public-view > header nav, #public-view > header > div.md\\:hidden')];
+        expect(menus).toHaveLength(2);
+        for (const menu of menus) {
+            const hrefs = [...menu.querySelectorAll('a')].map(a => a.getAttribute('href'));
+            expect(hrefs).toEqual(['#profilo-pubblica', '#filosofia-pubblica', '#trattamenti-pubblica', '#domande-frequenti', '#poliambulatori-pubblica', '#news-pubblica', '#preparazione-pubblica', '#contatti-pubblica']);
+            expect(menu.querySelector('a[href="#domande-frequenti"]').textContent.trim()).toBe('Domande frequenti');
+        }
+    });
+
     it('il sito resta su una sola pagina pubblica (più l\'informativa privacy)', () => {
         const pages = readdirSync(ROOT).filter(f => f.endsWith('.html')).sort();
         expect(pages).toEqual(['index.html', 'privacy.html']);
