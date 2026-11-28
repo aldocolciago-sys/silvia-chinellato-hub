@@ -108,7 +108,7 @@ describe('sito pubblico', () => {
     it('la navigazione punta a sezioni esistenti', async () => {
         app = await bootApp();
         const anchors = app.$$('#public-view nav a[href^="#"]');
-        expect(anchors.length).toBe(7);
+        expect(anchors.length).toBe(8); // 7 sezioni + Domande frequenti
         for (const a of anchors) expect(app.byId(a.getAttribute('href').slice(1)), a.getAttribute('href')).not.toBeNull();
     });
 
