@@ -269,6 +269,10 @@
 
             #toast { left: .75rem; right: .75rem; bottom: calc(var(--mobile-nav-h) + .75rem + env(safe-area-inset-bottom)); justify-content: center; }
         }
+        /* Domande frequenti: elenco apribile senza JavaScript */
+        .faq-item > summary { list-style: none; cursor: pointer; }
+        .faq-item > summary::-webkit-details-marker { display: none; }
+        .faq-item[open] .faq-icon { transform: rotate(45deg); }
     </style>
     <!-- CSS Tailwind compilato (tailwind.config.js), dopo gli stili della pagina come faceva il Play CDN. -->
     <link rel="stylesheet" href="/assets/css/tailwind.css">
@@ -292,6 +296,7 @@
                     <a href="#profilo-pubblica" class="hover:text-nature-700 transition">Chi Sono</a>
                     <a href="#filosofia-pubblica" class="hover:text-nature-700 transition">Il Mio Metodo</a>
                     <a href="#trattamenti-pubblica" class="hover:text-nature-700 transition">Trattamenti</a>
+                    <a href="#domande-frequenti" class="hover:text-nature-700 transition">Domande frequenti</a>
                     <a href="#poliambulatori-pubblica" class="hover:text-nature-700 transition">Dove Ricevo</a>
                     <a href="#news-pubblica" class="hover:text-nature-700 transition">News</a>
                     <a href="#preparazione-pubblica" class="hover:text-nature-700 transition">Preparazione</a>
@@ -312,6 +317,7 @@
                 <a href="#profilo-pubblica" class="hover:text-nature-600">Chi Sono</a>
                 <a href="#filosofia-pubblica" class="hover:text-nature-600">Il Mio Metodo</a>
                 <a href="#trattamenti-pubblica" class="hover:text-nature-600">Trattamenti</a>
+                <a href="#domande-frequenti" class="hover:text-nature-600">Domande frequenti</a>
                 <a href="#poliambulatori-pubblica" class="hover:text-nature-600">Dove Ricevo</a>
                 <a href="#news-pubblica" class="hover:text-nature-600">News</a>
                 <a href="#preparazione-pubblica" class="hover:text-nature-600">Preparazione</a>
@@ -384,6 +390,78 @@
                     <p class="text-xs sm:text-sm text-slate-500 font-light">Cosa sono i trattamenti e come si svolgono. Non sostituiscono la diagnosi e le cure del medico.</p>
                 </div>
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8" id="public-treatments-grid"></div>
+            </section>
+
+            <!-- Domande frequenti: testo fisso (leggibile da Google senza database), stesso stile delle altre sezioni.
+                 I contenuti gestiti da Silvia (trattamenti, sedi, news, preparazione) restano nelle loro sezioni. -->
+            <section id="domande-frequenti" class="space-y-6 sm:space-y-8 scroll-mt-24">
+                <div class="text-center max-w-xl mx-auto space-y-2">
+                    <span class="text-xs font-bold text-nature-700 uppercase tracking-widest italic-title sm:text-sm">Domande frequenti</span>
+                    <h2 class="font-editorial text-2xl sm:text-4xl font-bold text-slate-900 tracking-tight italic">Come si svolgono osteopatia e idrocolonterapia</h2>
+                    <p class="text-xs sm:text-sm text-slate-500 font-light">Le risposte alle domande più comuni prima del primo appuntamento.</p>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8 items-start">
+                    <div class="bg-white/90 backdrop-blur-md p-6 sm:p-8 rounded-[2.5rem] border border-white/80 shadow-lg space-y-2">
+                        <h3 class="font-editorial text-xl sm:text-2xl font-bold text-slate-900 italic flex items-center gap-3"><span class="w-10 h-10 rounded-2xl bg-nature-50 text-nature-600 flex items-center justify-center text-lg shadow-inner flex-shrink-0"><i aria-hidden="true" class="fa-solid fa-hand-holding-medical"></i></span>Osteopatia a Carate Brianza</h3>
+                        <div class="divide-y divide-nature-100">
+                            <details class="faq-item py-3">
+                                <summary class="flex items-center justify-between gap-4 font-semibold text-slate-900 text-sm sm:text-base">Dove si fa l'osteopatia?<i aria-hidden="true" class="faq-icon fa-solid fa-plus text-nature-600 transition"></i></summary>
+                                <div class="faq-answer pt-2 text-xs sm:text-sm text-slate-600 leading-relaxed space-y-2"><p>Nel mio studio privato in Via San Giuseppe 25, 20841 Carate Brianza (MB). <a href="https://maps.app.goo.gl/KfM6Rqde9TN5TTxq7" target="_blank" rel="noopener" class="underline text-nature-800">Apri in Google Maps</a></p></div>
+                            </details>
+                            <details class="faq-item py-3">
+                                <summary class="flex items-center justify-between gap-4 font-semibold text-slate-900 text-sm sm:text-base">Come si svolge la prima seduta?<i aria-hidden="true" class="faq-icon fa-solid fa-plus text-nature-600 transition"></i></summary>
+                                <div class="faq-answer pt-2 text-xs sm:text-sm text-slate-600 leading-relaxed space-y-2"><p>Si parte da un colloquio sulla storia clinica, su eventuali esami e terapie in corso e sulle possibili controindicazioni. Segue la valutazione; il trattamento viene proposto solo se è indicato e le spiego prima cosa faremo. Le tecniche si adattano alla persona: strutturali, cranio-sacrali e miofasciali.</p></div>
+                            </details>
+                            <details class="faq-item py-3">
+                                <summary class="flex items-center justify-between gap-4 font-semibold text-slate-900 text-sm sm:text-base">Cosa devo portare?<i aria-hidden="true" class="faq-icon fa-solid fa-plus text-nature-600 transition"></i></summary>
+                                <div class="faq-answer pt-2 text-xs sm:text-sm text-slate-600 leading-relaxed space-y-2"><p>Referti ed esami recenti, se li ha, l'elenco dei farmaci che prende e un abbigliamento comodo.</p></div>
+                            </details>
+                            <details class="faq-item py-3">
+                                <summary class="flex items-center justify-between gap-4 font-semibold text-slate-900 text-sm sm:text-base">Serve la prescrizione del medico?<i aria-hidden="true" class="faq-icon fa-solid fa-plus text-nature-600 transition"></i></summary>
+                                <div class="faq-answer pt-2 text-xs sm:text-sm text-slate-600 leading-relaxed space-y-2"><p>No, per una seduta privata non serve. L'osteopatia non sostituisce la diagnosi e le cure del medico: quando serve, consiglio di rivolgersi al medico curante.</p></div>
+                            </details>
+                            <details class="faq-item py-3">
+                                <summary class="flex items-center justify-between gap-4 font-semibold text-slate-900 text-sm sm:text-base">Quando è meglio sentire prima il medico?<i aria-hidden="true" class="faq-icon fa-solid fa-plus text-nature-600 transition"></i></summary>
+                                <div class="faq-answer pt-2 text-xs sm:text-sm text-slate-600 leading-relaxed space-y-2"><p>Dopo un trauma o una caduta, in caso di febbre, di dolore che peggiora rapidamente o che compare di notte, di formicolii o perdita di forza: in queste situazioni è bene rivolgersi prima al medico.</p></div>
+                            </details>
+                        </div>
+                    </div>
+                    <div class="bg-white/90 backdrop-blur-md p-6 sm:p-8 rounded-[2.5rem] border border-white/80 shadow-lg space-y-2">
+                        <h3 class="font-editorial text-xl sm:text-2xl font-bold text-slate-900 italic flex items-center gap-3"><span class="w-10 h-10 rounded-2xl bg-nature-50 text-nature-600 flex items-center justify-center text-lg shadow-inner flex-shrink-0"><i aria-hidden="true" class="fa-solid fa-droplet"></i></span>Idrocolonterapia a Carate Brianza e Cinisello Balsamo</h3>
+                        <div class="divide-y divide-nature-100">
+                            <details class="faq-item py-3">
+                                <summary class="flex items-center justify-between gap-4 font-semibold text-slate-900 text-sm sm:text-base">Dove si fa l'idrocolonterapia?<i aria-hidden="true" class="faq-icon fa-solid fa-plus text-nature-600 transition"></i></summary>
+                                <div class="faq-answer pt-2 text-xs sm:text-sm text-slate-600 leading-relaxed space-y-2"><p>Al CMS Centro Medico Polispecialistico, Piazza Risorgimento 3, Carate Brianza (MB), e al Centro Polisalute, Via E. de Amicis 67, Cinisello Balsamo (MI). Si prenota direttamente presso i centri (vedi <a href="#poliambulatori-pubblica" class="underline text-nature-800">Dove ricevo</a>) oppure scrivendomi dal <a href="#appointment-request" class="underline text-nature-800">modulo di contatto</a>.</p></div>
+                            </details>
+                            <details class="faq-item py-3">
+                                <summary class="flex items-center justify-between gap-4 font-semibold text-slate-900 text-sm sm:text-base">Come si svolge e quanto dura una seduta?<i aria-hidden="true" class="faq-icon fa-solid fa-plus text-nature-600 transition"></i></summary>
+                                <div class="faq-answer pt-2 text-xs sm:text-sm text-slate-600 leading-relaxed space-y-2"><p>È un lavaggio del colon con acqua tiepida introdotta a bassa pressione, con un'apparecchiatura a circuito chiuso. Prima della seduta un breve colloquio serve a verificare le controindicazioni; la seduta comprende un massaggio addominale e dura di solito 45–60 minuti in tutto.</p></div>
+                            </details>
+                            <details class="faq-item py-3">
+                                <summary class="flex items-center justify-between gap-4 font-semibold text-slate-900 text-sm sm:text-base">Quando non si esegue?<i aria-hidden="true" class="faq-icon fa-solid fa-plus text-nature-600 transition"></i></summary>
+                                <div class="faq-answer pt-2 text-xs sm:text-sm text-slate-600 leading-relaxed space-y-2"><p>Alcune situazioni richiedono di rinviare la seduta o di sentire prima il medico, per esempio:</p>
+                                    <ul class="list-disc pl-5 my-2 space-y-1">
+                                        <li>gravidanza;</li>
+                                        <li>malattie infiammatorie intestinali in fase attiva, come il morbo di Crohn o la rettocolite ulcerosa;</li>
+                                        <li>diverticolite in corso;</li>
+                                        <li>emorroidi o ragadi in fase acuta;</li>
+                                        <li>interventi recenti all'addome o all'intestino;</li>
+                                        <li>tumori del colon o del retto;</li>
+                                        <li>gravi malattie del cuore o dei reni.</li>
+                                    </ul>
+                                    <p>L'elenco non è completo: le controindicazioni si verificano insieme nel colloquio prima della seduta.</p></div>
+                            </details>
+                            <details class="faq-item py-3">
+                                <summary class="flex items-center justify-between gap-4 font-semibold text-slate-900 text-sm sm:text-base">Come mi preparo?<i aria-hidden="true" class="faq-icon fa-solid fa-plus text-nature-600 transition"></i></summary>
+                                <div class="faq-answer pt-2 text-xs sm:text-sm text-slate-600 leading-relaxed space-y-2"><p>Nei 2 giorni precedenti si consiglia un'alimentazione leggera, ricca di acqua e povera di scorie. Le indicazioni complete sono nella sezione <a href="#preparazione-pubblica" class="underline text-nature-800">Preparazione</a> e vengono date al momento della prenotazione.</p></div>
+                            </details>
+                            <details class="faq-item py-3">
+                                <summary class="flex items-center justify-between gap-4 font-semibold text-slate-900 text-sm sm:text-base">Chi esegue il trattamento?<i aria-hidden="true" class="faq-icon fa-solid fa-plus text-nature-600 transition"></i></summary>
+                                <div class="faq-answer pt-2 text-xs sm:text-sm text-slate-600 leading-relaxed space-y-2"><p>Lo eseguo io: sono infermiera, iscritta all'OPI di Milano, Lodi, Monza e Brianza, con una formazione specifica in idrocolonterapia. Il trattamento non sostituisce le cure del medico.</p></div>
+                            </details>
+                        </div>
+                    </div>
+                </div>
             </section>
 
             <section id="poliambulatori-pubblica" class="space-y-6 sm:space-y-8 scroll-mt-24 text-center">

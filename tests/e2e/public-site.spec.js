@@ -49,6 +49,18 @@ test.describe('sito pubblico', () => {
         await expect(page.locator('#poliambulatori-pubblica')).toContainText('Piazza Risorgimento 3');
     });
 
+    test('le domande frequenti si aprono e non cambiano le sezioni gestite da Silvia', async ({ page }) => {
+        await openSite(page);
+        const faq = page.locator('#domande-frequenti');
+        await expect(faq.getByText('Le risposte alle domande più comuni')).toBeVisible();
+        const answer = faq.getByText("L'elenco non è completo", { exact: false });
+        await expect(answer).toBeHidden();
+        await faq.getByText('Quando non si esegue?').click();
+        await expect(answer).toBeVisible();
+        await expect(page.locator('#public-treatments-grid > div')).toHaveCount(3);
+        await expect(page.locator('#public-centers-grid > div')).toHaveCount(2);
+    });
+
     test('la navigazione porta alle sezioni', async ({ page }) => {
         await openSite(page);
         const nav = isMobile(page) ? page.locator('header .md\\:hidden') : page.locator('header nav');

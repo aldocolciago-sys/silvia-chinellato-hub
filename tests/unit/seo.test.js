@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { existsSync, readFileSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import path from 'node:path';
 import { JSDOM } from 'jsdom';
 import { ROOT, readIndexHtml } from '../support/app-source.js';
@@ -127,5 +127,58 @@ describe('robots.txt e sitemap.xml', () => {
         for (const loc of locs.slice(1)) expect(existsSync(path.join(ROOT, loc.slice(SITE.length)))).toBe(true);
         const privacy = new JSDOM(readFileSync(path.join(ROOT, 'privacy.html'), 'utf8')).window.document;
         expect(privacy.querySelector('link[rel="canonical"]').getAttribute('href')).toBe(`${SITE}privacy.html`);
+    });
+});
+
+describe('home: struttura invariata e domande frequenti', () => {
+    const sectionIds = () => [...document.querySelectorAll('#public-view main > section[id]')].map(section => section.id);
+
+    it('la struttura resta quella di sempre: stesse sezioni, nello stesso ordine, con le parti gestite da Silvia', () => {
+        expect(sectionIds()).toEqual(['profilo-pubblica', 'filosofia-pubblica', 'trattamenti-pubblica', 'domande-frequenti', 'poliambulatori-pubblica', 'news-pubblica', 'preparazione-pubblica', 'contatti-pubblica']);
+        for (const id of ['public-treatments-grid', 'public-centers-grid', 'public-news-grid', 'public-preparations-grid', 'appointment-request-form']) {
+            expect(document.getElementById(id), id).not.toBeNull();
+        }
+    });
+
+    it('i due menu in alto (computer e telefono) hanno il pulsante Domande frequenti dopo Trattamenti', () => {
+        const menus = [...document.querySelectorAll('#public-view > header nav, #public-view > header > div.md\\:hidden')];
+        expect(menus).toHaveLength(2);
+        for (const menu of menus) {
+            const hrefs = [...menu.querySelectorAll('a')].map(a => a.getAttribute('href'));
+            expect(hrefs).toEqual(['#profilo-pubblica', '#filosofia-pubblica', '#trattamenti-pubblica', '#domande-frequenti', '#poliambulatori-pubblica', '#news-pubblica', '#preparazione-pubblica', '#contatti-pubblica']);
+            expect(menu.querySelector('a[href="#domande-frequenti"]').textContent.trim()).toBe('Domande frequenti');
+        }
+    });
+
+    it('il sito resta su una sola pagina pubblica (più l\'informativa privacy)', () => {
+        const pages = readdirSync(ROOT).filter(f => f.endsWith('.html')).sort();
+        expect(pages).toEqual(['index.html', 'privacy.html']);
+    });
+
+    it('le domande frequenti coprono entrambi i trattamenti, con sedi, indirizzi e modi per prenotare', () => {
+        const faq = document.getElementById('domande-frequenti');
+        const text = faq.textContent.replace(/\s+/g, ' ');
+        expect([...faq.querySelectorAll('h3')].map(h => h.textContent.trim())).toEqual(['Osteopatia a Carate Brianza', 'Idrocolonterapia a Carate Brianza e Cinisello Balsamo']);
+        for (const place of ['Via San Giuseppe 25, 20841 Carate Brianza', 'Piazza Risorgimento 3, Carate Brianza', 'Via E. de Amicis 67, Cinisello Balsamo']) expect(text).toContain(place);
+        for (const href of ['https://maps.app.goo.gl/KfM6Rqde9TN5TTxq7', '#poliambulatori-pubblica', '#appointment-request', '#preparazione-pubblica']) {
+            expect(faq.querySelector(`a[href="${href}"]`), href).not.toBeNull();
+        }
+        expect(text).toContain('Quando non si esegue?');
+        expect(text).toMatch(/non sostituisce (la diagnosi e )?le cure del medico/);
+    });
+
+    it('ogni domanda è un elenco apribile con testo di risposta', () => {
+        const items = [...document.querySelectorAll('#domande-frequenti details.faq-item')];
+        expect(items.length).toBeGreaterThanOrEqual(8);
+        for (const item of items) {
+            expect(item.querySelector('summary').textContent.trim()).toMatch(/\?$/);
+            expect(item.querySelector('summary + .faq-answer p').textContent.trim().length).toBeGreaterThan(20);
+        }
+    });
+
+    it('nessun prezzo pubblicato nella home (scelta di Silvia)', () => {
+        const visible = document.getElementById('public-view').cloneNode(true);
+        visible.querySelectorAll('script').forEach(el => el.remove());
+        expect(visible.textContent).not.toMatch(/€|\beuro\b|\d+\s*eur\b/i);
     });
 });
