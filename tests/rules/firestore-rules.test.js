@@ -92,7 +92,7 @@ describe('dati condivisi (pazienti, agenda, compensi, impostazioni)', () => {
             `${SHARED}/_meta/test-doc`, `${SHARED}/centers_list/test-doc`, `${SHARED}/clinical_sessions/test-doc`,
             `${SHARED}/manual_revenue/test-doc`, `${SHARED}/patients_list/test-doc`,
             `${SHARED}/settings/agenda`, `${SHARED}/settings/calendar_sync`, `${SHARED}/settings/daily_reminder`, `${SHARED}/settings/finance`, `${SHARED}/settings/messaging`,
-            `${SHARED}/studio_events/test-doc`, `${SHARED}/tax_profile/default`
+            `${SHARED}/site_stats/test-doc`, `${SHARED}/studio_events/test-doc`, `${SHARED}/tax_profile/default`
         ]);
     });
 
@@ -100,6 +100,8 @@ describe('dati condivisi (pazienti, agenda, compensi, impostazioni)', () => {
         it(`${who}: nessun accesso`, async () => {
             await assertFails(getDoc(doc(db(), `${SHARED}/patients_list/p1`)));
             await assertFails(getDocs(collection(db(), `${SHARED}/patients_list`)));
+            // le statistiche del sito: solo l'area riservata le legge; le scrive il server (Firebase Admin)
+            await assertFails(getDocs(collection(db(), `${SHARED}/site_stats`)));
             for (const path of paths) await assertFails(setDoc(doc(db(), path), { x: 1 }));
         });
     }
