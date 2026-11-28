@@ -51,6 +51,7 @@ describe('classificazione dei segnali', () => {
         expect(placeFromHeaders({ 'x-vercel-ip-country': 'IT', 'x-vercel-ip-city': 'Carate%20Brianza' })).toBe('Carate Brianza');
         expect(placeFromHeaders({ 'x-vercel-ip-country': 'IT', 'x-vercel-ip-city': 'Sant%27Angelo%20Lodigiano' })).toBe("Sant'Angelo Lodigiano");
         expect(placeFromHeaders({ 'x-vercel-ip-country': 'DE', 'x-vercel-ip-city': 'Berlin' })).toBe('Estero');
+        expect(placeFromHeaders({ 'x-vercel-ip-country': 'IT', 'x-vercel-ip-city': 'Milan' }), 'nomi italiani').toBe('Milano');
         expect(placeFromHeaders({})).toBe('Non disponibile');
         expect(placeFromHeaders({ 'x-vercel-ip-country': 'IT', 'x-vercel-ip-city': '%3Cscript%3E.x' })).toBe('scriptx');
     });
