@@ -4,6 +4,7 @@
  *  - file statici dalla radice del repository (index.html, immagini);
  *  - GET /api/ical → esegue la vera funzione serverless api/ical.js;
  *  - /__fixtures__/*.ics → calendari di esempio per gli E2E (tests/fixtures/ics);
+ *  - POST /api/statistiche → 204, i segnali delle statistiche di visita vengono scartati;
  *  - /__fixtures__/dynamic/<chiave>.ics → calendari modificabili via PUT (un calendario per test).
  *
  * Uso: node tests/support/server.mjs  (PORT=4173 di default)
@@ -67,6 +68,12 @@ export function createServer() {
         try {
             if (pathname === '/api/ical' || pathname === '/api/ical.js') {
                 await icalHandler({ method: req.method, query: Object.fromEntries(url.searchParams), headers: req.headers }, vercelResponse(res));
+                return;
+            }
+            // Statistiche di visita: in prova si accettano e si scartano (i test E2E controllano il segnale inviato).
+            if (pathname === '/api/statistiche') {
+                await readBody(req);
+                res.writeHead(req.method === 'POST' ? 204 : 405).end();
                 return;
             }
             const dynamic = pathname.match(/^\/__fixtures__\/dynamic\/([\w-]+)\.ics$/);

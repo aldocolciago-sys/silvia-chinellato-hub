@@ -87,7 +87,7 @@ describe('dati obbligatori e informativa', () => {
     });
 
     it('la pagina "Privacy e cookie" copre titolare, navigazione, modulo, cookie, destinatari e diritti', () => {
-        for (const id of ['titolare', 'navigazione', 'modulo', 'contatti', 'link', 'cookie', 'destinatari', 'diritti']) {
+        for (const id of ['titolare', 'navigazione', 'statistiche', 'modulo', 'contatti', 'link', 'cookie', 'destinatari', 'diritti']) {
             expect(privacy.getElementById(id), id).not.toBeNull();
         }
         const text = privacy.body.textContent;
@@ -96,6 +96,20 @@ describe('dati obbligatori e informativa', () => {
         expect(text).toContain('Garante per la protezione dei dati personali');
         expect(text).toMatch(/P\.\s?IVA\s+\d{11}/);
         expect(privacy.querySelector('a[href="/"]')).not.toBeNull();
+    });
+
+    it('le statistiche di visita sono descritte nell’informativa e nel piè di pagina, con le chiavi davvero usate', () => {
+        const statistiche = privacy.getElementById('statistiche').textContent;
+        expect(statistiche).toContain('non salva l\'indirizzo IP');
+        expect(statistiche).toContain('Non si usano cookie');
+        expect(statistiche).toMatch(/legittimo interesse/);
+        const script = readFileSync(path.join(ROOT, 'assets', 'js', 'statistiche.js'), 'utf8');
+        for (const key of ['statisticheVisitaInCorso', 'statisticheIgnoraDispositivo']) {
+            expect(script, key).toContain(`'${key}'`);
+            expect(privacy.getElementById('cookie').textContent, key).toContain(key);
+        }
+        expect(index.querySelector('footer').textContent).toContain('statistiche di visita anonime');
+        expect(index.querySelector('footer').textContent).not.toContain('né strumenti di statistica');
     });
 
     it('l’antispam salva in localStorage proprio la chiave descritta nell’informativa', () => {

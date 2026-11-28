@@ -121,6 +121,8 @@
          Il calendario (FullCalendar, ~280 KB) si carica solo all'ingresso nell'area riservata: vedi loadFullCalendar(). -->
     <link rel="stylesheet" href="/assets/css/fonts.css">
     <link rel="stylesheet" href="/assets/fontawesome/css/all.min.css">
+    <!-- Statistiche di visita anonime, senza cookie (informativa privacy, sezione 3) -->
+    <script src="/assets/js/statistiche.js" defer></script>
 
     <style>
         body { 
@@ -406,7 +408,7 @@
                         <div class="divide-y divide-nature-100">
                             <details class="faq-item py-3">
                                 <summary class="flex items-center justify-between gap-4 font-semibold text-slate-900 text-sm sm:text-base">Dove si fa l'osteopatia?<i aria-hidden="true" class="faq-icon fa-solid fa-plus text-nature-600 transition"></i></summary>
-                                <div class="faq-answer pt-2 text-xs sm:text-sm text-slate-600 leading-relaxed space-y-2"><p>Nel mio studio privato in Via San Giuseppe 25, 20841 Carate Brianza (MB). <a href="https://maps.app.goo.gl/KfM6Rqde9TN5TTxq7" target="_blank" rel="noopener" class="underline text-nature-800">Apri in Google Maps</a></p></div>
+                                <div class="faq-answer pt-2 text-xs sm:text-sm text-slate-600 leading-relaxed space-y-2"><p>Nel mio studio privato in Via San Giuseppe 25, 20841 Carate Brianza (MB). <a href="https://maps.app.goo.gl/KfM6Rqde9TN5TTxq7" target="_blank" rel="noopener" data-stat="maps" class="underline text-nature-800">Apri in Google Maps</a></p></div>
                             </details>
                             <details class="faq-item py-3">
                                 <summary class="flex items-center justify-between gap-4 font-semibold text-slate-900 text-sm sm:text-base">Come si svolge la prima seduta?<i aria-hidden="true" class="faq-icon fa-solid fa-plus text-nature-600 transition"></i></summary>
@@ -505,12 +507,12 @@
                         </div>
                         <h4 class="font-editorial text-xl font-bold text-nature-900 italic">Contatto Telefonico</h4>
                         <p class="text-xs text-slate-600 font-light leading-relaxed font-editorial italic text-sm">Contatto diretto tramite telefono o WhatsApp per urgenze e informazioni rapide.</p>
-                        <div class="px-4 py-2 bg-slate-200/90 rounded-xl text-xs font-semibold text-slate-600 tracking-widest blur-[3px] select-none cursor-pointer hover:blur-none transition font-editorial text-base" title="Passa il cursore per svelare">
+                        <div data-stat="telefono" class="px-4 py-2 bg-slate-200/90 rounded-xl text-xs font-semibold text-slate-600 tracking-widest blur-[3px] select-none cursor-pointer hover:blur-none transition font-editorial text-base" title="Passa il cursore per svelare">
                             +39 333 •••••••
                         </div>
                     </div>
 
-                    <a href="https://www.instagram.com/dott.ssasilviachinellato/" target="_blank" rel="noopener" class="bg-warmth-50/80 p-6 sm:p-8 rounded-3xl border border-warmth-100 flex flex-col items-center text-center space-y-3 shadow-xs hover:shadow-md transition group">
+                    <a href="https://www.instagram.com/dott.ssasilviachinellato/" target="_blank" rel="noopener" data-stat="instagram" class="bg-warmth-50/80 p-6 sm:p-8 rounded-3xl border border-warmth-100 flex flex-col items-center text-center space-y-3 shadow-xs hover:shadow-md transition group">
                         <div class="w-14 h-14 rounded-2xl bg-gradient-to-tr from-amber-500 via-rose-500 to-purple-600 text-white flex items-center justify-center text-xl shadow-md group-hover:scale-105 transition">
                             <i aria-hidden="true" class="fa-brands fa-instagram"></i>
                         </div>
@@ -519,7 +521,7 @@
                         <span class="text-xs font-bold text-rose-600 underline font-editorial italic text-lg">@dott.ssasilviachinellato</span>
                     </a>
 
-                    <a href="mailto:silviachine@gmail.com" class="bg-water-50/80 p-6 sm:p-8 rounded-3xl border border-water-100 flex flex-col items-center text-center space-y-3 shadow-xs hover:shadow-md transition group">
+                    <a href="mailto:silviachine@gmail.com" data-stat="email" class="bg-water-50/80 p-6 sm:p-8 rounded-3xl border border-water-100 flex flex-col items-center text-center space-y-3 shadow-xs hover:shadow-md transition group">
                         <div class="w-14 h-14 rounded-2xl bg-water-600 text-white flex items-center justify-center text-xl shadow-md group-hover:scale-105 transition">
                             <i aria-hidden="true" class="fa-solid fa-envelope"></i>
                         </div>
@@ -575,8 +577,8 @@
             <!-- Dati obbligatori del professionista: art. 35 DPR 633/1972 e art. 7 D.Lgs. 70/2003 -->
             <p class="font-semibold text-slate-700">Dott.ssa Silvia Chinellato – Infermiera e osteopata</p>
             <p id="footer-legal-data">Studio: Via San Giuseppe 25, 20841 Carate Brianza (MB) • P.IVA 13070370963 • Infermiera iscritta all'OPI di Milano, Lodi, Monza e Brianza, n. 31189 • Laurea in Infermieristica (2014), Diploma in Osteopatia (2019)</p>
-            <p>Email: <a href="mailto:silviachine@gmail.com" class="underline">silviachine@gmail.com</a></p>
-            <p><a href="/privacy.html" class="underline font-semibold text-nature-800">Privacy e cookie</a> • Il sito non usa cookie di profilazione né strumenti di statistica</p>
+            <p>Email: <a href="mailto:silviachine@gmail.com" data-stat="email" class="underline">silviachine@gmail.com</a></p>
+            <p><a href="/privacy.html" class="underline font-semibold text-nature-800">Privacy e cookie</a> • Il sito non usa cookie: solo statistiche di visita anonime e aggregate</p>
             <p class="text-slate-500">© 2026 Silvia Chinellato</p>
         </footer>
     </div>
@@ -629,6 +631,9 @@
                 </button>
                 <button onclick="openBusinessDashboard()" class="w-7 h-7 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 rounded-xl transition flex items-center justify-center border border-emerald-200 shadow-xs" title="Dashboard compensi">
                     <i aria-hidden="true" class="fa-solid fa-chart-line text-[10px]"></i>
+                </button>
+                <button onclick="openSiteStatsModal()" class="w-7 h-7 bg-water-50 hover:bg-water-100 text-water-700 rounded-xl transition flex items-center justify-center border border-water-100 shadow-xs" title="Statistiche del sito" aria-label="Statistiche del sito">
+                    <i aria-hidden="true" class="fa-solid fa-chart-simple text-[10px]"></i>
                 </button>
                 <button onclick="openRequestsModal()" class="relative w-7 h-7 bg-nature-50 hover:bg-nature-100 text-nature-800 rounded-xl transition flex items-center justify-center border border-nature-200 shadow-xs" title="Richieste di appuntamento">
                     <i aria-hidden="true" class="fa-solid fa-inbox text-[10px]"></i>
@@ -701,6 +706,7 @@
                 <button type="button" onclick="mobileOpenAdmin(openNewsAdminModal)"><i aria-hidden="true" class="fa-solid fa-bullhorn"></i>News e offerte</button>
                 <button type="button" onclick="mobileOpenAdmin(openPrepAdminModal)"><i aria-hidden="true" class="fa-solid fa-book-medical"></i>Preparazione</button>
                 <button type="button" onclick="mobileOpenAdmin(openBusinessDashboard)"><i aria-hidden="true" class="fa-solid fa-chart-line"></i>Compensi</button>
+                <button type="button" onclick="mobileOpenAdmin(openSiteStatsModal)"><i aria-hidden="true" class="fa-solid fa-chart-simple"></i>Statistiche sito</button>
                 <button type="button" onclick="mobileOpenAdmin(openRequestsModal)"><i aria-hidden="true" class="fa-solid fa-inbox"></i>Richieste<span id="requests-badge-mobile" class="hidden ml-1 px-1.5 rounded-full bg-rose-600 text-white text-[10px] font-bold"></span></button>
                 <button type="button" onclick="mobileOpenAdmin(openRemindersModal)"><i aria-hidden="true" class="fa-solid fa-bell"></i>Promemoria</button>
                 <button type="button" onclick="mobileOpenAdmin(openRecallModal)"><i aria-hidden="true" class="fa-solid fa-phone-volume"></i>Richiami</button>
@@ -1424,6 +1430,35 @@
     </div>
 
     <!-- APPOINTMENT REQUESTS MODAL -->
+    <!-- Statistiche del sito: totali giornalieri anonimi scritti da api/statistiche.js (shared/data/site_stats) -->
+    <div id="site-stats-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-md hidden z-50 flex items-center justify-center p-4" role="dialog" aria-modal="true" aria-labelledby="site-stats-title">
+        <div class="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-3xl overflow-hidden flex flex-col max-h-[90vh] border border-nature-100">
+            <div class="px-5 sm:px-6 py-4 sm:py-5 border-b border-nature-100 flex items-center justify-between gap-3 bg-nature-50/60">
+                <div class="flex items-center gap-3 min-w-0">
+                    <div class="w-9 h-9 rounded-2xl bg-water-50 text-water-700 flex items-center justify-center flex-shrink-0"><i aria-hidden="true" class="fa-solid fa-chart-simple text-sm"></i></div>
+                    <div class="min-w-0">
+                        <h3 id="site-stats-title" class="font-editorial text-base sm:text-lg font-bold text-slate-900 italic">Statistiche del sito</h3>
+                        <p id="site-stats-summary" class="text-[11px] text-slate-600">Visite anonime, senza cookie</p>
+                    </div>
+                </div>
+                <button aria-label="Chiudi" type="button" onclick="closeSiteStatsModal()" class="text-slate-400 hover:text-slate-600 w-8 h-8 rounded-full flex items-center justify-center hover:bg-slate-200/60 transition flex-shrink-0"><i aria-hidden="true" class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="p-4 sm:p-6 overflow-y-auto space-y-5 flex-1">
+                <div class="flex flex-wrap items-center gap-2" role="group" aria-label="Periodo">
+                    <button type="button" data-site-stats-days="7" onclick="setSiteStatsPeriod(7)" class="site-stats-period px-3 py-1.5 rounded-full text-xs font-semibold border border-nature-200 transition">7 giorni</button>
+                    <button type="button" data-site-stats-days="30" onclick="setSiteStatsPeriod(30)" class="site-stats-period px-3 py-1.5 rounded-full text-xs font-semibold border border-nature-200 transition">30 giorni</button>
+                    <button type="button" data-site-stats-days="90" onclick="setSiteStatsPeriod(90)" class="site-stats-period px-3 py-1.5 rounded-full text-xs font-semibold border border-nature-200 transition">90 giorni</button>
+                </div>
+                <div id="site-stats-content" class="space-y-5"></div>
+                <div class="border-t border-nature-100 pt-4 space-y-2 text-[11px] text-slate-600">
+                    <label class="inline-flex items-center gap-2 text-xs font-semibold text-slate-700"><input type="checkbox" id="site-stats-ignore" onchange="setSiteStatsIgnore(this.checked)">Non contare le visite da questo dispositivo</label>
+                    <p>Si contano solo totali giornalieri: nessun cookie, nessun indirizzo IP, nessun dato che riconosca chi visita il sito. Il comune è approssimativo; chi arriva dal QR del volantino o da WhatsApp risulta "Diretto".</p>
+                    <p>Le parole cercate su Google si trovano in <a href="https://search.google.com/search-console" target="_blank" rel="noopener" class="underline text-nature-800 font-semibold">Google Search Console</a>.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div id="requests-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-md hidden z-50 flex items-center justify-center p-4">
         <div class="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-2xl overflow-hidden flex flex-col max-h-[90vh] border border-nature-100">
             <div class="px-5 sm:px-6 py-4 sm:py-5 border-b border-nature-100 flex items-center justify-between gap-3 bg-nature-50/60">
@@ -1916,6 +1951,7 @@
                 return;
             }
             document.body.classList.add('mobile-admin-active');
+            setSiteStatsIgnore(true); // le visite di Silvia e Aldo non entrano nelle statistiche del sito
             document.getElementById('public-view').classList.add('hidden');
             document.getElementById('private-view').classList.remove('hidden');
             document.getElementById('logged-user-email-display').innerHTML = `<span class="w-2 h-2 rounded-full bg-nature-500 animate-pulse"></span> ${appState.currentUserEmail || 'Amministratore'}`;
@@ -1989,8 +2025,8 @@
                         ${center.phone ? `<p class="text-xs sm:text-sm text-slate-500 font-light flex items-center gap-2"><i aria-hidden="true" class="fa-solid fa-phone text-nature-600"></i> ${escapeHtml(center.phone)}</p>` : ''}
                     </div>
                     <div class="flex flex-wrap items-center gap-3 pt-2">
-                        ${siteUrl ? `<a href="${siteUrl}" target="_blank" rel="noopener noreferrer" class="px-4 py-2 bg-water-50 hover:bg-water-100 text-water-800 font-semibold rounded-xl text-xs transition flex items-center gap-1.5 shadow-2xs"><i aria-hidden="true" class="fa-solid fa-globe"></i> <span>Sito Web</span></a>` : ''}
-                        ${bookingUrl ? `<a href="${bookingUrl}" target="_blank" rel="noopener noreferrer" class="px-4 py-2 bg-nature-600 hover:bg-nature-700 text-white font-semibold rounded-xl text-xs transition flex items-center gap-1.5 shadow-md"><i aria-hidden="true" class="fa-solid fa-calendar-check"></i> <span>Prenota Online</span></a>` : ''}
+                        ${siteUrl ? `<a href="${siteUrl}" target="_blank" rel="noopener noreferrer" data-stat="centro_sito" data-stat-dettaglio="${escapeHtml(center.name)}" class="px-4 py-2 bg-water-50 hover:bg-water-100 text-water-800 font-semibold rounded-xl text-xs transition flex items-center gap-1.5 shadow-2xs"><i aria-hidden="true" class="fa-solid fa-globe"></i> <span>Sito Web</span></a>` : ''}
+                        ${bookingUrl ? `<a href="${bookingUrl}" target="_blank" rel="noopener noreferrer" data-stat="centro_prenota" data-stat-dettaglio="${escapeHtml(center.name)}" class="px-4 py-2 bg-nature-600 hover:bg-nature-700 text-white font-semibold rounded-xl text-xs transition flex items-center gap-1.5 shadow-md"><i aria-hidden="true" class="fa-solid fa-calendar-check"></i> <span>Prenota Online</span></a>` : ''}
                     </div>
                 </div>
             `;
@@ -5222,12 +5258,155 @@
                 form.reset();
                 delete form.dataset.startedAt;
                 showRequestFeedback(thanks, true);
+                document.dispatchEvent(new CustomEvent('statistiche:evento', { detail: 'richiesta_appuntamento' }));
             } catch (err) {
                 console.error('Invio richiesta non riuscito:', err);
                 showRequestFeedback('Invio non riuscito. La preghiamo di riprovare o di scrivere a silviachine@gmail.com.', false);
             } finally {
                 updateRequestSubmitState();
             }
+        };
+
+        // ---------- Statistiche del sito (area riservata) ----------
+        // Etichette dei contatori scritti da api/statistiche.js (le chiavi devono coincidere: vedi tests/unit/statistiche-admin.test.js).
+        const SITE_STATS_SOURCES = {
+            google: 'Google', bing: 'Bing', assistenti_ai: 'Assistenti AI (ChatGPT e simili)', instagram: 'Instagram', facebook: 'Facebook',
+            whatsapp: 'WhatsApp', miodottore: 'MioDottore', cms: 'Sito del CMS', altri_siti: 'Altri siti', diretto: 'Diretto (QR, link salvati, app)'
+        };
+        const SITE_STATS_DEVICES = { telefono: 'Telefono', computer: 'Computer', tablet: 'Tablet' };
+        const SITE_STATS_EVENTS = {
+            richiesta_appuntamento: 'Richieste di appuntamento inviate', faq: 'Domande frequenti aperte', instagram: 'Clic su Instagram',
+            email: "Clic sull'email", telefono: 'Tocchi per vedere il telefono', maps: 'Apertura di Google Maps',
+            centro_prenota: 'Clic su "Prenota" di un centro', centro_sito: 'Clic su "Sito web" di un centro'
+        };
+        const SITE_STATS_WEEKDAYS = ['Lunedì', 'Martedì', 'Mercoledì', 'Giovedì', 'Venerdì', 'Sabato', 'Domenica'];
+        const SITE_STATS_DAY_PARTS = [['Mattina (6-12)', 6, 12], ['Pomeriggio (12-18)', 12, 18], ['Sera (18-24)', 18, 24], ['Notte (0-6)', 0, 6]];
+        const SITE_STATS_IGNORE_KEY = 'statisticheIgnoraDispositivo';
+        let siteStatsDays = 30;
+        let siteStatsDocs = null;
+
+        function setSiteStatsIgnore(ignore) {
+            try {
+                if (ignore) localStorage.setItem(SITE_STATS_IGNORE_KEY, '1');
+                else localStorage.removeItem(SITE_STATS_IGNORE_KEY);
+            } catch (err) { /* archiviazione non disponibile */ }
+        }
+        window.setSiteStatsIgnore = setSiteStatsIgnore;
+        function siteStatsIgnored() {
+            try { return localStorage.getItem(SITE_STATS_IGNORE_KEY) === '1'; } catch (err) { return false; }
+        }
+
+        /** Data AAAA-MM-GG nel fuso di Roma, come le chiavi dei documenti delle statistiche. */
+        function romeDateKey(date) {
+            const parts = Object.fromEntries(new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Rome', year: 'numeric', month: '2-digit', day: '2-digit' })
+                .formatToParts(date).map(p => [p.type, p.value]));
+            return `${parts.year}-${parts.month}-${parts.day}`;
+        }
+        function shiftDateKey(key, days) {
+            const d = new Date(`${key}T12:00:00Z`);
+            d.setUTCDate(d.getUTCDate() + days);
+            return d.toISOString().slice(0, 10);
+        }
+
+        /** Somma i documenti giornalieri del periodo (ultimi `days` giorni fino a oggi compreso). */
+        function aggregateSiteStats(docs, days, todayKey) {
+            const startKey = shiftDateKey(todayKey, -(days - 1));
+            const byDate = new Map(docs.filter(d => d && /^\d{4}-\d{2}-\d{2}$/.test(d.date || '')).map(d => [d.date, d]));
+            const sumMaps = (target, map) => { for (const [k, v] of Object.entries(map || {})) target[k] = (target[k] || 0) + (Number(v) || 0); };
+            const total = { visits: 0, views: 0, sources: {}, devices: {}, places: {}, hours: {}, events: {}, faq: {}, centers: {}, weekdays: Array(7).fill(0), daily: [] };
+            for (let key = startKey; key <= todayKey; key = shiftDateKey(key, 1)) {
+                const doc = byDate.get(key) || {};
+                const visits = Number(doc.visits) || 0;
+                const views = Number(doc.views) || 0;
+                total.visits += visits;
+                total.views += views;
+                total.daily.push({ date: key, visits, views });
+                total.weekdays[(new Date(`${key}T12:00:00Z`).getUTCDay() + 6) % 7] += visits;
+                for (const group of ['sources', 'devices', 'places', 'hours', 'events', 'faq', 'centers']) sumMaps(total[group], doc[group]);
+            }
+            total.today = total.daily.at(-1) || { visits: 0, views: 0 };
+            return total;
+        }
+
+        function siteStatsBars(title, entries, { limit = 10, empty = 'Ancora nessun dato.', keepOrder = false } = {}) {
+            const filtered = entries.filter(([, v]) => v > 0);
+            const rows = (keepOrder ? filtered : filtered.sort((a, b) => b[1] - a[1])).slice(0, limit);
+            const max = Math.max(1, ...rows.map(([, v]) => v));
+            const body = rows.length ? rows.map(([label, value]) => `
+                <div class="space-y-1">
+                    <div class="flex items-center justify-between gap-3 text-xs"><span class="text-slate-700 truncate">${escapeHtml(label)}</span><span class="font-bold text-slate-900 tabular-nums">${value}</span></div>
+                    <div class="h-2 rounded-full bg-nature-50 overflow-hidden"><div class="h-full rounded-full bg-nature-600" style="width:${Math.max(4, Math.round(value / max * 100))}%"></div></div>
+                </div>`).join('') : `<p class="text-xs text-slate-500 italic">${escapeHtml(empty)}</p>`;
+            return `<section class="bg-white border border-nature-100 rounded-3xl p-4 space-y-3"><h4 class="font-editorial text-base font-bold text-slate-900 italic">${escapeHtml(title)}</h4>${body}</section>`;
+        }
+
+        function renderSiteStats() {
+            const content = document.getElementById('site-stats-content');
+            if (!content) return;
+            document.querySelectorAll('.site-stats-period').forEach(button => {
+                const active = Number(button.dataset.siteStatsDays) === siteStatsDays;
+                button.classList.toggle('bg-nature-700', active);
+                button.classList.toggle('text-white', active);
+                button.classList.toggle('bg-white', !active);
+                button.classList.toggle('text-nature-800', !active);
+                button.setAttribute('aria-pressed', active ? 'true' : 'false');
+            });
+            document.getElementById('site-stats-ignore').checked = siteStatsIgnored();
+            if (siteStatsDocs === null) { content.innerHTML = '<p class="text-xs text-slate-500 italic">Caricamento…</p>'; return; }
+            const stats = aggregateSiteStats(siteStatsDocs, siteStatsDays, romeDateKey(new Date()));
+            document.getElementById('site-stats-summary').textContent = `Ultimi ${siteStatsDays} giorni · visite anonime, senza cookie`;
+            const maxDay = Math.max(1, ...stats.daily.map(d => d.visits));
+            const fmt = (key) => new Date(`${key}T12:00:00Z`).toLocaleDateString('it-IT', { day: 'numeric', month: 'short', timeZone: 'UTC' });
+            const card = (label, value, hint) => `<div class="bg-nature-50/70 border border-nature-100 rounded-3xl p-4"><p class="text-[11px] font-semibold text-slate-600 uppercase tracking-wide">${label}</p><p class="font-editorial text-3xl font-bold text-slate-900">${value}</p><p class="text-[11px] text-slate-600">${hint}</p></div>`;
+            const hours = SITE_STATS_DAY_PARTS.map(([label, from, to]) => [label, Object.entries(stats.hours).reduce((sum, [h, v]) => sum + (Number(h) >= from && Number(h) < to ? v : 0), 0)]);
+            content.innerHTML = `
+                <div class="grid grid-cols-3 gap-3">
+                    ${card('Visite', stats.visits, 'ogni volta che qualcuno apre il sito')}
+                    ${card('Pagine viste', stats.views, 'comprese le pagine aperte più volte')}
+                    ${card('Oggi', stats.today.visits, `visite · ${stats.today.views} pagine viste`)}
+                </div>
+                ${stats.visits === 0 && stats.views === 0 ? '<p class="text-xs text-slate-600 bg-amber-50 border border-amber-100 rounded-2xl p-3">Nessuna visita registrata in questo periodo. I conteggi partono dal giorno in cui le statistiche sono state attivate.</p>' : ''}
+                <section class="bg-white border border-nature-100 rounded-3xl p-4 space-y-2">
+                    <h4 class="font-editorial text-base font-bold text-slate-900 italic">Visite giorno per giorno</h4>
+                    <div id="site-stats-chart" class="flex items-end gap-[2px] h-28" role="img" aria-label="Grafico delle visite giorno per giorno">
+                        ${stats.daily.map(d => `<div class="flex-1 rounded-t bg-water-500/80 hover:bg-nature-700 min-h-[2px]" style="height:${Math.round(d.visits / maxDay * 100)}%" title="${fmt(d.date)}: ${d.visits} visite, ${d.views} pagine viste"></div>`).join('')}
+                    </div>
+                    <div class="flex justify-between text-[10px] text-slate-600"><span>${fmt(stats.daily[0].date)}</span><span>${fmt(stats.daily.at(-1).date)}</span></div>
+                </section>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    ${siteStatsBars('Da dove arrivano', Object.entries(stats.sources).map(([k, v]) => [SITE_STATS_SOURCES[k] || k, v]))}
+                    ${siteStatsBars('Dispositivo', Object.entries(stats.devices).map(([k, v]) => [SITE_STATS_DEVICES[k] || k, v]))}
+                    ${siteStatsBars('Comuni (approssimativi)', Object.entries(stats.places))}
+                    ${siteStatsBars('Cosa fanno sul sito', Object.entries(stats.events).map(([k, v]) => [SITE_STATS_EVENTS[k] || k, v]), { empty: 'Ancora nessuna azione registrata.' })}
+                    ${siteStatsBars('Giorni della settimana', SITE_STATS_WEEKDAYS.map((label, i) => [label, stats.weekdays[i]]), { limit: 7, keepOrder: true })}
+                    ${siteStatsBars('Fasce orarie', hours, { limit: 4, keepOrder: true })}
+                    ${siteStatsBars('Domande frequenti più aperte', Object.entries(stats.faq), { empty: 'Nessuna domanda aperta finora.' })}
+                    ${siteStatsBars('Clic sui centri', Object.entries(stats.centers), { empty: 'Nessun clic sui centri finora.' })}
+                </div>`;
+        }
+
+        window.openSiteStatsModal = async function() {
+            document.getElementById('site-stats-modal').classList.remove('hidden');
+            updateModalState();
+            renderSiteStats();
+            try {
+                if (!db) throw new Error('Database non disponibile');
+                const snap = await getDocs(sharedCollection('site_stats'));
+                siteStatsDocs = snap.docs.map(d => ({ date: d.id, ...d.data() }));
+            } catch (err) {
+                console.error('Statistiche non caricate:', err);
+                siteStatsDocs = siteStatsDocs || [];
+                showToast('Statistiche non caricate: riprova tra poco.');
+            }
+            renderSiteStats();
+        };
+        window.closeSiteStatsModal = function() {
+            document.getElementById('site-stats-modal').classList.add('hidden');
+            updateModalState();
+        };
+        window.setSiteStatsPeriod = function(days) {
+            siteStatsDays = [7, 30, 90].includes(Number(days)) ? Number(days) : 30;
+            renderSiteStats();
         };
 
         // Area riservata

@@ -38,6 +38,7 @@ const ENTRY_POINTS = [
     { name: 'News', modal: 'news-admin-modal', desktop: { title: 'Gestisci News' }, mobile: { more: 'News e offerte' } },
     { name: 'Guide di preparazione', modal: 'prep-admin-modal', desktop: { title: 'Gestisci Preparazione' }, mobile: { more: 'Preparazione' } },
     { name: 'Compensi', modal: 'business-dashboard-modal', desktop: { title: 'Dashboard compensi' }, mobile: { more: 'Compensi' } },
+    { name: 'Statistiche del sito', modal: 'site-stats-modal', desktop: { title: 'Statistiche del sito' }, mobile: { more: 'Statistiche sito' } },
     { name: 'Richiami', modal: 'recall-modal', desktop: { title: 'Pazienti da richiamare' }, mobile: { more: 'Richiami' } },
     { name: 'Appuntamenti senza paziente', modal: 'unassigned-events-modal', desktop: { title: 'Appuntamenti senza paziente' }, mobile: { more: 'Senza paziente' } },
     { name: 'Backup', modal: 'backup-modal', desktop: { title: 'Backup & Ripristino' }, mobile: { more: 'Backup e ripristino' } },
@@ -155,7 +156,7 @@ test.describe('raggiungibilità di tutte le funzioni', () => {
         for (const button of await nav.getByRole('button').all()) await button.click({ trial: true });
         await nav.getByRole('button', { name: 'Altro' }).click();
         const more = page.locator('#mobile-admin-more');
-        await expect(more.getByRole('button')).toHaveText(['Chiudi', 'Poliambulatori', 'Settimana tipo', 'Trattamenti', 'News e offerte', 'Preparazione', 'Compensi', 'Richieste', 'Promemoria', 'Richiami', 'Ultime novità', 'Senza paziente', 'Backup e ripristino', 'Esci'].map(t => t === 'Chiudi' ? '' : t));
+        await expect(more.getByRole('button')).toHaveText(['Chiudi', 'Poliambulatori', 'Settimana tipo', 'Trattamenti', 'News e offerte', 'Preparazione', 'Compensi', 'Statistiche sito', 'Richieste', 'Promemoria', 'Richiami', 'Ultime novità', 'Senza paziente', 'Backup e ripristino', 'Esci'].map(t => t === 'Chiudi' ? '' : t));
         for (const button of await more.getByRole('button').all()) await button.click({ trial: true });
     });
 });
