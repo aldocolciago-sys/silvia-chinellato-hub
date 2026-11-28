@@ -2,7 +2,7 @@ import { describe, it, expect, afterEach } from 'vitest';
 import { bootApp, SHARED } from '../support/jsdom-app.js';
 import { seedDocs } from '../fixtures/seed.js';
 import { readIndexHtml } from '../support/app-source.js';
-import { SOURCE_LABELS, EVENT_LABELS } from '../../api/_statistiche-core.js';
+import { SOURCE_LABELS, EVENT_LABELS, ITALIAN_CITY_NAMES } from '../../api/_statistiche-core.js';
 
 /** Statistiche del sito nell'area riservata: lettura dei totali giornalieri scritti da api/statistiche.js. */
 let app;
@@ -59,6 +59,26 @@ describe('area riservata: statistiche del sito', () => {
         expect(app.text('site-stats-summary')).toContain('Ultimi 7 giorni');
     });
 
+    it('il grafico ha barre con altezza e colore propri (la più alta è il giorno con più visite)', async () => {
+        await openStats();
+        app.window.setSiteStatsPeriod(7);
+        const bars = app.$$('#site-stats-chart > div');
+        const today = bars.at(-1);
+        const yesterday = bars.at(-2);
+        expect(yesterday.getAttribute('data-visits')).toBe('4');
+        expect(yesterday.style.height).toBe('112px');
+        expect(today.style.height).toBe(`${Math.round(3 / 4 * 112)}px`);
+        expect(today.style.backgroundColor).not.toBe('');
+        expect(bars[0].style.height).toBe('2px');
+        expect(app.$('#site-stats-chart').getAttribute('aria-label')).toMatch(/: .* 4, .* 3$/);
+    });
+
+    it('i nomi inglesi delle città (es. Milan) diventano italiani e si sommano a quelli già italiani', async () => {
+        await openStats(statsDoc(romeKey(0), { visits: 5, views: 5, places: { Milan: 3, Milano: 2 } }));
+        expect(app.text('site-stats-content')).toMatch(/Milano\s*5(?!\d)/);
+        expect(app.text('site-stats-content')).not.toContain('Milan ');
+    });
+
     it('senza dati spiega che i conteggi partono dall\'attivazione', async () => {
         await openStats({});
         expect(app.text('site-stats-content')).toContain('Nessuna visita registrata');
@@ -102,6 +122,11 @@ describe('area riservata: statistiche del sito', () => {
 describe('etichette delle statistiche', () => {
     const html = readIndexHtml();
     const keysOf = (name) => Object.keys(Object.fromEntries([...html.match(new RegExp(`const ${name} = \\{([\\s\\S]*?)\\n {8}\\};`))[1].matchAll(/(\w+):\s*['"]/g)].map(m => [m[1], 1])));
+
+    it('i nomi italiani delle città coincidono tra server e area riservata', () => {
+        const block = html.match(/const SITE_STATS_CITY_NAMES = (\{[^}]*\});/)[1];
+        expect(JSON.parse(block.replace(/(\w+):/g, '"$1":').replace(/'/g, '"'))).toEqual(ITALIAN_CITY_NAMES);
+    });
 
     it('ogni provenienza e azione contata dal server ha un\'etichetta nell\'area riservata', () => {
         expect(keysOf('SITE_STATS_SOURCES').sort()).toEqual(Object.keys(SOURCE_LABELS).sort());

@@ -85,6 +85,12 @@ export function sourceFrom({ referrerHost = '', utmSource = '', siteHost = DEFAU
     return 'altri_siti';
 }
 
+/** Vercel dà i nomi delle città in inglese: si usano quelli italiani. */
+export const ITALIAN_CITY_NAMES = {
+    Milan: 'Milano', Rome: 'Roma', Turin: 'Torino', Naples: 'Napoli', Florence: 'Firenze', Venice: 'Venezia',
+    Genoa: 'Genova', Padua: 'Padova', Mantua: 'Mantova', Syracuse: 'Siracusa', Leghorn: 'Livorno'
+};
+
 /** Comune da cui ci si collega, già calcolato da Vercel dall'indirizzo IP (che non viene salvato). */
 export function placeFromHeaders(headers = {}) {
     const country = String(headers['x-vercel-ip-country'] || '').toUpperCase();
@@ -92,7 +98,7 @@ export function placeFromHeaders(headers = {}) {
     let city = String(headers['x-vercel-ip-city'] || '');
     try { city = decodeURIComponent(city); } catch { /* nome non codificato */ }
     city = city.replace(/[^\p{L}\p{M}' -]/gu, '').replace(/\s+/g, ' ').trim().slice(0, 50);
-    return city || 'Non disponibile';
+    return ITALIAN_CITY_NAMES[city] || city || 'Non disponibile';
 }
 
 /** Testo libero breve (domanda frequente, nome del centro) ridotto a caratteri sicuri. */

@@ -1452,7 +1452,7 @@
                 <div id="site-stats-content" class="space-y-5"></div>
                 <div class="border-t border-nature-100 pt-4 space-y-2 text-[11px] text-slate-600">
                     <label class="inline-flex items-center gap-2 text-xs font-semibold text-slate-700"><input type="checkbox" id="site-stats-ignore" onchange="setSiteStatsIgnore(this.checked)">Non contare le visite da questo dispositivo</label>
-                    <p>Si contano solo totali giornalieri: nessun cookie, nessun indirizzo IP, nessun dato che riconosca chi visita il sito. Il comune è approssimativo; chi arriva dal QR del volantino o da WhatsApp risulta "Diretto".</p>
+                    <p>Si contano solo totali giornalieri: nessun cookie, nessun indirizzo IP, nessun dato che riconosca chi visita il sito. Il comune è approssimativo: con la rete del telefono spesso risulta Milano anche per chi è in Brianza. Chi arriva dal QR del volantino o da WhatsApp risulta "Diretto".</p>
                     <p>Le parole cercate su Google si trovano in <a href="https://search.google.com/search-console" target="_blank" rel="noopener" class="underline text-nature-800 font-semibold">Google Search Console</a>.</p>
                 </div>
             </div>
@@ -5279,9 +5279,12 @@
             email: "Clic sull'email", telefono: 'Tocchi per vedere il telefono', maps: 'Apertura di Google Maps',
             centro_prenota: 'Clic su "Prenota" di un centro', centro_sito: 'Clic su "Sito web" di un centro'
         };
+        // Vercel dà i nomi delle città in inglese: stessi nomi di ITALIAN_CITY_NAMES in api/_statistiche-core.js
+        const SITE_STATS_CITY_NAMES = { Milan: 'Milano', Rome: 'Roma', Turin: 'Torino', Naples: 'Napoli', Florence: 'Firenze', Venice: 'Venezia', Genoa: 'Genova', Padua: 'Padova', Mantua: 'Mantova', Syracuse: 'Siracusa', Leghorn: 'Livorno' };
         const SITE_STATS_WEEKDAYS = ['Lunedì', 'Martedì', 'Mercoledì', 'Giovedì', 'Venerdì', 'Sabato', 'Domenica'];
         const SITE_STATS_DAY_PARTS = [['Mattina (6-12)', 6, 12], ['Pomeriggio (12-18)', 12, 18], ['Sera (18-24)', 18, 24], ['Notte (0-6)', 0, 6]];
         const SITE_STATS_IGNORE_KEY = 'statisticheIgnoraDispositivo';
+        const SITE_STATS_CHART_PX = 112;
         let siteStatsDays = 30;
         let siteStatsDocs = null;
 
@@ -5322,7 +5325,8 @@
                 total.views += views;
                 total.daily.push({ date: key, visits, views });
                 total.weekdays[(new Date(`${key}T12:00:00Z`).getUTCDay() + 6) % 7] += visits;
-                for (const group of ['sources', 'devices', 'places', 'hours', 'events', 'faq', 'centers']) sumMaps(total[group], doc[group]);
+                for (const group of ['sources', 'devices', 'hours', 'events', 'faq', 'centers']) sumMaps(total[group], doc[group]);
+                for (const [name, v] of Object.entries(doc.places || {})) sumMaps(total.places, { [SITE_STATS_CITY_NAMES[name] || name]: v });
             }
             total.today = total.daily.at(-1) || { visits: 0, views: 0 };
             return total;
@@ -5368,8 +5372,8 @@
                 ${stats.visits === 0 && stats.views === 0 ? '<p class="text-xs text-slate-600 bg-amber-50 border border-amber-100 rounded-2xl p-3">Nessuna visita registrata in questo periodo. I conteggi partono dal giorno in cui le statistiche sono state attivate.</p>' : ''}
                 <section class="bg-white border border-nature-100 rounded-3xl p-4 space-y-2">
                     <h4 class="font-editorial text-base font-bold text-slate-900 italic">Visite giorno per giorno</h4>
-                    <div id="site-stats-chart" class="flex items-end gap-[2px] h-28" role="img" aria-label="Grafico delle visite giorno per giorno">
-                        ${stats.daily.map(d => `<div class="flex-1 rounded-t bg-water-500/80 hover:bg-nature-700 min-h-[2px]" style="height:${Math.round(d.visits / maxDay * 100)}%" title="${fmt(d.date)}: ${d.visits} visite, ${d.views} pagine viste"></div>`).join('')}
+                    <div id="site-stats-chart" style="display:flex;align-items:flex-end;gap:2px;height:${SITE_STATS_CHART_PX}px" role="img" aria-label="Visite giorno per giorno: ${stats.daily.map(d => `${fmt(d.date)} ${d.visits}`).join(', ')}">
+                        ${stats.daily.map(d => `<div data-visits="${d.visits}" style="flex:1 1 0;min-width:2px;height:${Math.max(2, Math.round(d.visits / maxDay * SITE_STATS_CHART_PX))}px;background-color:${d.visits ? '#4a8fa8' : '#e4edf2'};border-radius:3px 3px 0 0" title="${fmt(d.date)}: ${d.visits} visite, ${d.views} pagine viste"></div>`).join('')}
                     </div>
                     <div class="flex justify-between text-[10px] text-slate-600"><span>${fmt(stats.daily[0].date)}</span><span>${fmt(stats.daily.at(-1).date)}</span></div>
                 </section>
